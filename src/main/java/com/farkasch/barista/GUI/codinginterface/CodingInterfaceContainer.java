@@ -1,4 +1,4 @@
-package com.farkasch.barista.GUI;
+package com.farkasch.barista.GUI.codinginterface;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -35,5 +35,6 @@ public class CodingInterfaceContainer extends BorderPane {
             setLeft(centerInterface);
             setRight(newInterface);
         }
+        interfaces.add(newInterface);
     }
 }

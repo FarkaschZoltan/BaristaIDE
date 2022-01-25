@@ -1,6 +1,6 @@
-package com.farkasch.barista.GUI;
+package com.farkasch.barista.GUI.codinginterface;
 
-import com.farkasch.barista.GUI.menu.CodingInterfaceSwitchMenu;
+import com.farkasch.barista.services.SaveService;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -9,25 +9,33 @@ import javafx.scene.layout.BorderPane;
 
 public class CodingInterface extends BorderPane {
     private TextArea content;
-    private CodingInterfaceSwitchMenu switchMenu;
+    private SwitchMenu switchMenu;
+
+    public TextArea getContent() {
+        return content;
+    }
 
     public CodingInterface(){
         content = new TextArea();
-        switchMenu = new CodingInterfaceSwitchMenu();
-    }
+        switchMenu = new SwitchMenu(this);
 
-    public CodingInterface(File file) {
-        content = new TextArea();
-        switchMenu = new CodingInterfaceSwitchMenu();
-
-        showFile(file);
+        setTop(switchMenu);
+        setCenter(content);
     }
 
     public void showFile(File file){
 
+        if(switchMenu.getCurrentlyActive() != null){
+            SaveService.saveFile(file, content.getText());
+        }
+
+        if(!switchMenu.contains(file)){
+            switchMenu.addFile(file);
+        }
+
         try {
-            Scanner contentScanner = new Scanner(file);
             StringBuilder contentBuilder = new StringBuilder();
+            Scanner contentScanner = new Scanner(file);
             while(contentScanner.hasNextLine()){
                 contentBuilder.append(contentScanner.nextLine());
             }
@@ -37,9 +45,5 @@ public class CodingInterface extends BorderPane {
             e.printStackTrace();
             System.out.println("Error while opening file!");
         }
-
-
-        setTop(switchMenu);
-        setCenter(content);
     }
 }
