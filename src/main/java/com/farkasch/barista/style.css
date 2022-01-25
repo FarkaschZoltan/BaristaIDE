@@ -1,0 +1,12 @@
+#switch-menu{
+  -fx-alignment: center-left;
+}
+
+#switch-menu__item{
+
+}
+
+#switch-menu__item--selected{
+  -fx-background-color: blue;
+  -fx-color-label-visible: white;
+}
