@@ -18,7 +18,7 @@ public class MainApp extends Application {
         stage.setTitle("BaristaIDE");
 
         TextArea sideMenuDummy = new TextArea();
-        TextArea codeArea = new TextArea();
+        CodingInterfaceContainer codeArea = new CodingInterfaceContainer();
         TopMenu topMenu = new TopMenu();
 
         BorderPane layout = new BorderPane();
