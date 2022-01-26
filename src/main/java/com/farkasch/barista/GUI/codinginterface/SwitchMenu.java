@@ -32,18 +32,10 @@ public class SwitchMenu extends HBox {
 
     public void addFile(File file){
         EventHandler<javafx.event.ActionEvent> clickEvent = actionEvent -> {
-            if(currentlyActive != null){
-                SaveService.saveFile(currentlyActive.getFile(), codingInterface.getContent().getText());
-            }
             codingInterface.showFile(((SwitchMenuItem)actionEvent.getTarget()).getFile());
-           for(Node n : getChildren()){
-               if(n.equals(actionEvent.getTarget())){
-                   currentlyActive.setId("switch-menu__item");
-                   currentlyActive = (SwitchMenuItem) n;
-                   currentlyActive.setId("switch-menu__item--selected");
-                   break;
-               }
-           }
+            currentlyActive.setId("switch-menu__item");
+            currentlyActive = (SwitchMenuItem) actionEvent.getTarget();
+            currentlyActive.setId("switch-menu__item--selected");
         };
         SwitchMenuItem widget = new SwitchMenuItem(file, clickEvent);
         getChildren().add(widget);

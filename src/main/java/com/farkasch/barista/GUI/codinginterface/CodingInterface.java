@@ -26,7 +26,7 @@ public class CodingInterface extends BorderPane {
     public void showFile(File file){
 
         if(switchMenu.getCurrentlyActive() != null){
-            SaveService.saveFile(file, content.getText());
+            SaveService.saveFile(switchMenu.getCurrentlyActive(), content.getText());
         }
 
         if(!switchMenu.contains(file)){
@@ -34,12 +34,13 @@ public class CodingInterface extends BorderPane {
         }
 
         try {
-            StringBuilder contentBuilder = new StringBuilder();
             Scanner contentScanner = new Scanner(file);
+            System.out.println(file.getName());
+            content.setText("");
             while(contentScanner.hasNextLine()){
-                contentBuilder.append(contentScanner.nextLine());
+                content.appendText(contentScanner.nextLine());
             }
-            content.setText(contentBuilder.toString());
+
         } catch(FileNotFoundException e){
             //TODO error popup!
             e.printStackTrace();
