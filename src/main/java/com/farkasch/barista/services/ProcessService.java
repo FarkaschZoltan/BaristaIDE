@@ -11,33 +11,34 @@ import org.springframework.lang.Nullable;
 
 public class ProcessService {
 
-    public static List<String> getDirs(@Nullable String folder){
+    public static List<String> getDirs(@Nullable String folder) {
         List<String> dirs = new ArrayList<>();
 
         ProcessBuilder pb = new ProcessBuilder();
-        if(folder == null){
+        if (folder == null) {
             pb.directory(new File("C:\\Users"));
-        }
-        else{
+        } else {
             pb.directory(new File("C:\\Users" + folder));
         }
         pb.command("CMD", "/C", "dir");
 
-        try{
+        try {
             Process process = pb.start();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()));
             String line;
 
-            while((line = reader.readLine()) != null){
+            while ((line = reader.readLine()) != null) {
                 //System.out.println(line);
                 List<String> splitLine = Arrays.asList(line.split(" "));
-                if(splitLine.contains("<DIR>") && !(splitLine.contains(".") || splitLine.contains(".."))){
-                    dirs.add(splitLine.get(splitLine.size()-1));
+                if (splitLine.contains("<DIR>") && !(splitLine.contains(".") || splitLine.contains(
+                    ".."))) {
+                    dirs.add(splitLine.get(splitLine.size() - 1));
                 }
             }
 
             //dirs.stream().forEach(s -> System.out.println("-> " + s));
-        }catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

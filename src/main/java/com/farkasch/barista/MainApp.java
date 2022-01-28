@@ -1,7 +1,7 @@
 package com.farkasch.barista;
 
-import com.farkasch.barista.GUI.codinginterface.CodingInterfaceContainer;
-import com.farkasch.barista.GUI.mainview.TopMenu;
+import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
+import com.farkasch.barista.gui.mainview.topmenu.TopMenu;
 import java.nio.file.Paths;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -57,7 +57,9 @@ public class MainApp extends Application {
         layout.setLeft(sideMenuDummy);
 
         Scene scene = new Scene(layout, 700, 600);
-        scene.getStylesheets().add(Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
+        scene.getStylesheets().add(
+            Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
+                .toString());
 
         ((TextArea)layout.getLeft()).setPrefWidth(scene.getWidth() * 0.2);
 
