@@ -45,4 +45,38 @@ public class ProcessService {
         return dirs;
     }
 
+    public static List<String> getDirsAndFiles(@Nullable String folder){
+        List<String> dirsAndFiles = new ArrayList<>();
+
+        ProcessBuilder pb = new ProcessBuilder();
+        if (folder == null) {
+            pb.directory(new File("C:\\Users"));
+        } else {
+            pb.directory(new File("C:\\Users" + folder));
+        }
+        pb.command("CMD", "/C", "dir");
+
+        try {
+            Process process = pb.start();
+            BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+                List<String> splitLine = Arrays.asList(line.split(" "));
+                if ((splitLine.contains("<DIR>") || splitLine.get(splitLine.size()-1).contains(".")) && !(splitLine.contains(".") || splitLine.contains(
+                    ".."))) {
+                    dirsAndFiles.add(splitLine.get(splitLine.size() - 1));
+                }
+            }
+
+            dirsAndFiles.stream().forEach(s -> System.out.println("-> " + s));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return dirsAndFiles;
+    }
+
 }
