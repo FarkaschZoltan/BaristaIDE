@@ -39,6 +39,13 @@ public class TopMenu extends MenuBar {
 
         MenuItem newProject = new MenuItem("New Project");
 
+        MenuItem openFile = new MenuItem("Open File");
+        openFile.setOnAction(actionEvent -> {
+            OpenFileWindow openFileWindow = new OpenFileWindow(
+                file -> mainApp.getCodeArea().openFile(file));
+            openFileWindow.show();
+        });
+
         MenuItem loadProject = new MenuItem("Load Project");
 
         MenuItem saveProject = new MenuItem("Save");
@@ -47,7 +54,7 @@ public class TopMenu extends MenuBar {
                 mainApp.getCodeArea().getActiveInterface().getContent().getText());
         });
 
-        fileMenu.getItems().addAll(newFile, newProject, loadProject, saveProject);
+        fileMenu.getItems().addAll(newFile, newProject, openFile, loadProject, saveProject);
     }
 
     private void initGitMenu() {
