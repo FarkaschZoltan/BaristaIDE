@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javafx.util.Pair;
 import org.springframework.lang.Nullable;
 
 public class ProcessService {
@@ -45,8 +46,8 @@ public class ProcessService {
         return dirs;
     }
 
-    public static List<String> getDirsAndFiles(@Nullable String folder){
-        List<String> dirsAndFiles = new ArrayList<>();
+    public static List<Pair<String, Boolean>> getDirsAndFiles(@Nullable String folder){
+        List<Pair<String, Boolean>> dirsAndFiles = new ArrayList<>();
 
         ProcessBuilder pb = new ProcessBuilder();
         if (folder == null) {
@@ -65,9 +66,12 @@ public class ProcessService {
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
                 List<String> splitLine = Arrays.asList(line.split(" "));
-                if ((splitLine.contains("<DIR>") || splitLine.get(splitLine.size()-1).contains(".")) && !(splitLine.contains(".") || splitLine.contains(
+                if (splitLine.contains("<DIR>") && !(splitLine.contains(".") || splitLine.contains(
                     ".."))) {
-                    dirsAndFiles.add(splitLine.get(splitLine.size() - 1));
+                    dirsAndFiles.add(new Pair<String, Boolean>(splitLine.get(splitLine.size() - 1), false));
+                }
+                else if(splitLine.get(splitLine.size()-1).matches(".*[.].[a-z0-9]{2,3}")){
+                    dirsAndFiles.add(new Pair<String, Boolean>(splitLine.get(splitLine.size() - 1), true));
                 }
             }
 
