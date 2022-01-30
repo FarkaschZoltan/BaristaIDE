@@ -21,23 +21,24 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.lang.Nullable;
 
 public class NewFileWindow extends Stage {
 
     //Design
-    TextField fileNameField;
-    TextField folderPathField;
-    Label folderPathLabel;
-    Label fileNameLabel;
-    Label folderSelectorLabel;
-    Button createButton;
-    GridPane fieldLayout;
-    GridPane rootFolderSelector;
-    ScrollPane scrollPane;
-    VBox windowLayout;
-    HBox createButtonContainer;
-    Scene scene;
+    private TextField fileNameField;
+    private TextField folderPathField;
+    private Label folderPathLabel;
+    private Label fileNameLabel;
+    private Label folderSelectorLabel;
+    private Button createButton;
+    private GridPane fieldLayout;
+    private GridPane rootFolderSelector;
+    private ScrollPane scrollPane;
+    private VBox windowLayout;
+    private HBox createButtonContainer;
+    private Scene scene;
 
 
     public NewFileWindow(Consumer<File> openFile) {
@@ -64,18 +65,19 @@ public class NewFileWindow extends Stage {
     }
 
     private void init(Consumer<File> openFile) {
+        setTitle("New File");
+
         scene.getStylesheets().add(
             Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
                 .toString());
 
         scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setPrefHeight(scene.getHeight());
+        VBox.setMargin(scrollPane, new Insets(10));
 
         fileNameLabel.setLabelFor(fileNameField);
         folderPathLabel.setLabelFor(folderPathField);
-
-        scrollPane.setPrefHeight(scene.getHeight());
-        VBox.setMargin(scrollPane, new Insets(10));
 
         fieldLayout.add(fileNameLabel, 0, 0);
         GridPane.setMargin(fileNameLabel, new Insets(10, 20, 10, 10));
@@ -122,6 +124,7 @@ public class NewFileWindow extends Stage {
             folderContainer.setPrefWidth(
                 parentContainer == null ? scene.getWidth() : parentContainer.getWidth());
             Label folderLabel = new Label(dirs.get(i));
+            folderLabel.setGraphic(new FontIcon("mdi-folder"));
             folderLabel.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
                 Label target = ((Label) mouseEvent.getTarget());
                 VBox parent = (VBox) (target.getParent());
