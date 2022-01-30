@@ -19,6 +19,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.lang.Nullable;
 
 public class OpenFileWindow extends Stage {
@@ -36,7 +37,7 @@ public class OpenFileWindow extends Stage {
 
     private String filePath;
 
-    public OpenFileWindow(Consumer<File> openFile){
+    public OpenFileWindow(Consumer<File> openFile) {
         fileName = new Label("");
         fileNameLabel = new Label("Chosen File: ");
         chooseFileLabel = new Label("Choose a file: ");
@@ -57,7 +58,7 @@ public class OpenFileWindow extends Stage {
         init(openFile);
     }
 
-    private void init(Consumer<File> openFile){
+    private void init(Consumer<File> openFile) {
         setTitle("Open File");
 
         scene.getStylesheets().add(
@@ -107,13 +108,17 @@ public class OpenFileWindow extends Stage {
                 parentContainer == null ? scene.getWidth() : parentContainer.getWidth());
             Label folderLabel = new Label(dirs.get(i).getKey());
             Boolean isFile = dirs.get(i).getValue();
-            System.out.println(isFile);
+            if (isFile) {
+                folderLabel.setGraphic(new FontIcon("mdi-file"));
+            } else {
+                folderLabel.setGraphic(new FontIcon("mdi-folder"));
+            }
             folderLabel.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
                 Label target = ((Label) mouseEvent.getTarget());
                 VBox parent = (VBox) (target.getParent());
                 if (parent.getChildren().size() > 1) {
                     folderClose(parent);
-                } else if(!isFile.booleanValue()){
+                } else if (!isFile.booleanValue()) {
                     folderExpand((parentName == null ? "" : parentName) + "\\" + target.getText(),
                         folderContainer);
                 } else {
