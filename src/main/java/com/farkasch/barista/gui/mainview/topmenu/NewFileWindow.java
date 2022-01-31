@@ -121,7 +121,7 @@ public class NewFileWindow extends Stage {
 
         for (int i = 0; i < dirs.size(); i++) {
             VBox folderContainer = new VBox();
-            folderContainer.setPrefWidth(
+            folderContainer.setMinWidth(
                 parentContainer == null ? scene.getWidth() : parentContainer.getWidth());
             Label folderLabel = new Label(dirs.get(i));
             folderLabel.setGraphic(new FontIcon("mdi-folder"));

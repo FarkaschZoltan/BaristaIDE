@@ -16,6 +16,7 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -99,12 +100,11 @@ public class OpenFileWindow extends Stage {
             folderSelector = rootFolderSelector;
         } else {
             folderSelector = new GridPane();
-            folderSelector.setMaxWidth(Double.MAX_VALUE);
         }
 
         for (int i = 0; i < dirs.size(); i++) {
             VBox folderContainer = new VBox();
-            folderContainer.setPrefWidth(
+            folderContainer.setMinWidth(
                 parentContainer == null ? scene.getWidth() : parentContainer.getWidth());
             Label folderLabel = new Label(dirs.get(i).getKey());
             Boolean isFile = dirs.get(i).getValue();
@@ -136,6 +136,7 @@ public class OpenFileWindow extends Stage {
             }
             //folderSelector.setGridLinesVisible(true);
         }
+
         if (parentContainer != null) {
             parentContainer.getChildren().add(folderSelector);
         }
