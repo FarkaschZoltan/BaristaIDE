@@ -43,7 +43,7 @@ public class CodingInterface extends BorderPane {
             System.out.println(file.getName());
             content.setText("");
             while (contentScanner.hasNextLine()) {
-                content.appendText(contentScanner.nextLine());
+                content.appendText(contentScanner.nextLine() + "\n");
             }
 
         } catch (FileNotFoundException e) {
