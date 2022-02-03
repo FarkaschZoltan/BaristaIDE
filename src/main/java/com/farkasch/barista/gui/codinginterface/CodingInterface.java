@@ -11,6 +11,7 @@ public class CodingInterface extends BorderPane {
 
     private TextArea content;
     private SwitchMenu switchMenu;
+    private CodingInterfaceContainer parent;
 
     public TextArea getContent() {
         return content;
@@ -20,9 +21,10 @@ public class CodingInterface extends BorderPane {
         return switchMenu.getCurrentlyActive();
     }
 
-    public CodingInterface() {
+    public CodingInterface(CodingInterfaceContainer parent) {
         content = new TextArea();
         switchMenu = new SwitchMenu(this);
+        this.parent = parent;
 
         setTop(switchMenu);
         setCenter(content);
@@ -42,6 +44,7 @@ public class CodingInterface extends BorderPane {
             Scanner contentScanner = new Scanner(file);
             System.out.println(file.getName());
             content.setText("");
+            System.out.println(contentScanner.hasNextLine());
             while (contentScanner.hasNextLine()) {
                 content.appendText(contentScanner.nextLine() + "\n");
             }
@@ -51,5 +54,9 @@ public class CodingInterface extends BorderPane {
             e.printStackTrace();
             System.out.println("Error while opening file!");
         }
+    }
+
+    public void close(){
+        parent.closeInterface(this);
     }
 }
