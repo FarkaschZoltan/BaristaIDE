@@ -17,7 +17,13 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>17.0.0.1</version>
+            <version>17.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>17.0.2</version>
         </dependency>
 
         <dependency>
@@ -36,13 +42,13 @@
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-javafx</artifactId>
-            <version>11.3.5</version>
+            <version>12.2.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-materialdesign-pack</artifactId>
-            <version>11.3.5</version>
+            <version>12.2.0</version>
         </dependency>
     </dependencies>
 
@@ -70,6 +76,9 @@
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.ttf</include>
+                    <include>**/*.html</include>
+                    <include>**/*.css</include>
+                    <include>**/*.js</include>
                 </includes>
             </resource>
         </resources>
