@@ -1,22 +1,21 @@
 package com.farkasch.barista.gui.codinginterface;
 
 import com.farkasch.barista.services.FileService;
+import com.farkasch.barista.services.JavaScriptService;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Paths;
 import java.util.Scanner;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.text.Font;
+import javafx.scene.web.WebView;
 
 public class CodingInterface extends BorderPane {
 
-    private TextArea content;
+    private WebView content;
     private SwitchMenu switchMenu;
     private CodingInterfaceContainer parent;
 
-    public TextArea getContent() {
-        return content;
+    public String getTextContent() {
+        return JavaScriptService.getContent(content);
     }
 
     public File getShownFile() {
@@ -24,10 +23,10 @@ public class CodingInterface extends BorderPane {
     }
 
     public CodingInterface(CodingInterfaceContainer parent) {
-        content = new TextArea();
-        content.setFont(Font.loadFont(getClass().getResource(
-                "/fonts/Hack-Bold.ttf").toExternalForm(),
-            12));
+        content = new WebView();
+        content.getEngine()
+            .load(this.getClass().getResource("/codinginterface/codearea.html")
+                .toExternalForm());
 
         switchMenu = new SwitchMenu(this);
         this.parent = parent;
@@ -39,7 +38,8 @@ public class CodingInterface extends BorderPane {
     public void showFile(File file) {
 
         if (switchMenu.getCurrentlyActive() != null) {
-            FileService.saveFile(switchMenu.getCurrentlyActive(), content.getText());
+            FileService.saveFile(switchMenu.getCurrentlyActive(),
+                JavaScriptService.getContent(content));
         }
 
         if (!switchMenu.contains(file)) {
@@ -49,11 +49,13 @@ public class CodingInterface extends BorderPane {
         try {
             Scanner contentScanner = new Scanner(file);
             System.out.println(file.getName());
-            content.setText("");
             System.out.println(contentScanner.hasNextLine());
+            String textContent = new String();
             while (contentScanner.hasNextLine()) {
-                content.appendText(contentScanner.nextLine() + "\n");
+                textContent = textContent.concat(contentScanner.nextLine() + "\n");
             }
+            System.out.println("textContent: " + textContent);
+            JavaScriptService.setContent(content, textContent);
 
         } catch (FileNotFoundException e) {
             //TODO error popup!

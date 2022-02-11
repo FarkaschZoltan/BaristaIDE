@@ -51,7 +51,7 @@ public class TopMenu extends MenuBar {
         MenuItem saveProject = new MenuItem("Save");
         saveProject.setOnAction(actionEvent -> {
             FileService.saveFile(mainApp.getCodeArea().getActiveInterface().getShownFile(),
-                mainApp.getCodeArea().getActiveInterface().getContent().getText());
+                mainApp.getCodeArea().getActiveInterface().getTextContent());
         });
 
         fileMenu.getItems().addAll(newFile, newProject, openFile, loadProject, saveProject);
