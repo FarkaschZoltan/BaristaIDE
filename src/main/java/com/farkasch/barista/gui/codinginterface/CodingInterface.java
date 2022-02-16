@@ -10,63 +10,64 @@ import javafx.scene.web.WebView;
 
 public class CodingInterface extends BorderPane {
 
-    private WebView content;
-    private SwitchMenu switchMenu;
-    private CodingInterfaceContainer parent;
+  private WebView content;
+  private SwitchMenu switchMenu;
+  private CodingInterfaceContainer parent;
+  private boolean interfaceLoaded = false;
 
-    public String getTextContent() {
-        return JavaScriptService.getContent(content);
+  public String getTextContent() {
+    return JavaScriptService.getContent(content);
+  }
+
+  public File getShownFile() {
+    return switchMenu.getCurrentlyActive();
+  }
+
+  public CodingInterface(CodingInterfaceContainer parent) {
+    content = new WebView();
+    content.getEngine()
+      .load(this.getClass().getResource("/codinginterface/codearea.html")
+        .toExternalForm());
+
+    System.out.println(content.getEngine().getDocument());
+
+    switchMenu = new SwitchMenu(this);
+    this.parent = parent;
+
+    setTop(switchMenu);
+    setCenter(content);
+  }
+
+  public void showFile(File file) {
+
+    if (switchMenu.getCurrentlyActive() != null) {
+      FileService.saveFile(switchMenu.getCurrentlyActive(),
+        JavaScriptService.getContent(content));
     }
 
-    public File getShownFile() {
-        return switchMenu.getCurrentlyActive();
+    if (!switchMenu.contains(file)) {
+      switchMenu.addFile(file);
     }
 
-    public CodingInterface(CodingInterfaceContainer parent) {
-        content = new WebView();
-        content.getEngine()
-            .load(this.getClass().getResource("/codinginterface/codearea.html")
-                .toExternalForm());
-
-        System.out.println(content.getEngine().getDocument());
-
-        switchMenu = new SwitchMenu(this);
-        this.parent = parent;
-
-        setTop(switchMenu);
-        setCenter(content);
+    try {
+      Scanner contentScanner = new Scanner(file);
+      System.out.println(file.getName());
+      String textContent = new String();
+      while (contentScanner.hasNextLine()) {
+        textContent = textContent.concat(contentScanner.nextLine() + "\n");
+      }
+      System.out.println("textContent: " + textContent);
+      System.out.println(switchMenu.getCurrentlyActive() == null);
+      JavaScriptService.setContent(content, textContent, !interfaceLoaded);
+      interfaceLoaded = true;
+    } catch (FileNotFoundException e) {
+      //TODO error popup!
+      e.printStackTrace();
+      System.out.println("Error while opening file!");
     }
+  }
 
-    public void showFile(File file) {
-
-        if (switchMenu.getCurrentlyActive() != null) {
-            FileService.saveFile(switchMenu.getCurrentlyActive(),
-                JavaScriptService.getContent(content));
-        }
-
-        if (!switchMenu.contains(file)) {
-            switchMenu.addFile(file);
-        }
-
-        try {
-            Scanner contentScanner = new Scanner(file);
-            System.out.println(file.getName());
-            String textContent = new String();
-            while (contentScanner.hasNextLine()) {
-                textContent = textContent.concat(contentScanner.nextLine() + "\n");
-            }
-            System.out.println("textContent: " + textContent);
-            System.out.println(content.getEngine());
-            JavaScriptService.setContent(content, textContent);
-
-        } catch (FileNotFoundException e) {
-            //TODO error popup!
-            e.printStackTrace();
-            System.out.println("Error while opening file!");
-        }
-    }
-
-    public void close() {
-        parent.closeInterface(this);
-    }
+  public void close() {
+    parent.closeInterface(this);
+  }
 }
