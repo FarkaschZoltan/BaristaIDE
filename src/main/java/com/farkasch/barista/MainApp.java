@@ -1,5 +1,6 @@
 package com.farkasch.barista;
 
+import com.farkasch.barista.gui.codinginterface.CodingInterface;
 import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.gui.mainview.topmenu.TopMenu;
 import java.nio.file.Paths;

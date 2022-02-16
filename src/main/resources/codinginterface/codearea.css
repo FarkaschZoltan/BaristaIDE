@@ -48,5 +48,13 @@ html, body {
   font-weight: bold;
   font-size: 12px;
   overflow-x : scroll;
-  white-space: nowrap;
+  white-space: pre;
+}
+
+.primitive {
+  color: orangered;
+}
+
+.string{
+  color: green;
 }
