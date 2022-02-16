@@ -22,11 +22,13 @@ public class JavaScriptService {
     }
   }
 
-  private static void execute(WebView view, String script){
+  private static void execute(WebView view, String... scripts){
     view.getEngine().getLoadWorker().stateProperty().addListener(
       (observableValue, oldState, newState) -> {
         if(newState == State.SUCCEEDED){
-          view.getEngine().executeScript(script);
+          for(String script : scripts){
+            view.getEngine().executeScript(script);
+          }
         }
       }
     );

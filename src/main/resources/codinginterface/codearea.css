@@ -51,10 +51,14 @@ html, body {
   white-space: pre;
 }
 
-.primitive {
-  color: orangered;
+.language {
+  color: blue;
 }
 
 .string{
   color: green;
+}
+
+.method{
+  color: darkcyan;
 }

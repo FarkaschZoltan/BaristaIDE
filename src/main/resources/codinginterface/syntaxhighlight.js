@@ -2,27 +2,31 @@ const codeQuery = $("#code-area");
 const code = document.querySelector("#code-area")
 const body = document.querySelector("body");
 
-const primitiveReg = /\b(int|char|long|double|float|byte|short|boolean)\b/g
-const stringReg = /(".*?")|('.*?')/g
+const stringReg = /(".*?")|('.*?')/g;
+const languageReg = /\b(abstract|assert|boolean|break|byte|case|catch|char|class|continue|default|do|double|else|enum|extends|final|finally|float|for|if|implements|import|instanceof|int|interface|long|native|new|null|package|private|public|return|short|strictfp|static|super|switch|synchronized|this|throw|throws|transient|try|void|volatile|while|const|goto|true|false|,)\b/g
+const methodReg = /([a-zA-Z0-9_]*)(?=\((.*)\){)/g;
+
+//(?<!(if|for|while|catch|do|else|new|throw))
 
 function handleKeyPress(event) {
   switch (event.keyCode) {
     case 13: //enter
       break;
     default:
-      highlight(event);
+      highlight();
       break;
   }
 }
 
-function highlight(event) {
+function highlight() {
   let parsed = "";
   codeQuery.each(function () {
     let string = this.textContent;
     console.log(string);
-    parsed = string.replaceAll(primitiveReg, "<span class=\"primitive\">$1</span>");
-    parsed = parsed.replaceAll(stringReg, "<span class=\"string\">$1</span>")
-  })
+    parsed = string.replaceAll(languageReg, "<span class=language>$1</span>");
+    parsed = parsed.replaceAll(stringReg, "<span class=string>$1</span>");
+    parsed = parsed.replaceAll(methodReg, "<span class=method>$1</span>");
+  });
 
   let caretPos = getCaretIndex();
   //console.log("|" + parsed + "|");
