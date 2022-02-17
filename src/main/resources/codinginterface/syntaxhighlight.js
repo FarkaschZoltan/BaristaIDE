@@ -22,14 +22,12 @@ function highlight() {
   let parsed = "";
   codeQuery.each(function () {
     let string = this.textContent;
-    console.log(string);
     parsed = string.replaceAll(languageReg, "<span class=language>$1</span>");
     parsed = parsed.replaceAll(stringReg, "<span class=string>$1</span>");
     parsed = parsed.replaceAll(methodReg, "<span class=method>$1</span>");
   });
 
   let caretPos = getCaretIndex();
-  //console.log("|" + parsed + "|");
   code.innerHTML = parsed;
   setCaretPosition(caretPos);
 }
@@ -47,7 +45,6 @@ function getCaretIndex() {
       position = preCaretRange.toString().length;
     }
   }
-
   return position;
 }
 
@@ -57,12 +54,14 @@ function setCaretPosition(index) {
 
   let substringLength = 0;
   let prevSubstringLength = 0;
-  let indexToSet = index;
-  let childIndex = 0;
+  let indexToSet;
+  let childIndex;
 
-  for (let i = 0; i < code.childNodes.length; i++) {
-
+  let i = -1;
+  while (substringLength < index) {
     prevSubstringLength = substringLength;
+    i++;
+
     if (code.childNodes[i].nodeType != Node.TEXT_NODE) {
       substringLength += code.childNodes[i].firstChild === null
           ? code.childNodes[i].textContent.length
@@ -71,21 +70,26 @@ function setCaretPosition(index) {
       substringLength += code.childNodes[i].textContent.length;
     }
 
-    console.log("substringLength: " + substringLength);
-
-    if (substringLength >= index) {
-      indexToSet = index - prevSubstringLength;
-      console.log(indexToSet);
-      childIndex = i;
-    }
   }
 
-  if (code.childNodes[childIndex].nodeType !== Node.TEXT_NODE) {
-    range.setStart(
-        code.childNodes[childIndex].firstChild ?? code.childNodes[childIndex],
-        indexToSet);
+  childIndex = i;
+
+  if (childIndex === 0) {
+    indexToSet = index;
   } else {
-    range.setStart(code.childNodes[childIndex], indexToSet);
+    indexToSet = index - prevSubstringLength;
+  }
+
+  if(index === 0){
+    range.setStart(code, 0)
+  } else {
+    if (code.childNodes[childIndex].nodeType !== Node.TEXT_NODE) {
+      range.setStart(
+          code.childNodes[childIndex].firstChild ?? code.childNodes[childIndex],
+          indexToSet);
+    } else {
+      range.setStart(code.childNodes[childIndex], indexToSet);
+    }
   }
 
   range.collapse(true);

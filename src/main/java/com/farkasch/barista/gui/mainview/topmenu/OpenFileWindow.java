@@ -146,5 +146,4 @@ public class OpenFileWindow extends Stage {
         System.out.println(parent);
         parent.getChildren().remove(1, parent.getChildren().size());
     }
-
 }
