@@ -12,13 +12,25 @@ function handleKeyPress(event) {
   switch (event.keyCode) {
     case 13: //enter
       break;
+    case 9:
+      event.preventDefault();
+      handleTabPress();
+      break;
     default:
-      highlight();
+      highlight(0, null);
       break;
   }
 }
 
-function highlight() {
+function handleTabPress(){
+  let string = code.textContent;
+  let caret = getCaretIndex();
+  string = string.slice(0, caret) + "  " + string.slice(caret, string.length);
+  code.textContent = string;
+  highlight(2, caret);
+}
+
+function highlight(offset, caretPos) {
   let parsed = "";
   codeQuery.each(function () {
     let string = this.textContent;
@@ -26,10 +38,11 @@ function highlight() {
     parsed = parsed.replaceAll(stringReg, "<span class=string>$1</span>");
     parsed = parsed.replaceAll(methodReg, "<span class=method>$1</span>");
   });
-
-  let caretPos = getCaretIndex();
+  if(caretPos === null){
+    caretPos = getCaretIndex();
+  }
   code.innerHTML = parsed;
-  setCaretPosition(caretPos);
+  setCaretPosition(caretPos + offset);
 }
 
 function getCaretIndex() {
@@ -99,3 +112,11 @@ function setCaretPosition(index) {
 }
 
 code.addEventListener("keyup", handleKeyPress);
+
+function preventTab(event){
+  if(event.keyCode === 9){
+    event.preventDefault();
+  }
+}
+
+body.addEventListener("keydown", preventTab);
