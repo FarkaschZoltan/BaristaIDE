@@ -38,7 +38,7 @@ public class ProcessService {
           splitLine = splitLine.stream().filter(s -> !s.equals("")).toList();
           int startIndex = splitLine.indexOf("<DIR>") + 1;
           String folderName = splitLine.get(startIndex);
-          for(int i = startIndex + 1;i < splitLine.size(); i++){
+          for (int i = startIndex + 1; i < splitLine.size(); i++) {
             folderName += " " + splitLine.get(i);
           }
           dirs.add(folderName);
@@ -78,7 +78,7 @@ public class ProcessService {
           splitLine = splitLine.stream().filter(s -> !s.equals("")).toList();
           int startIndex = splitLine.indexOf("<DIR>") + 1;
           String folderName = splitLine.get(startIndex);
-          for(int i = startIndex + 1;i < splitLine.size(); i++){
+          for (int i = startIndex + 1; i < splitLine.size(); i++) {
             folderName += " " + splitLine.get(i);
           }
           dirsAndFiles.add(new Pair<>(folderName, false));
@@ -86,7 +86,7 @@ public class ProcessService {
           splitLine = splitLine.stream().filter(s -> !s.equals("")).toList();
           int startIndex = 5;
           String fileName = splitLine.get(startIndex);
-          for(int i = startIndex + 1;i < splitLine.size(); i++){
+          for (int i = startIndex + 1; i < splitLine.size(); i++) {
             fileName += " " + splitLine.get(i);
           }
           dirsAndFiles.add(new Pair<>(fileName, true));

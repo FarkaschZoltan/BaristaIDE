@@ -16,7 +16,7 @@ public class JavaScriptService {
       String script = "(function(){"
         + "document.getElementById(\"code-area\").textContent = `" + content + "`;"
         + "})();";
-      if(firstOpen){
+      if (firstOpen) {
         open(view, script, "highlight()");
       } else {
         view.getEngine().executeScript(script);
@@ -24,11 +24,11 @@ public class JavaScriptService {
     }
   }
 
-  private static void open(WebView view, String... scripts){
+  private static void open(WebView view, String... scripts) {
     view.getEngine().getLoadWorker().stateProperty().addListener(
       (observableValue, oldState, newState) -> {
-        if(newState == State.SUCCEEDED){
-          for(String script : scripts){
+        if (newState == State.SUCCEEDED) {
+          for (String script : scripts) {
             view.getEngine().executeScript(script);
           }
         }

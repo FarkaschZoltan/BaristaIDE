@@ -7,23 +7,23 @@ import java.nio.file.FileAlreadyExistsException;
 
 public class FileService {
 
-    public static void saveFile(File file, String content) {
-        try {
-            FileOutputStream fos = new FileOutputStream(file, false);
-            fos.write(content.getBytes());
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+  public static void saveFile(File file, String content) {
+    try {
+      FileOutputStream fos = new FileOutputStream(file, false);
+      fos.write(content.getBytes());
+      fos.close();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+  }
 
-    public static File createFile(String path) throws FileAlreadyExistsException {
-        File newFile = new File(path);
-        try {
-            newFile.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return newFile;
+  public static File createFile(String path) throws FileAlreadyExistsException {
+    File newFile = new File(path);
+    try {
+      newFile.createNewFile();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+    return newFile;
+  }
 }
