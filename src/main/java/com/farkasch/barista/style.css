@@ -23,7 +23,7 @@
 #folder{
   -fx-min-width: 100%;
   -fx-background-color: #F4F4F4;
-  -fx-text-alignment: left;
+  -fx-alignment: LEFT;
 }
 
 #folder:hover {
