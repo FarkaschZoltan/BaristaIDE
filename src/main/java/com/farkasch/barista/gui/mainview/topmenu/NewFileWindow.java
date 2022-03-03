@@ -123,10 +123,10 @@ public class NewFileWindow extends Stage {
             VBox folderContainer = new VBox();
             folderContainer.setMinWidth(
                 parentContainer == null ? scene.getWidth() : parentContainer.getWidth());
-            Label folderLabel = new Label(dirs.get(i));
-            folderLabel.setGraphic(new FontIcon("mdi-folder"));
-            folderLabel.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-                Label target = ((Label) mouseEvent.getTarget());
+            Button folderButton = new Button(dirs.get(i));
+            folderButton.setGraphic(new FontIcon("mdi-folder"));
+            folderButton.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+                Button target = folderButton;
                 VBox parent = (VBox) (target.getParent());
                 if (parent.getChildren().size() > 1) {
                     folderClose(parent);
@@ -135,10 +135,10 @@ public class NewFileWindow extends Stage {
                         folderContainer);
                 }
             });
-            folderLabel.setId("folder");
-            folderLabel.setMaxWidth(Double.MAX_VALUE);
-            folderLabel.setMaxHeight(Double.MAX_VALUE);
-            folderContainer.getChildren().add(folderLabel);
+            folderButton.setId("folder");
+            folderButton.setMaxWidth(Double.MAX_VALUE);
+            folderButton.setMaxHeight(Double.MAX_VALUE);
+            folderContainer.getChildren().add(folderButton);
             folderSelector.addRow(i, folderContainer);
             if (parentContainer != null) {
                 folderSelector.setPadding(new Insets(0, 0, 0, 20));
