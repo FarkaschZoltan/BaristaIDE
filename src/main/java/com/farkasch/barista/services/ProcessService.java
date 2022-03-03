@@ -35,7 +35,13 @@ public class ProcessService {
         List<String> splitLine = Arrays.asList(line.split(" "));
         if (splitLine.contains("<DIR>") && !(splitLine.contains(".") || splitLine.contains(
           ".."))) {
-          dirs.add(splitLine.get(splitLine.size() - 1));
+          splitLine = splitLine.stream().filter(s -> !s.equals("")).toList();
+          int startIndex = splitLine.indexOf("<DIR>") + 1;
+          String folderName = splitLine.get(startIndex);
+          for(int i = startIndex + 1;i < splitLine.size(); i++){
+            folderName += " " + splitLine.get(i);
+          }
+          dirs.add(folderName);
         }
       }
 
