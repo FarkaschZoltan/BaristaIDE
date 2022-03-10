@@ -1,8 +1,8 @@
 package com.farkasch.barista;
 
-import com.farkasch.barista.gui.codinginterface.CodingInterface;
 import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.gui.mainview.topmenu.TopMenu;
+import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import java.nio.file.Paths;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -16,16 +16,16 @@ public class MainApp extends Application {
         launch(args);
     }
 
-    private TextArea sideMenuDummy;
+    private SideMenu sideMenu;
     private CodingInterfaceContainer codeArea;
     private TopMenu topMenu;
 
-    public TextArea getSideMenuDummy() {
-        return sideMenuDummy;
+    public SideMenu getSideMenu() {
+        return sideMenu;
     }
 
-    public void setSideMenuDummy(TextArea sideMenuDummy) {
-        this.sideMenuDummy = sideMenuDummy;
+    public void setSideMenu(TextArea sideMenuDummy) {
+        this.sideMenu = sideMenu;
     }
 
     public CodingInterfaceContainer getCodeArea() {
@@ -48,21 +48,21 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
         stage.setTitle("BaristaIDE");
 
-        sideMenuDummy = new TextArea();
+        sideMenu = new SideMenu(this);
         codeArea = new CodingInterfaceContainer();
         topMenu = new TopMenu(this);
 
         BorderPane layout = new BorderPane();
         layout.setCenter(codeArea);
         layout.setTop(topMenu);
-        layout.setLeft(sideMenuDummy);
+        layout.setLeft(sideMenu);
 
         Scene scene = new Scene(layout, 700, 600);
         scene.getStylesheets().add(
             Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
                 .toString());
 
-        ((TextArea)layout.getLeft()).setPrefWidth(scene.getWidth() * 0.2);
+        sideMenu.setPrefWidth(scene.getWidth() * 0.2);
 
         stage.setScene(scene);
 

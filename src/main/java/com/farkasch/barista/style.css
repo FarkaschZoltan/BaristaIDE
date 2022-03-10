@@ -30,3 +30,11 @@
   -fx-background-color: grey;
   -fx-text-fill: #F4F4F4;
 }
+
+#side-menu {
+  -fx-background-color: grey;
+}
+
+#side-menu__content {
+  -fx-background-color: grey;
+}

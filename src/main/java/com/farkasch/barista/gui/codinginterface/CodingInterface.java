@@ -29,8 +29,6 @@ public class CodingInterface extends BorderPane {
       .load(this.getClass().getResource("/codinginterface/codearea.html")
         .toExternalForm());
 
-    System.out.println(content.getEngine().getDocument());
-
     switchMenu = new SwitchMenu(this);
     this.parent = parent;
 
