@@ -21,10 +21,19 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javax.annotation.PostConstruct;
 import org.kordamp.ikonli.javafx.FontIcon;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
 
+@Component
 public class NewFileWindow extends Stage {
+
+  @Autowired
+  FileService fileService;
+  @Autowired
+  ProcessService processService;
 
   //Design
   private TextField fileNameField;
@@ -40,8 +49,12 @@ public class NewFileWindow extends Stage {
   private HBox createButtonContainer;
   private Scene scene;
 
+  Consumer<File> openFile;
 
-  public NewFileWindow(Consumer<File> openFile) {
+  @PostConstruct
+  private void init() {
+    setTitle("New File");
+
     fileNameField = new TextField("NewFile.txt");
     fileNameLabel = new Label("File name: ");
 
@@ -60,12 +73,6 @@ public class NewFileWindow extends Stage {
     windowLayout = new VBox(fieldLayout, scrollPane, createButtonContainer);
 
     scene = new Scene(windowLayout, 300, 400);
-
-    init(openFile);
-  }
-
-  private void init(Consumer<File> openFile) {
-    setTitle("New File");
 
     scene.getStylesheets().add(
       Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
@@ -92,7 +99,7 @@ public class NewFileWindow extends Stage {
 
     createButton.setOnAction(actionEvent -> {
       try {
-        File newFile = FileService.createFile(
+        File newFile = fileService.createFile(
           folderPathField.getText() + "\\" + fileNameField.getText());
         openFile.accept(newFile);
         close();
@@ -103,13 +110,19 @@ public class NewFileWindow extends Stage {
 
     createButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(createButtonContainer, new Insets(10));
+  }
+
+  public void showWindow(Consumer<File> openFile){
+    this.openFile = openFile;
 
     folderExpand(null, null);
     setScene(scene);
+
+    show();
   }
 
   private void folderExpand(@Nullable String parentName, @Nullable VBox parentContainer) {
-    List<String> dirs = ProcessService.getDirs(parentName);
+    List<String> dirs = processService.getDirs(parentName);
     folderPathField.setText("C:\\Users" + (parentName == null ? "" : parentName));
     GridPane folderSelector = null;
     if (parentContainer == null) {

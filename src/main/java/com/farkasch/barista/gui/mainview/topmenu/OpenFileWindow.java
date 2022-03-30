@@ -20,10 +20,17 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import javax.annotation.PostConstruct;
 import org.kordamp.ikonli.javafx.FontIcon;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
 
+@Component
 public class OpenFileWindow extends Stage {
+
+  @Autowired
+  ProcessService processService;
 
   private Label fileName;
   private Label fileNameLabel;
@@ -37,8 +44,12 @@ public class OpenFileWindow extends Stage {
   private Scene scene;
 
   private String filePath;
+  private Consumer<File> openFile;
 
-  public OpenFileWindow(Consumer<File> openFile) {
+  @PostConstruct
+  private void init() {
+    setTitle("Open File");
+
     fileName = new Label("");
     fileNameLabel = new Label("Chosen File: ");
     chooseFileLabel = new Label("Choose a file: ");
@@ -55,12 +66,6 @@ public class OpenFileWindow extends Stage {
     scene = new Scene(windowLayout, 300, 400);
 
     filePath = "";
-
-    init(openFile);
-  }
-
-  private void init(Consumer<File> openFile) {
-    setTitle("Open File");
 
     scene.getStylesheets().add(
       Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
@@ -88,13 +93,19 @@ public class OpenFileWindow extends Stage {
 
     openButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(openButtonContainer, new Insets(10));
+  }
+
+  public void showWindow(Consumer<File> openFile){
+    this.openFile = openFile;
 
     folderExpand(null, null);
     setScene(scene);
+
+    show();
   }
 
   private void folderExpand(@Nullable String parentName, @Nullable VBox parentContainer) {
-    List<Pair<String, Boolean>> dirs = ProcessService.getDirsAndFiles(parentName);
+    List<Pair<String, Boolean>> dirs = processService.getDirsAndFiles(parentName);
     GridPane folderSelector = null;
     if (parentContainer == null) {
       folderSelector = rootFolderSelector;

@@ -1,24 +1,40 @@
 package com.farkasch.barista.gui.mainview.topmenu;
 
-import com.farkasch.barista.MainApp;
+import com.farkasch.barista.JavaFxApp;
 import com.farkasch.barista.services.FileService;
+import com.farkasch.barista.services.PersistenceService;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javax.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 
-
+@Component
 public class TopMenu extends MenuBar {
 
-  private MainApp mainApp;
+  @Lazy
+  @Autowired
+  private JavaFxApp javaFxApp;
+  @Autowired
+  private FileService fileService;
+  @Autowired
+  private CompileSettingsWindow compileSettingsWindow;
+  @Autowired
+  private NewFileWindow newFileWindow;
+  @Autowired
+  private OpenFileWindow openFileWindow;
+  @Autowired
+  private PersistenceService persistenceService;
 
   private Menu fileMenu;
   private Menu settingsMenu;
   private Menu gitMenu;
   private Menu helpMenu;
 
-  public TopMenu(MainApp mainApp) {
-    this.mainApp = mainApp;
-
+  @PostConstruct
+  private void init(){
     initFileMenu();
     initSettingsMenu();
     initGitMenu();
@@ -32,37 +48,44 @@ public class TopMenu extends MenuBar {
 
     MenuItem newFile = new MenuItem("New File");
     newFile.setOnAction(actionEvent -> {
-      NewFileWindow newFileWindow = new NewFileWindow(
-        file -> mainApp.getCodeArea().openFile(file));
-      newFileWindow.show();
+      newFileWindow.showWindow(file -> {
+        persistenceService.getActiveInterface().showFile(file);
+      });
     });
 
     MenuItem newProject = new MenuItem("New Project");
 
     MenuItem openFile = new MenuItem("Open File");
     openFile.setOnAction(actionEvent -> {
-      OpenFileWindow openFileWindow = new OpenFileWindow(
-        file -> mainApp.getCodeArea().openFile(file));
-      openFileWindow.show();
+      openFileWindow.showWindow(file -> {
+        persistenceService.getActiveInterface().showFile(file);
+      });
     });
 
     MenuItem loadProject = new MenuItem("Load Project");
 
     MenuItem saveProject = new MenuItem("Save");
     saveProject.setOnAction(actionEvent -> {
-      FileService.saveFile(mainApp.getCodeArea().getActiveInterface().getShownFile(),
-        mainApp.getCodeArea().getActiveInterface().getTextContent());
+      fileService.saveFile(persistenceService.getActiveInterface().getShownFile(),
+        persistenceService.getActiveInterface().getTextContent());
     });
 
     fileMenu.getItems().addAll(newFile, newProject, openFile, loadProject, saveProject);
   }
 
   private void initGitMenu() {
-    settingsMenu = new Menu("Settings");
+    gitMenu = new Menu("Git");
   }
 
   private void initSettingsMenu() {
-    gitMenu = new Menu("Git");
+
+    settingsMenu = new Menu("Settings");
+    MenuItem compileSettings = new MenuItem("Compile");
+    compileSettings.setOnAction(actionEvent -> {
+      CompileSettingsWindow compileSettingsWindow = new CompileSettingsWindow();
+    });
+
+    settingsMenu.getItems().addAll(compileSettings);
   }
 
   private void initHelpMenu() {

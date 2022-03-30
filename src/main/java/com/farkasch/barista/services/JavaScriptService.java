@@ -2,15 +2,17 @@ package com.farkasch.barista.services;
 
 import javafx.concurrent.Worker.State;
 import javafx.scene.web.WebView;
+import org.springframework.stereotype.Service;
 
+@Service
 public class JavaScriptService {
 
-  public static String getContent(WebView view) {
+  public String getContent(WebView view) {
     String script = "document.querySelector(\"#code-area\").textContent";
     return (String) view.getEngine().executeScript(script);
   }
 
-  public static void setContent(WebView view, String content, boolean firstOpen) {
+  public void setContent(WebView view, String content, boolean firstOpen) {
     if (!content.equals("")) {
       System.out.println(content);
       String script = "(function(){"
@@ -24,7 +26,7 @@ public class JavaScriptService {
     }
   }
 
-  private static void open(WebView view, String... scripts) {
+  private void open(WebView view, String... scripts) {
     view.getEngine().getLoadWorker().stateProperty().addListener(
       (observableValue, oldState, newState) -> {
         if (newState == State.SUCCEEDED) {

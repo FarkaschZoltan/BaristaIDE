@@ -4,6 +4,7 @@ import java.io.File;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
+import javax.annotation.PostConstruct;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.stereotype.Component;
 
@@ -13,15 +14,15 @@ public class SwitchMenu extends HBox {
   private CodingInterface codingInterface;
   private SwitchMenuItem currentlyActive;
 
+  public SwitchMenu(CodingInterface codingInterface){
+    this.codingInterface = codingInterface;
+  }
+
   public File getCurrentlyActive() {
     return currentlyActive == null ? null : currentlyActive.getFile();
   }
 
-  public SwitchMenu(CodingInterface codingInterface) {
-    this.codingInterface = codingInterface;
-    init();
-  }
-
+  @PostConstruct
   private void init() {
     setId("switch-menu");
   }
@@ -69,6 +70,10 @@ public class SwitchMenu extends HBox {
 
     public SwitchMenuItem(File file) {
       this.file = file;
+    }
+
+    @PostConstruct
+    private void init(){
       setFillHeight(true);
       initOpenButton();
       initCloseButton();

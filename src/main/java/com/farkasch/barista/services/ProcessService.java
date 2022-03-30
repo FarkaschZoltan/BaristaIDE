@@ -14,10 +14,12 @@ import java.util.HashMap;
 import java.util.List;
 import javafx.util.Pair;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ProcessService {
 
-  public static List<String> getDirs(@Nullable String folder) {
+  public List<String> getDirs(@Nullable String folder) {
     List<String> dirs = new ArrayList<>();
 
     ProcessBuilder pb = new ProcessBuilder();
@@ -57,7 +59,7 @@ public class ProcessService {
     return dirs;
   }
 
-  public static List<Pair<String, Boolean>> getDirsAndFiles(@Nullable String folder) {
+  public List<Pair<String, Boolean>> getDirsAndFiles(@Nullable String folder) {
     List<Pair<String, Boolean>> dirsAndFiles = new ArrayList<>();
 
     ProcessBuilder pb = new ProcessBuilder();
@@ -105,7 +107,7 @@ public class ProcessService {
     return dirsAndFiles;
   }
 
-  public static void Compile(String filePath, String fileName, @Nullable List<String> packages){
+  public void Compile(String filePath, String fileName, @Nullable List<String> packages){
     ProcessBuilder pb = new ProcessBuilder();
     pb.directory(new File(filePath));
     pb.command("cmd", "/C", "javac " + fileName);
@@ -122,7 +124,7 @@ public class ProcessService {
     }
   }
 
-  public static void Run(String filePath, String fileName, @Nullable List<String> packages){
+  public void Run(String filePath, String fileName, @Nullable List<String> packages){
     Compile(filePath, fileName, packages);
     try {
       String[] command = new String[]{"cmd.exe", "/c", "start cmd.exe /k \"java " + fileName +  "\""};

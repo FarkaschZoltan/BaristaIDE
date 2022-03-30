@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.layout.BorderPane;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CodingInterfaceContainer extends BorderPane {
 
   private List<CodingInterface> interfaces;
