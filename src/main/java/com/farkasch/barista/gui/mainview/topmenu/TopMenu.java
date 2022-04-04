@@ -1,6 +1,7 @@
 package com.farkasch.barista.gui.mainview.topmenu;
 
 import com.farkasch.barista.JavaFxApp;
+import com.farkasch.barista.gui.mainview.MainStage;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import javafx.scene.control.Menu;
@@ -14,9 +15,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class TopMenu extends MenuBar {
 
-  @Lazy
-  @Autowired
-  private JavaFxApp javaFxApp;
   @Autowired
   private FileService fileService;
   @Autowired
@@ -27,6 +25,9 @@ public class TopMenu extends MenuBar {
   private OpenFileWindow openFileWindow;
   @Autowired
   private PersistenceService persistenceService;
+  @Lazy
+  @Autowired
+  private MainStage mainStage;
 
   private Menu fileMenu;
   private Menu settingsMenu;
@@ -58,7 +59,11 @@ public class TopMenu extends MenuBar {
     MenuItem openFile = new MenuItem("Open File");
     openFile.setOnAction(actionEvent -> {
       openFileWindow.showWindow(file -> {
-        persistenceService.getActiveInterface().showFile(file);
+        if(persistenceService.getActiveInterface() != null){
+          persistenceService.getActiveInterface().showFile(file);
+        } else {
+          mainStage.openNewFile(file);
+        }
       });
     });
 
@@ -82,7 +87,7 @@ public class TopMenu extends MenuBar {
     settingsMenu = new Menu("Settings");
     MenuItem compileSettings = new MenuItem("Compile");
     compileSettings.setOnAction(actionEvent -> {
-      CompileSettingsWindow compileSettingsWindow = new CompileSettingsWindow();
+      compileSettingsWindow.showWindow();
     });
 
     settingsMenu.getItems().addAll(compileSettings);

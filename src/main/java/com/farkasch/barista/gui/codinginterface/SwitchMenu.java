@@ -1,25 +1,32 @@
 package com.farkasch.barista.gui.codinginterface;
 
+import com.farkasch.barista.services.PersistenceService;
 import java.io.File;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javax.annotation.PostConstruct;
 import org.kordamp.ikonli.javafx.FontIcon;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
+@Scope("prototype")
 public class SwitchMenu extends HBox {
 
-  private CodingInterface codingInterface;
-  private SwitchMenuItem currentlyActive;
+  @Autowired
+  private PersistenceService persistenceService;
 
-  public SwitchMenu(CodingInterface codingInterface){
-    this.codingInterface = codingInterface;
-  }
+  private CodingInterface parent;
+  private SwitchMenuItem currentlyActive;
 
   public File getCurrentlyActive() {
     return currentlyActive == null ? null : currentlyActive.getFile();
+  }
+
+  public void setParent(CodingInterface parent){
+    this.parent = parent;
   }
 
   @PostConstruct
@@ -34,6 +41,8 @@ public class SwitchMenu extends HBox {
       currentlyActive.setContentId("switch-menu__item");
     }
     currentlyActive = widget;
+    persistenceService.addOpenFile(currentlyActive.getFile());
+    persistenceService.setActiveFile(currentlyActive.getFile());
   }
 
   public void removeFile(int index) {
@@ -70,9 +79,9 @@ public class SwitchMenu extends HBox {
 
     public SwitchMenuItem(File file) {
       this.file = file;
+      init();
     }
 
-    @PostConstruct
     private void init(){
       setFillHeight(true);
       initOpenButton();
@@ -82,10 +91,11 @@ public class SwitchMenu extends HBox {
     private void initOpenButton() {
       openButton = new Button(file.getName());
       openButton.setOnAction(actionEvent -> {
-        codingInterface.showFile(file);
+        parent.showFile(file);
         currentlyActive.setContentId("switch-menu__item");
         currentlyActive = this;
         currentlyActive.setContentId("switch-menu__item--selected");
+        persistenceService.setActiveFile(currentlyActive.getFile());
       });
       getChildren().add(openButton);
       openButton.setMinHeight(getHeight());
@@ -99,20 +109,23 @@ public class SwitchMenu extends HBox {
         int index = menu.getChildren().indexOf(this);
         if (menu.getChildren().size() == 1) {
           menu.removeFile(index);
-          codingInterface.close();
+          parent.close();
         } else if (index > 0) {
-          codingInterface.showFile(
+          parent.showFile(
             ((SwitchMenuItem) menu.getChildren().get(index - 1)).getFile());
           menu.removeFile(index);
           currentlyActive = (SwitchMenuItem) menu.getChildren().get(index - 1);
           currentlyActive.setContentId("switch-menu__item--selected");
+          persistenceService.setActiveFile(currentlyActive.getFile());
         } else {
-          codingInterface.showFile(
+          parent.showFile(
             ((SwitchMenuItem) menu.getChildren().get(index + 1)).getFile());
           menu.removeFile(index);
           currentlyActive = (SwitchMenuItem) menu.getChildren().get(index + 1);
           currentlyActive.setContentId("switch-menu__item--selected");
+          persistenceService.setActiveFile(currentlyActive.getFile());
         }
+        persistenceService.removeOpenFile(((SwitchMenuItem)menu.getChildren().get(index)).getFile());
       });
       closeButton.setGraphic(new FontIcon("mdi-close"));
       closeButton.setMinHeight(getHeight());

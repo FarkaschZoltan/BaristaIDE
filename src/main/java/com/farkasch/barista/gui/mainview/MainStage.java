@@ -3,6 +3,7 @@ package com.farkasch.barista.gui.mainview;
 import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.gui.mainview.topmenu.TopMenu;
+import java.io.File;
 import java.nio.file.Paths;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
@@ -42,6 +43,10 @@ public class MainStage extends Stage {
     sideMenu.setPrefWidth(scene.getWidth() * 0.2);
 
     setScene(scene);
+  }
+
+  public void openNewFile(File file){
+    codingInterfaceContainer.openFile(file);
   }
 
 }

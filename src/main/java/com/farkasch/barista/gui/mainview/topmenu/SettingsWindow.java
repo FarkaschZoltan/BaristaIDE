@@ -17,7 +17,7 @@ public abstract class SettingsWindow extends Stage {
   protected Pane content;
   protected Scene scene;
 
-  public SettingsWindow() {
+  protected void showWindow(){
     windowLayout = new BorderPane();
 
     initContent();
@@ -26,6 +26,9 @@ public abstract class SettingsWindow extends Stage {
 
     windowLayout.setCenter(content);
     windowLayout.setLeft(sideMenu);
+
+    setScene(scene);
+    show();
   }
 
   protected abstract void initContent();

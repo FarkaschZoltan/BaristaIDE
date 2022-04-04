@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Scanner;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -71,7 +72,7 @@ public class FileService {
 
   public void updateNameInJarJson(String oldFileName, String newFileName){
     try{
-      File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\JarConfig\\JarConfig.json");
+      File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       FileWriter writer = new FileWriter(jarJsonFile);
@@ -100,9 +101,9 @@ public class FileService {
     }
   }
 
-  public void updateJarsInJarJson(String fileName, String... jars){
+  public void updateJarsInJarJson(String fileName, List<String> jars){
     try{
-      File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\JarConfig\\JarConfig.json");
+      File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       FileWriter writer = new FileWriter(jarJsonFile);
@@ -124,10 +125,37 @@ public class FileService {
 
       jsonString = JSONArray.toJSONString(array);
       writer.write(jsonString);
+      writer.close();
     } catch(IOException e){
       e.printStackTrace();
     } catch(ParseException e){
       e.printStackTrace();
     }
+  }
+
+  public JSONObject getJarsForFile(String fileName){
+    try{
+      File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\config\\JarConfig.json");
+      Scanner scanner = new Scanner(jarJsonFile);
+      JSONParser parser = new JSONParser();
+      String jsonString = "";
+
+      while(scanner.hasNextLine()){
+        jsonString = jsonString.concat(scanner.nextLine());
+      }
+      JSONArray array = (JSONArray) parser.parse(jsonString);
+
+      for(Object j : array){
+        if(((JSONObject) j).get("fileName") == fileName){
+          return (JSONObject) j;
+        }
+      }
+
+    } catch(IOException e){
+      e.printStackTrace();
+    } catch(ParseException e){
+      e.printStackTrace();
+    }
+    return new JSONObject();
   }
 }

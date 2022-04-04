@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.layout.BorderPane;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
@@ -13,9 +15,8 @@ public class CodingInterfaceContainer extends BorderPane {
   private List<CodingInterface> interfaces;
   private int activeInterfaceInd = 0;
 
-  public CodingInterface getActiveInterface() {
-    return interfaces.get(activeInterfaceInd);
-  }
+  @Autowired
+  private ApplicationContext applicationContext;
 
   public CodingInterfaceContainer() {
     interfaces = new ArrayList<>();
@@ -24,7 +25,8 @@ public class CodingInterfaceContainer extends BorderPane {
   public void openFile(File file) {
     CodingInterface activeInterface;
     if (interfaces.isEmpty()) {
-      activeInterface = new CodingInterface(this);
+      activeInterface = applicationContext.getBean(CodingInterface.class);
+      activeInterface.setParent(this);
       newInterface(activeInterface);
     } else {
       activeInterface = interfaces.get(activeInterfaceInd);

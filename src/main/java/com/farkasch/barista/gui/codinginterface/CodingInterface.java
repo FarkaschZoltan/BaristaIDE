@@ -9,29 +9,36 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebView;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
+@Scope("prototype")
 public class CodingInterface extends BorderPane {
 
   @Autowired
   private JavaScriptService javaScriptService;
   @Autowired
   private FileService fileService;
+  @Autowired
+  private ApplicationContext applicationContext;
 
-  private SwitchMenu switchMenu;
   private CodingInterfaceContainer parent;
+  private SwitchMenu switchMenu;
   private boolean interfaceLoaded = false;
   private WebView content;
 
-  public CodingInterface(CodingInterfaceContainer parent){
+  public void setParent(CodingInterfaceContainer parent){
     this.parent = parent;
   }
 
   @PostConstruct
   private void init(){
     content = new WebView();
-    switchMenu = new SwitchMenu(this);
+    switchMenu = applicationContext.getBean(SwitchMenu.class);
+    switchMenu.setParent(this);
     content.getEngine()
       .load(this.getClass().getResource("/codinginterface/codearea.html")
         .toExternalForm());
