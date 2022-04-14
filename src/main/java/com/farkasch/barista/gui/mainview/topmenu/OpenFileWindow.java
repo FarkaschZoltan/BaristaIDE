@@ -1,11 +1,14 @@
 package com.farkasch.barista.gui.mainview.topmenu;
 
+import com.farkasch.barista.gui.component.FolderDropdown;
+import com.farkasch.barista.gui.component.FolderDropdown.FolderConsumer;
 import com.farkasch.barista.services.ProcessService;
 import com.sun.javafx.scene.control.LabeledText;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
@@ -37,7 +40,7 @@ public class OpenFileWindow extends Stage {
   private Label chooseFileLabel;
   private Button openFileButton;
   private GridPane fileNameLayout;
-  private GridPane rootFolderSelector;
+  private FolderDropdown rootFolderSelector;
   private ScrollPane scrollPane;
   private VBox windowLayout;
   private HBox openButtonContainer;
@@ -56,10 +59,9 @@ public class OpenFileWindow extends Stage {
 
     openFileButton = new Button("Open");
 
-    rootFolderSelector = new GridPane();
     fileNameLayout = new GridPane();
 
-    scrollPane = new ScrollPane(rootFolderSelector);
+    scrollPane = new ScrollPane();
     openButtonContainer = new HBox(openFileButton);
     windowLayout = new VBox(fileNameLayout, scrollPane, openButtonContainer);
 
@@ -93,69 +95,22 @@ public class OpenFileWindow extends Stage {
 
     openButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(openButtonContainer, new Insets(10));
+
+    rootFolderSelector = new FolderDropdown(scene, processService, true);
+    rootFolderSelector.setFileClickAction((parentName, parentContainer, target) -> {
+      fileName.setText(target.getText());
+      filePath = "C:\\Users\\" + parentName + "\\" + target.getText();
+    });
+
+    scrollPane.setContent(rootFolderSelector);
   }
 
-  public void showWindow(Consumer<File> openFile){
+  public void showWindow(Consumer<File> openFile) {
     this.openFile = openFile;
 
-    folderExpand(null, null);
+    rootFolderSelector.folderExpand(null, null);
     setScene(scene);
 
     show();
-  }
-
-  private void folderExpand(@Nullable String parentName, @Nullable VBox parentContainer) {
-    List<Pair<String, Boolean>> dirs = processService.getDirsAndFiles(parentName);
-    GridPane folderSelector = null;
-    if (parentContainer == null) {
-      folderSelector = rootFolderSelector;
-    } else {
-      folderSelector = new GridPane();
-    }
-
-    for (int i = 0; i < dirs.size(); i++) {
-      VBox folderContainer = new VBox();
-      folderContainer.setMinWidth(
-        parentContainer == null ? scene.getWidth() : parentContainer.getWidth());
-      Button folderButton = new Button(dirs.get(i).getKey());
-      Boolean isFile = dirs.get(i).getValue();
-      if (isFile) {
-        folderButton.setGraphic(new FontIcon("mdi-file"));
-      } else {
-        folderButton.setGraphic(new FontIcon("mdi-folder"));
-      }
-      folderButton.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-        Button target = folderButton;
-        VBox parent = (VBox) (target.getParent());
-        if (parent.getChildren().size() > 1) {
-          folderClose(parent);
-        } else if (!isFile.booleanValue()) {
-          folderExpand((parentName == null ? "" : parentName) + "\\" + target.getText(),
-            folderContainer);
-        } else {
-          fileName.setText(target.getText());
-          filePath = "C:\\Users\\" + parentName + "\\" + target.getText();
-        }
-      });
-
-      folderButton.setId("folder");
-      folderButton.setMaxWidth(Double.MAX_VALUE);
-      folderButton.setMaxHeight(Double.MAX_VALUE);
-      folderContainer.getChildren().add(folderButton);
-      folderSelector.addRow(i, folderContainer);
-      if (parentContainer != null) {
-        folderSelector.setPadding(new Insets(0, 0, 0, 20));
-      }
-      //folderSelector.setGridLinesVisible(true);
-    }
-
-    if (parentContainer != null) {
-      parentContainer.getChildren().add(folderSelector);
-    }
-  }
-
-  private void folderClose(VBox parent) {
-    System.out.println(parent);
-    parent.getChildren().remove(1, parent.getChildren().size());
   }
 }

@@ -22,7 +22,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -91,8 +90,6 @@ public class CompileSettingsWindow extends AbstractSettingsWindow {
     AtomicInteger jarsCount = new AtomicInteger();
 
     mainFileSelector.setItems(FXCollections.observableList(persistenceService.updateAndGetCurrentMainFiles()));
-    persistenceService.getOpenFiles().stream().forEach(System.out::println);
-    persistenceService.getMainFiles().stream().forEach(System.out::println);
     if(mainFileSelector.getItems().size() != 0){
       mainFileSelector.setValue(mainFileSelector.getItems().get(0));
       fillJarSelector(mainFileSelector.getValue().getAbsolutePath(), jarsCount, jarSelector);

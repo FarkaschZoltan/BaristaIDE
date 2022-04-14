@@ -1,5 +1,6 @@
 package com.farkasch.barista.gui.mainview.topmenu;
 
+import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.ProcessService;
 import java.io.File;
@@ -43,7 +44,7 @@ public class NewFileWindow extends Stage {
   private Label folderSelectorLabel;
   private Button createButton;
   private GridPane fieldLayout;
-  private GridPane rootFolderSelector;
+  private FolderDropdown rootFolderSelector;
   private ScrollPane scrollPane;
   private VBox windowLayout;
   private HBox createButtonContainer;
@@ -66,9 +67,8 @@ public class NewFileWindow extends Stage {
 
     fieldLayout = new GridPane();
 
-    rootFolderSelector = new GridPane();
     folderSelectorLabel = new Label("Folders: ");
-    scrollPane = new ScrollPane(rootFolderSelector);
+    scrollPane = new ScrollPane();
 
     windowLayout = new VBox(fieldLayout, scrollPane, createButtonContainer);
 
@@ -110,12 +110,20 @@ public class NewFileWindow extends Stage {
 
     createButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(createButtonContainer, new Insets(10));
+
+    rootFolderSelector = new FolderDropdown(scene, processService, false);
+    rootFolderSelector.setFolderClickAction((parentName, parentContainer, target) -> {
+      folderPathField.setText("C:\\Users" + (parentName == null ? "" : parentName));
+    });
+
+
+    scrollPane.setContent(rootFolderSelector);
   }
 
   public void showWindow(Consumer<File> openFile){
     this.openFile = openFile;
 
-    folderExpand(null, null);
+    rootFolderSelector.folderExpand(null, null);
     setScene(scene);
 
     show();
