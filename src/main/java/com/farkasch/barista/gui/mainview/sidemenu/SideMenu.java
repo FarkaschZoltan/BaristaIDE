@@ -1,9 +1,12 @@
 package com.farkasch.barista.gui.mainview.sidemenu;
 
 import com.farkasch.barista.JavaFxApp;
+import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.services.ProcessService;
+import com.farkasch.barista.util.enums.JavacEnum;
 import java.io.File;
+import java.util.HashMap;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -17,13 +20,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class SideMenu extends BorderPane {
 
-  @Lazy
-  @Autowired
-  private JavaFxApp javaFxApp;
   @Autowired
   private ProcessService processService;
   @Autowired
   private PersistenceService persistenceService;
+  @Autowired
+  private FileService fileService;
 
   private HBox topMenu;
   private VBox content;
@@ -57,11 +59,11 @@ public class SideMenu extends BorderPane {
     compileButton = new Button("Compile");
     compileButton.setGraphic(new FontIcon("mdi-wrench"));
     compileButton.setOnMouseClicked(click -> {
-      File f = persistenceService.getActiveInterface().getShownFile();
+      File f = persistenceService.getMainFiles().get(0);
       String filePath = f.getParentFile().getPath();
       String fileName = f.getName();
-      System.out.println(filePath + " - " + fileName);
-      processService.Compile(filePath, fileName, null);
+      //TODO: main file selector
+      processService.Compile(filePath, fileName);
     });
   }
 
@@ -69,10 +71,10 @@ public class SideMenu extends BorderPane {
     runButton = new Button("Run");
     runButton.setGraphic(new FontIcon("mdi-play"));
     runButton.setOnMouseClicked(click -> {
-      File f = persistenceService.getActiveInterface().getShownFile();
+      File f = persistenceService.getMainFiles().get(0);
       String filePath = f.getParentFile().getPath();
       String fileName = f.getName();
-      processService.Run(filePath, fileName, null);
+      processService.Run(filePath, fileName);
     });
   }
 }

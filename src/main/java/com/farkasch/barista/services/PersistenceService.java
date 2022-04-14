@@ -6,10 +6,16 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PersistenceService {
+
+  @Lazy
+  @Autowired
+  FileService fileService;
 
   private File activeFile;
   private List<File> openFiles;
@@ -46,10 +52,13 @@ public class PersistenceService {
 
   public void addOpenFile(File file){
     openFiles.add(file);
+    updateAndGetCurrentMainFiles();
+    System.out.println("Added!");
   }
 
   public void removeOpenFile(File file){
-    openFiles.remove(file);
+    System.out.println(openFiles.remove(file));
+    updateAndGetCurrentMainFiles();
   }
 
   public List<File> getMainFiles() {
@@ -78,9 +87,9 @@ public class PersistenceService {
         while(scanner.hasNextLine()){
           fileContent = fileContent.concat(scanner.nextLine());
         }
-        System.out.println(fileContent);
         if(fileContent.replaceAll("\\s", "").contains(mainString)){
           newMainFiles.add(f);
+          fileService.createNewInJarJson(f.getAbsolutePath(), null);
         }
       } catch (FileNotFoundException e){
         e.printStackTrace();

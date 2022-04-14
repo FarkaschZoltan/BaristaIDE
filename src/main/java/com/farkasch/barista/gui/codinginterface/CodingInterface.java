@@ -73,8 +73,6 @@ public class CodingInterface extends BorderPane {
       while (contentScanner.hasNextLine()) {
         textContent = textContent.concat(contentScanner.nextLine() + "\n");
       }
-      System.out.println("textContent: " + textContent);
-      System.out.println(switchMenu.getCurrentlyActive() == null);
       javaScriptService.setContent(content, textContent, !interfaceLoaded);
       interfaceLoaded = true;
     } catch (FileNotFoundException e) {

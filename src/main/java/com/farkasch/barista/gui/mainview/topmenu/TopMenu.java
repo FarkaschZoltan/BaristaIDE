@@ -1,7 +1,7 @@
 package com.farkasch.barista.gui.mainview.topmenu;
 
-import com.farkasch.barista.JavaFxApp;
 import com.farkasch.barista.gui.mainview.MainStage;
+import com.farkasch.barista.gui.mainview.topmenu.settingswindow.CompileSettingsWindow;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import javafx.scene.control.Menu;
@@ -64,6 +64,7 @@ public class TopMenu extends MenuBar {
         } else {
           mainStage.openNewFile(file);
         }
+        persistenceService.addOpenFile(file);
       });
     });
 

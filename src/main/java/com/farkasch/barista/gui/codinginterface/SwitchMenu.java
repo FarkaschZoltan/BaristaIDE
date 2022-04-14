@@ -41,11 +41,11 @@ public class SwitchMenu extends HBox {
       currentlyActive.setContentId("switch-menu__item");
     }
     currentlyActive = widget;
-    persistenceService.addOpenFile(currentlyActive.getFile());
     persistenceService.setActiveFile(currentlyActive.getFile());
   }
 
   public void removeFile(int index) {
+    persistenceService.removeOpenFile(((SwitchMenuItem)(getChildren().get(index))).getFile());
     getChildren().remove(index);
   }
 
@@ -125,7 +125,6 @@ public class SwitchMenu extends HBox {
           currentlyActive.setContentId("switch-menu__item--selected");
           persistenceService.setActiveFile(currentlyActive.getFile());
         }
-        persistenceService.removeOpenFile(((SwitchMenuItem)menu.getChildren().get(index)).getFile());
       });
       closeButton.setGraphic(new FontIcon("mdi-close"));
       closeButton.setMinHeight(getHeight());

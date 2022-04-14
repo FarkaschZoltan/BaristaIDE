@@ -32,7 +32,6 @@ public class CodingInterfaceContainer extends BorderPane {
       activeInterface = interfaces.get(activeInterfaceInd);
     }
     activeInterface.showFile(file);
-
   }
 
   public void newInterface(CodingInterface newInterface) {

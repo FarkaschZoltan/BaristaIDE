@@ -6,12 +6,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -37,55 +39,66 @@ public class FileService {
     return newFile;
   }
 
-  public void cleanupJarJson(){
-    //TODO: implement cleaning up json file after it has been not used in a while
+  public void cleanupJarJson() {
+    //TODO: implement cleaning up json file after it hasn't been used in a while
   }
 
-  public void createNewInJarJson(String fileName, String... jars){
-    try{
-      File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\JarConfig\\JarConfig.json");
+  public void createNewInJarJson(String fileName, String... jars) {
+    try {
+      File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
-      FileWriter writer = new FileWriter(jarJsonFile);
       JSONObject jar = new JSONObject();
+      JSONArray array = new JSONArray();
       String jsonString = "";
 
-      jar.put("fileName", fileName);
-      jar.put("jars", jars);
-      jar.put("lastUpdated", LocalDateTime.now());
-
-      while(scanner.hasNextLine()){
+      while (scanner.hasNextLine()) {
         jsonString = jsonString.concat(scanner.nextLine());
       }
 
-      JSONArray array = (JSONArray) parser.parse(jsonString);
+      if (jsonString != "") {
+        array = ((JSONArray) parser.parse(jsonString));
+      }
+
+      for (Object json : array) {
+        if (((JSONObject) json).get("fileName").equals(fileName)) {
+          return;
+        }
+      }
+
+      jar.put("fileName", fileName);
+      jar.put("jars", jars == null ? new ArrayList<>() : jars);
+      jar.put("lastUpdated", "\"" + LocalDateTime.now() + "\"");
+
       array.add(jar);
       jsonString = JSONArray.toJSONString(array);
+      FileWriter writer = new FileWriter(jarJsonFile);
       writer.write(jsonString);
-    } catch(IOException e){
+      writer.close();
+    } catch (IOException e) {
       e.printStackTrace();
-    } catch(ParseException e){
+    } catch (ParseException e) {
       e.printStackTrace();
     }
 
   }
 
-  public void updateNameInJarJson(String oldFileName, String newFileName){
-    try{
+  public void updateNameInJarJson(String oldFileName, String newFileName) {
+    try {
       File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       FileWriter writer = new FileWriter(jarJsonFile);
       String jsonString = "";
 
-      while(scanner.hasNextLine()){
+      while (scanner.hasNextLine()) {
         jsonString = jsonString.concat(scanner.nextLine());
       }
       JSONArray array = (JSONArray) parser.parse(jsonString);
 
-      for(int i = 0; i < array.size(); i++){
+      for (int i = 0; i < array.size(); i++) {
         JSONObject jar = (JSONObject) array.get(i);
-        if(jar.get("fileName") == oldFileName){
+        if (jar.get("fileName") == oldFileName) {
           jar.put("fileName", newFileName);
           jar.put("lastUpdated", LocalDateTime.now());
           break;
@@ -94,68 +107,78 @@ public class FileService {
 
       jsonString = JSONArray.toJSONString(array);
       writer.write(jsonString);
-    } catch(IOException e){
+    } catch (IOException e) {
       e.printStackTrace();
-    } catch(ParseException e){
+    } catch (ParseException e) {
       e.printStackTrace();
     }
   }
 
-  public void updateJarsInJarJson(String fileName, List<String> jars){
-    try{
+  public void updateJarsInJarJson(String fileName, List<String> jars) {
+    try {
       File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
-      FileWriter writer = new FileWriter(jarJsonFile);
+      JSONArray array;
       String jsonString = "";
 
-      while(scanner.hasNextLine()){
+      while (scanner.hasNextLine()) {
         jsonString = jsonString.concat(scanner.nextLine());
       }
-      JSONArray array = (JSONArray) parser.parse(jsonString);
 
-      for(int i = 0; i < array.size(); i++){
+      if (jsonString == "") {
+        array = new JSONArray();
+      } else {
+        array = ((JSONArray) parser.parse(jsonString));
+      }
+
+      for (int i = 0; i < array.size(); i++) {
         JSONObject jar = (JSONObject) array.get(i);
-        if(jar.get("fileName") == fileName){
+        System.out.println(jar.get("fileName"));
+        System.out.println(fileName);
+        if (jar.get("fileName").equals(fileName)) {
+          System.out.println("jars: ");
+          jars.stream().forEach(System.out::println);
           jar.put("jars", jars);
-          jar.put("lastUpdated", LocalDateTime.now());
+          jar.put("lastUpdated", "\"" + LocalDateTime.now() + "\"");
           break;
         }
       }
 
       jsonString = JSONArray.toJSONString(array);
+      FileWriter writer = new FileWriter(jarJsonFile);
       writer.write(jsonString);
       writer.close();
-    } catch(IOException e){
+    } catch (IOException e) {
       e.printStackTrace();
-    } catch(ParseException e){
+    } catch (ParseException e) {
       e.printStackTrace();
     }
   }
 
-  public JSONObject getJarsForFile(String fileName){
-    try{
+  public List<String> getJarsForFile(String fileName) {
+    try {
       File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       String jsonString = "";
 
-      while(scanner.hasNextLine()){
+      while (scanner.hasNextLine()) {
         jsonString = jsonString.concat(scanner.nextLine());
       }
       JSONArray array = (JSONArray) parser.parse(jsonString);
 
-      for(Object j : array){
-        if(((JSONObject) j).get("fileName") == fileName){
-          return (JSONObject) j;
+      for (Object j : array) {
+        if (((JSONObject) j).get("fileName").equals(fileName)) {
+          return (ArrayList<String>) ((JSONObject) j).get("jars");
         }
       }
 
-    } catch(IOException e){
+    } catch (IOException e) {
       e.printStackTrace();
-    } catch(ParseException e){
+    } catch (ParseException e) {
       e.printStackTrace();
     }
-    return new JSONObject();
+    return new ArrayList<String>();
   }
 }

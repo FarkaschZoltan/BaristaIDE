@@ -1,7 +1,9 @@
-package com.farkasch.barista.gui.mainview.topmenu;
+package com.farkasch.barista.gui.mainview.topmenu.settingswindow;
 
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
+import com.farkasch.barista.util.settings.AbstractSetting;
+import com.farkasch.barista.util.settings.JarSetting;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
@@ -13,19 +15,18 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CompileSettingsWindow extends SettingsWindow {
+public class CompileSettingsWindow extends AbstractSettingsWindow {
 
   @Autowired
   private PersistenceService persistenceService;
@@ -59,12 +60,28 @@ public class CompileSettingsWindow extends SettingsWindow {
     scene.getStylesheets().add(
       Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
         .toString());
+    content = addJarsPane();
+  }
+
+  @Override
+  protected void save(){
+    for(AbstractSetting setting : settingList){
+      if(setting.getClass().equals(JarSetting.class)){
+        fileService.updateJarsInJarJson(((JarSetting) setting).getFile(), ((JarSetting) setting).getJars());
+      }
+    }
+
+    settingList.clear();
+  }
+
+  @Override
+  protected void cancel(){
+    close();
   }
 
   private Pane addJarsPane(){
     VBox mainPane = new VBox();
     HBox searchBox = new HBox();
-    TextField searchField = new TextField();
     ComboBox<File> mainFileSelector = new ComboBox<>();
     Button browseButton = new Button();
     Button addButton = new Button();
@@ -74,6 +91,8 @@ public class CompileSettingsWindow extends SettingsWindow {
     AtomicInteger jarsCount = new AtomicInteger();
 
     mainFileSelector.setItems(FXCollections.observableList(persistenceService.updateAndGetCurrentMainFiles()));
+    persistenceService.getOpenFiles().stream().forEach(System.out::println);
+    persistenceService.getMainFiles().stream().forEach(System.out::println);
     if(mainFileSelector.getItems().size() != 0){
       mainFileSelector.setValue(mainFileSelector.getItems().get(0));
       fillJarSelector(mainFileSelector.getValue().getAbsolutePath(), jarsCount, jarSelector);
@@ -95,7 +114,7 @@ public class CompileSettingsWindow extends SettingsWindow {
       List<File> chosenJars = fileChooser.showOpenMultipleDialog(this);
       if(chosenJars != null){
         List<String> fileNames = chosenJars.stream().map(File::getAbsolutePath).collect(Collectors.toList());
-        fileService.updateJarsInJarJson(mainFileSelector.getValue().getAbsolutePath(), fileNames);
+        settingList.add(new JarSetting(mainFileSelector.getValue().getAbsolutePath(), fileNames));
         for(File jar : chosenJars){
           Label jarLabel = new Label(jar.getName());
           jarSelector.add(jarLabel, 0, jarsCount.get());
@@ -112,10 +131,11 @@ public class CompileSettingsWindow extends SettingsWindow {
   }
 
   private void fillJarSelector(String mainFile, AtomicInteger jarsCount, GridPane jarSelector){
-    JSONObject fileData = fileService.getJarsForFile(mainFile);
-    if(fileData.get("jars") != null){
-      ((List<String>)fileData.get("jars")).stream().forEach(jar -> {
-        Label jarLabel = new Label(jar);
+    List<String> fileData = fileService.getJarsForFile(mainFile);
+    if(fileData.size() != 0){
+      fileData.stream().forEach(jar -> {
+        String splitJar[] = jar.split("\\\\");
+        Label jarLabel = new Label(splitJar[splitJar.length - 1]);
         jarSelector.add(jarLabel, 0, jarsCount.get());
         jarsCount.getAndIncrement();
       });
