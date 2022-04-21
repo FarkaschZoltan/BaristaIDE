@@ -2,7 +2,6 @@ package com.farkasch.barista.gui.component;
 
 import com.farkasch.barista.services.ProcessService;
 import java.util.List;
-import java.util.function.Consumer;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -11,9 +10,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Pair;
 import org.kordamp.ikonli.javafx.FontIcon;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
 
 public class FolderDropdown extends GridPane {
 
@@ -56,7 +53,6 @@ public class FolderDropdown extends GridPane {
     }
 
     for (int i = 0; i < dirs.size(); i++) {
-      System.out.println(i);
       VBox folderContainer = new VBox();
       folderContainer.setMinWidth(
         parentContainer == null ? scene.getWidth() : parentContainer.getWidth());

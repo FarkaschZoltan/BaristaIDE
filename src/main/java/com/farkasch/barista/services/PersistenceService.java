@@ -1,6 +1,7 @@
 package com.farkasch.barista.services;
 
 import com.farkasch.barista.gui.codinginterface.CodingInterface;
+import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -15,7 +16,11 @@ public class PersistenceService {
 
   @Lazy
   @Autowired
-  FileService fileService;
+  private FileService fileService;
+
+  @Lazy
+  @Autowired
+  private SideMenu sideMenu;
 
   private File activeFile;
   private List<File> openFiles;
@@ -97,5 +102,9 @@ public class PersistenceService {
     }
     setMainFiles(newMainFiles);
     return newMainFiles;
+  }
+
+  public void refreshSideMenu(){
+    sideMenu.refresh();
   }
 }

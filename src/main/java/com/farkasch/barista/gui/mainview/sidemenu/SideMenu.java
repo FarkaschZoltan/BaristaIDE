@@ -1,6 +1,7 @@
 package com.farkasch.barista.gui.mainview.sidemenu;
 
 import com.farkasch.barista.JavaFxApp;
+import com.farkasch.barista.gui.component.SimpleDropdown;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.services.ProcessService;
@@ -31,12 +32,16 @@ public class SideMenu extends BorderPane {
   private VBox content;
   private Button compileButton;
   private Button runButton;
+  private SimpleDropdown openFiles;
 
   @PostConstruct
   private void init() {
     setId("side-menu");
     initTopMenu();
     initContent();
+
+    setTop(topMenu);
+    setCenter(content);
   }
 
   private void initTopMenu() {
@@ -45,14 +50,16 @@ public class SideMenu extends BorderPane {
     initRunButton();
 
     topMenu.getChildren().addAll(compileButton, runButton);
-
-    setTop(topMenu);
-    setCenter(content);
   }
 
   private void initContent() {
     content = new VBox();
+    openFiles = new SimpleDropdown("Open Files", persistenceService.getOpenFiles(), persistenceService);
+    openFiles.setMinWidth(this.getWidth());
+    openFiles.setMaxWidth(Double.MAX_VALUE);
+
     content.setId("side-menu__content");
+    content.getChildren().add(openFiles);
   }
 
   private void initCompileButton() {
@@ -77,4 +84,8 @@ public class SideMenu extends BorderPane {
       processService.Run(filePath, fileName);
     });
   }
+  public void refresh(){
+    openFiles.refresh(persistenceService.getOpenFiles());
+  }
+
 }

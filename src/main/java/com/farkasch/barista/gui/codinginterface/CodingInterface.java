@@ -67,6 +67,8 @@ public class CodingInterface extends BorderPane {
 
     if (!switchMenu.contains(file)) {
       switchMenu.addFile(file);
+    } else {
+      switchMenu.switchToFile(file);
     }
 
     try {

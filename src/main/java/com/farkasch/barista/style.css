@@ -21,9 +21,8 @@
 }
 
 #folder{
-  -fx-min-width: 100%;
   -fx-background-color: #F4F4F4;
-  -fx-alignment: LEFT;
+  -fx-alignment: center-left;
 }
 
 #folder:hover {
@@ -37,4 +36,27 @@
 
 #side-menu__content {
   -fx-background-color: grey;
+}
+
+#side-menu__simple-dropdown--title{
+  -fx-background-color: grey;
+  -fx-alignment: center;
+  -fx-text-fill: #F4F4F4;
+}
+
+#side-menu__simple-dropdown--item{
+  -fx-background-color: grey;
+  -fx-alignment: center-left;
+  -fx-text-fill: #F4F4F4;
+}
+
+#side-menu__simple-dropdown--title:hover, #side-menu__simple-dropdown--item:hover{
+  -fx-background-color: #F4F4F4;
+  -fx-text-fill: grey;
+}
+
+#test {
+  -fx-border-style: solid;
+  -fx-border-color: black;
+  -fx-border-width: 1px;
 }

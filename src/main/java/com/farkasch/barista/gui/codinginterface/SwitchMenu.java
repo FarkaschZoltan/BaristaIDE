@@ -2,6 +2,8 @@ package com.farkasch.barista.gui.codinginterface;
 
 import com.farkasch.barista.services.PersistenceService;
 import java.io.File;
+import javafx.beans.Observable;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
@@ -42,10 +44,25 @@ public class SwitchMenu extends HBox {
     }
     currentlyActive = widget;
     persistenceService.setActiveFile(currentlyActive.getFile());
+    persistenceService.refreshSideMenu();
+  }
+
+  public void switchToFile(File file){
+    for(Node item : getChildren()){
+      SwitchMenuItem switchMenuItem = (SwitchMenuItem) item;
+      if(switchMenuItem.getFile().equals(file)){
+        currentlyActive = switchMenuItem;
+        currentlyActive.setContentId("switch-menu__item--selected");
+        persistenceService.setActiveFile(currentlyActive.getFile());
+      } else {
+        switchMenuItem.setContentId("switch-menu__item");
+      }
+    }
   }
 
   public void removeFile(int index) {
     persistenceService.removeOpenFile(((SwitchMenuItem)(getChildren().get(index))).getFile());
+    persistenceService.refreshSideMenu();
     getChildren().remove(index);
   }
 

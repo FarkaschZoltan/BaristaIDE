@@ -116,63 +116,15 @@ public class NewFileWindow extends Stage {
       folderPathField.setText("C:\\Users" + (parentName == null ? "" : parentName));
     });
 
-
     scrollPane.setContent(rootFolderSelector);
   }
 
-  public void showWindow(Consumer<File> openFile){
+  public void showWindow(Consumer<File> openFile) {
     this.openFile = openFile;
 
     rootFolderSelector.folderExpand(null, null);
     setScene(scene);
 
     show();
-  }
-
-  private void folderExpand(@Nullable String parentName, @Nullable VBox parentContainer) {
-    List<String> dirs = processService.getDirs(parentName);
-    folderPathField.setText("C:\\Users" + (parentName == null ? "" : parentName));
-    GridPane folderSelector = null;
-    if (parentContainer == null) {
-      folderSelector = rootFolderSelector;
-    } else {
-      folderSelector = new GridPane();
-      folderSelector.setMaxWidth(Double.MAX_VALUE);
-    }
-
-    for (int i = 0; i < dirs.size(); i++) {
-      VBox folderContainer = new VBox();
-      folderContainer.setMinWidth(
-        parentContainer == null ? scene.getWidth() : parentContainer.getWidth());
-      Button folderButton = new Button(dirs.get(i));
-      folderButton.setGraphic(new FontIcon("mdi-folder"));
-      folderButton.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-        Button target = folderButton;
-        VBox parent = (VBox) (target.getParent());
-        if (parent.getChildren().size() > 1) {
-          folderClose(parent);
-        } else {
-          folderExpand((parentName == null ? "" : parentName) + "\\" + target.getText(),
-            folderContainer);
-        }
-      });
-      folderButton.setId("folder");
-      folderButton.setMaxWidth(Double.MAX_VALUE);
-      folderButton.setMaxHeight(Double.MAX_VALUE);
-      folderContainer.getChildren().add(folderButton);
-      folderSelector.addRow(i, folderContainer);
-      if (parentContainer != null) {
-        folderSelector.setPadding(new Insets(0, 0, 0, 20));
-      }
-      //folderSelector.setGridLinesVisible(true);
-    }
-    if (parentContainer != null) {
-      parentContainer.getChildren().add(folderSelector);
-    }
-  }
-
-  private void folderClose(VBox parent) {
-    System.out.println(parent);
-    parent.getChildren().remove(1, parent.getChildren().size());
   }
 }
