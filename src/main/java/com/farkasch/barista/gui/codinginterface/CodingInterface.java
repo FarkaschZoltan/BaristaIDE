@@ -2,6 +2,7 @@ package com.farkasch.barista.gui.codinginterface;
 
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.JavaScriptService;
+import com.farkasch.barista.services.PersistenceService;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -20,6 +21,8 @@ public class CodingInterface extends BorderPane {
 
   @Autowired
   private JavaScriptService javaScriptService;
+  @Autowired
+  private PersistenceService persistenceService;
   @Autowired
   private FileService fileService;
   @Autowired
@@ -74,6 +77,7 @@ public class CodingInterface extends BorderPane {
         textContent = textContent.concat(contentScanner.nextLine() + "\n");
       }
       javaScriptService.setContent(content, textContent, !interfaceLoaded);
+      persistenceService.setActiveInterface(this);
       interfaceLoaded = true;
     } catch (FileNotFoundException e) {
       //TODO error popup!

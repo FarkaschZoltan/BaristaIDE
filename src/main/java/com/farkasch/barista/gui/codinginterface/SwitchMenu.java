@@ -96,6 +96,7 @@ public class SwitchMenu extends HBox {
         currentlyActive = this;
         currentlyActive.setContentId("switch-menu__item--selected");
         persistenceService.setActiveFile(currentlyActive.getFile());
+        persistenceService.setActiveInterface(parent);
       });
       getChildren().add(openButton);
       openButton.setMinHeight(getHeight());

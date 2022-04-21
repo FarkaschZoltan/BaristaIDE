@@ -1,14 +1,10 @@
 package com.farkasch.barista.gui.mainview.topmenu;
 
 import com.farkasch.barista.gui.component.FolderDropdown;
-import com.farkasch.barista.gui.component.FolderDropdown.FolderConsumer;
 import com.farkasch.barista.services.ProcessService;
-import com.sun.javafx.scene.control.LabeledText;
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
@@ -17,16 +13,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 import javax.annotation.PostConstruct;
-import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component

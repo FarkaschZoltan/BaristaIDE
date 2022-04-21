@@ -1,5 +1,6 @@
 package com.farkasch.barista.gui.codinginterface;
 
+import com.farkasch.barista.services.PersistenceService;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,9 @@ public class CodingInterfaceContainer extends BorderPane {
 
   @Autowired
   private ApplicationContext applicationContext;
+
+  @Autowired
+  private PersistenceService persistenceService;
 
   public CodingInterfaceContainer() {
     interfaces = new ArrayList<>();
