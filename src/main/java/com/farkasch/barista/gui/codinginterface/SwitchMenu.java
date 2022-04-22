@@ -62,6 +62,7 @@ public class SwitchMenu extends HBox {
 
   public void removeFile(int index) {
     persistenceService.removeOpenFile(((SwitchMenuItem)(getChildren().get(index))).getFile());
+    persistenceService.addRecentlyClosed(((SwitchMenuItem)(getChildren().get(index))).getFile());
     persistenceService.refreshSideMenu();
     getChildren().remove(index);
   }

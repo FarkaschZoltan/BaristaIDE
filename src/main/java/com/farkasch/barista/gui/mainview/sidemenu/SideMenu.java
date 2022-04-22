@@ -33,6 +33,7 @@ public class SideMenu extends BorderPane {
   private Button compileButton;
   private Button runButton;
   private SimpleDropdown openFiles;
+  private SimpleDropdown recentlyClosed;
 
   @PostConstruct
   private void init() {
@@ -54,12 +55,15 @@ public class SideMenu extends BorderPane {
 
   private void initContent() {
     content = new VBox();
+
     openFiles = new SimpleDropdown("Open Files", persistenceService.getOpenFiles(), persistenceService);
-    openFiles.setMinWidth(this.getWidth());
     openFiles.setMaxWidth(Double.MAX_VALUE);
 
+    recentlyClosed = new SimpleDropdown("Recently Closed", persistenceService.getRecentlyClosed(), persistenceService);
+    recentlyClosed.setMaxWidth(Double.MAX_VALUE);
+
     content.setId("side-menu__content");
-    content.getChildren().add(openFiles);
+    content.getChildren().addAll(recentlyClosed, openFiles);
   }
 
   private void initCompileButton() {
@@ -86,6 +90,7 @@ public class SideMenu extends BorderPane {
   }
   public void refresh(){
     openFiles.refresh(persistenceService.getOpenFiles());
+    recentlyClosed.refresh(persistenceService.getRecentlyClosed());
   }
 
 }

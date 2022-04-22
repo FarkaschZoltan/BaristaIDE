@@ -1,6 +1,7 @@
 package com.farkasch.barista.services;
 
 import com.farkasch.barista.gui.codinginterface.CodingInterface;
+import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,13 +23,20 @@ public class PersistenceService {
   @Autowired
   private SideMenu sideMenu;
 
+  @Lazy
+  @Autowired
+  private CodingInterfaceContainer codingInterfaceContainer;
+
   private File activeFile;
   private List<File> openFiles;
   private List<File> mainFiles;
+  private List<File> recentlyClosed;
   private CodingInterface activeInterface;
 
-  public PersistenceService(){
+  public PersistenceService() {
     openFiles = new ArrayList<>();
+    recentlyClosed = new ArrayList<>();
+    mainFiles = new ArrayList<>();
   }
 
   public File getActiveFile() {
@@ -55,14 +63,13 @@ public class PersistenceService {
     this.openFiles = openFiles;
   }
 
-  public void addOpenFile(File file){
+  public void addOpenFile(File file) {
     openFiles.add(file);
     updateAndGetCurrentMainFiles();
-    System.out.println("Added!");
   }
 
-  public void removeOpenFile(File file){
-    System.out.println(openFiles.remove(file));
+  public void removeOpenFile(File file) {
+    openFiles.remove(file);
     updateAndGetCurrentMainFiles();
   }
 
@@ -74,29 +81,44 @@ public class PersistenceService {
     this.mainFiles = mainFiles;
   }
 
-  public void addMainFile(File file){
+  public void addMainFile(File file) {
     mainFiles.add(file);
   }
 
-  public void removeMainFile(File file){
+  public void removeMainFile(File file) {
     mainFiles.remove(file);
   }
 
-  public List<File> updateAndGetCurrentMainFiles(){
+  public List<File> getRecentlyClosed() {
+    return recentlyClosed;
+  }
+
+  public void setRecentlyClosed(List<File> recentlyClosed) {
+    this.recentlyClosed = recentlyClosed;
+  }
+
+  public void addRecentlyClosed(File file){
+    if(recentlyClosed.contains(file)){
+      recentlyClosed.remove(file);
+    }
+    recentlyClosed.add(file);
+  }
+
+  public List<File> updateAndGetCurrentMainFiles() {
     String mainString = "publicstaticvoidmain(String[]args)";
     List<File> newMainFiles = new ArrayList<>();
-    for(File f : openFiles){
-      try{
+    for (File f : openFiles) {
+      try {
         String fileContent = "";
         Scanner scanner = new Scanner(f);
-        while(scanner.hasNextLine()){
+        while (scanner.hasNextLine()) {
           fileContent = fileContent.concat(scanner.nextLine());
         }
-        if(fileContent.replaceAll("\\s", "").contains(mainString)){
+        if (fileContent.replaceAll("\\s", "").contains(mainString)) {
           newMainFiles.add(f);
           fileService.createNewInJarJson(f.getAbsolutePath(), null);
         }
-      } catch (FileNotFoundException e){
+      } catch (FileNotFoundException e) {
         e.printStackTrace();
       }
     }
@@ -104,7 +126,11 @@ public class PersistenceService {
     return newMainFiles;
   }
 
-  public void refreshSideMenu(){
+  public void refreshSideMenu() {
     sideMenu.refresh();
+  }
+
+  public void openNewFile(File file){
+    codingInterfaceContainer.openFile(file);
   }
 }

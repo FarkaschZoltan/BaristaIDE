@@ -73,7 +73,6 @@ public class CodingInterface extends BorderPane {
 
     try {
       Scanner contentScanner = new Scanner(file);
-      System.out.println(file.getName());
       String textContent = new String();
       while (contentScanner.hasNextLine()) {
         textContent = textContent.concat(contentScanner.nextLine() + "\n");
@@ -90,5 +89,6 @@ public class CodingInterface extends BorderPane {
 
   public void close() {
     parent.closeInterface(this);
+    persistenceService.setActiveInterface(null);
   }
 }
