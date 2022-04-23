@@ -6,7 +6,6 @@ import com.farkasch.barista.services.ProcessService;
 import java.io.File;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.function.Consumer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,24 +16,21 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javax.annotation.PostConstruct;
-import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
 public class NewFileWindow extends Stage {
 
   @Autowired
-  FileService fileService;
+  private FileService fileService;
   @Autowired
-  ProcessService processService;
+  private ProcessService processService;
 
   //Design
   private TextField fileNameField;
@@ -67,7 +63,7 @@ public class NewFileWindow extends Stage {
 
     fieldLayout = new GridPane();
 
-    folderSelectorLabel = new Label("Folders: ");
+    folderSelectorLabel = new Label("Choose destination folder: ");
     scrollPane = new ScrollPane();
 
     windowLayout = new VBox(fieldLayout, scrollPane, createButtonContainer);

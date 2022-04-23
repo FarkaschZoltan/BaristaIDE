@@ -24,6 +24,8 @@ public class TopMenu extends MenuBar {
   @Autowired
   private OpenFileWindow openFileWindow;
   @Autowired
+  private NewProjectWindow newProjectWindow;
+  @Autowired
   private PersistenceService persistenceService;
   @Lazy
   @Autowired
@@ -56,6 +58,9 @@ public class TopMenu extends MenuBar {
     });
 
     MenuItem newProject = new MenuItem("New Project");
+    newProject.setOnAction(actionEvent -> {
+      newProjectWindow.showWindow();
+    });
 
     MenuItem openFile = new MenuItem("Open File");
     openFile.setOnAction(actionEvent -> {

@@ -1,5 +1,6 @@
 package com.farkasch.barista.services;
 
+import com.farkasch.barista.util.BaristaProject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -45,7 +46,7 @@ public class FileService {
 
   public void createNewInJarJson(String fileName, String... jars) {
     try {
-      File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\config\\JarConfig.json");
+      File jarJsonFile = new File("C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\BaristaIDE\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       JSONObject jar = new JSONObject();
@@ -85,7 +86,7 @@ public class FileService {
 
   public void updateNameInJarJson(String oldFileName, String newFileName) {
     try {
-      File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\config\\JarConfig.json");
+      File jarJsonFile = new File("C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\BaristaIDE\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       FileWriter writer = new FileWriter(jarJsonFile);
@@ -116,7 +117,7 @@ public class FileService {
 
   public void updateJarsInJarJson(String fileName, List<String> jars) {
     try {
-      File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\config\\JarConfig.json");
+      File jarJsonFile = new File("C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\BaristaIDE\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       JSONArray array;
@@ -158,7 +159,7 @@ public class FileService {
 
   public List<String> getJarsForFile(String fileName) {
     try {
-      File jarJsonFile = new File("C:\\Program Files\\BaristaIDE\\config\\JarConfig.json");
+      File jarJsonFile = new File("C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\BaristaIDE\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       String jsonString = "";
@@ -180,5 +181,73 @@ public class FileService {
       e.printStackTrace();
     }
     return new ArrayList<String>();
+  }
+
+  public void createNewProject(BaristaProject baristaProject){
+    try{
+      //creating root folder;
+      File projectRoot = new File(baristaProject.getProjectRoot());
+      projectRoot.mkdir();
+
+      //creating .barista folder
+      File baristaFolder = new File(baristaProject.getProjectRoot() + "\\.barista");
+      baristaFolder.mkdir();
+
+      //creating ProjectConfig.json inside .barista
+      File projectConfig = new File(baristaFolder.getAbsolutePath() + "\\ProjectConfig.json");
+      projectConfig.createNewFile();
+
+      //creating src folder
+      File srcFolder = new File(baristaProject.getProjectRoot() + "\\src");
+      srcFolder.mkdir();
+
+      //creating target folder
+      File targetFolder = new File(baristaProject.getProjectRoot() + "\\target");
+      targetFolder.mkdir();
+
+      File globalProjectConfig = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
+      Scanner scanner = new Scanner(globalProjectConfig);
+      JSONParser parser = new JSONParser();
+      JSONObject project = new JSONObject();
+      JSONArray array = new JSONArray();
+      String jsonString = "";
+
+      while (scanner.hasNextLine()) {
+        jsonString = jsonString.concat(scanner.nextLine());
+      }
+
+      if (jsonString != "") {
+        array = ((JSONArray) parser.parse(jsonString));
+      }
+
+      for (Object json : array) {
+        if (((JSONObject) json).get("projectName").equals(baristaProject.getProjectName())) {
+          return; //TODO create cutsom "RESULT" to return
+        }
+      }
+
+      project.put("projectName", baristaProject.getProjectName());
+      project.put("projectRoot", baristaProject.getProjectRoot());
+      project.put("maven", baristaProject.isMaven());
+      project.put("gradle", baristaProject.isGradle());
+
+      array.add(project);
+      jsonString = JSONArray.toJSONString(array);
+      if(!globalProjectConfig.canWrite()){
+        globalProjectConfig.setWritable(true);
+      }
+      FileWriter writer = new FileWriter(globalProjectConfig);
+      writer.write(jsonString);
+      writer.close();
+
+    } catch(IOException e){
+      e.printStackTrace();
+    } catch (ParseException e){
+      e.printStackTrace();
+    }
+  }
+
+  public void loadProject(BaristaProject baristaProject){
+
   }
 }
