@@ -3,6 +3,7 @@ package com.farkasch.barista.services;
 import com.farkasch.barista.gui.codinginterface.CodingInterface;
 import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
+import com.farkasch.barista.util.BaristaProject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -18,11 +19,9 @@ public class PersistenceService {
   @Lazy
   @Autowired
   private FileService fileService;
-
   @Lazy
   @Autowired
   private SideMenu sideMenu;
-
   @Lazy
   @Autowired
   private CodingInterfaceContainer codingInterfaceContainer;
@@ -32,6 +31,7 @@ public class PersistenceService {
   private List<File> mainFiles;
   private List<File> recentlyClosed;
   private CodingInterface activeInterface;
+  private BaristaProject openProject;
 
   public PersistenceService() {
     openFiles = new ArrayList<>();
@@ -97,8 +97,16 @@ public class PersistenceService {
     this.recentlyClosed = recentlyClosed;
   }
 
-  public void addRecentlyClosed(File file){
-    if(recentlyClosed.contains(file)){
+  public BaristaProject getOpenProject() {
+    return openProject;
+  }
+
+  public void setOpenProject(BaristaProject openProject) {
+    this.openProject = openProject;
+  }
+
+  public void addRecentlyClosed(File file) {
+    if (recentlyClosed.contains(file)) {
       recentlyClosed.remove(file);
     }
     recentlyClosed.add(file);
@@ -130,7 +138,7 @@ public class PersistenceService {
     sideMenu.refresh();
   }
 
-  public void openNewFile(File file){
+  public void openNewFile(File file) {
     codingInterfaceContainer.openFile(file);
   }
 }

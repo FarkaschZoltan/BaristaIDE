@@ -6,6 +6,8 @@ public class BaristaProject {
   private boolean maven;
   private boolean gradle;
 
+  public BaristaProject() {}
+
   public BaristaProject(String projectName, String projectRoot, boolean maven, boolean gradle){
     this.projectName = projectName;
     this.projectRoot = projectRoot;

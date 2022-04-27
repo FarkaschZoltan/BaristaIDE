@@ -40,7 +40,7 @@
 
 #side-menu__simple-dropdown--title{
   -fx-background-color: grey;
-  -fx-alignment: center;
+  -fx-alignment: center-left;
   -fx-text-fill: #F4F4F4;
 }
 

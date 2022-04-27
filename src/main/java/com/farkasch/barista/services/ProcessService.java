@@ -29,9 +29,9 @@ public class ProcessService {
 
     ProcessBuilder pb = new ProcessBuilder();
     if (folder == null) {
-      pb.directory(new File("C:\\Users"));
+      pb.directory(new File(System.getProperty("user.home")));
     } else {
-      pb.directory(new File("C:\\Users" + folder));
+      pb.directory(new File(folder));
     }
     pb.command("CMD", "/C", "dir");
 
@@ -69,9 +69,9 @@ public class ProcessService {
 
     ProcessBuilder pb = new ProcessBuilder();
     if (folder == null) {
-      pb.directory(new File("C:\\Users"));
+      pb.directory(new File(System.getProperty("user.home")));
     } else {
-      pb.directory(new File("C:\\Users" + folder));
+      pb.directory(new File(folder));
     }
     pb.command("CMD", "/C", "dir");
 

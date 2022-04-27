@@ -88,7 +88,7 @@ public class OpenFileWindow extends Stage {
     openButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(openButtonContainer, new Insets(10));
 
-    rootFolderSelector = new FolderDropdown(scene, processService, true);
+    rootFolderSelector = new FolderDropdown(scene.getWidth(), processService, true, false);
     rootFolderSelector.setFileClickAction((parentName, parentContainer, target) -> {
       fileName.setText(target.getText());
       filePath = "C:\\Users\\" + parentName + "\\" + target.getText();
@@ -100,7 +100,7 @@ public class OpenFileWindow extends Stage {
   public void showWindow(Consumer<File> openFile) {
     this.openFile = openFile;
 
-    rootFolderSelector.folderExpand(null, null);
+    rootFolderSelector.prepare(null, null);
     setScene(scene);
 
     show();

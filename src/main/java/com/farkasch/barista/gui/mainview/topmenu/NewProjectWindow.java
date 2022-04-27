@@ -2,6 +2,7 @@ package com.farkasch.barista.gui.mainview.topmenu;
 
 import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.services.FileService;
+import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.enums.ProjectTypeEnum;
@@ -36,6 +37,8 @@ public class NewProjectWindow extends Stage {
   private ProcessService processService;
   @Autowired
   private FileService fileService;
+  @Autowired
+  private PersistenceService persistenceService;
 
   //Design
   private TextField projectNameField;
@@ -77,7 +80,6 @@ public class NewProjectWindow extends Stage {
     windowLayout = new VBox(fieldLayout, scrollPane, createButtonContainer);
 
     scene = new Scene(windowLayout, 300, 400);
-
     scene.getStylesheets().add(
       Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
         .toString());
@@ -127,20 +129,21 @@ public class NewProjectWindow extends Stage {
       }
       BaristaProject baristaProject = new BaristaProject(projectNameField.getText(), folderPathField.getText() + "\\" + projectNameField.getText(), maven, gradle);
       fileService.createNewProject(baristaProject);
+      persistenceService.setOpenProject(baristaProject);
       close();
     });
 
     createButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(createButtonContainer, new Insets(10));
 
-    rootFolderSelector = new FolderDropdown(scene, processService, false);
+    rootFolderSelector = new FolderDropdown(scene.getWidth(), processService, false, false);
     rootFolderSelector.setFolderClickAction((parentName, parentContainer, target) -> folderPathField.setText("C:\\Users" + parentName + "\\" + target.getText()));
 
     scrollPane.setContent(rootFolderSelector);
   }
 
   public void showWindow(){
-    rootFolderSelector.folderExpand(null, null);
+    rootFolderSelector.prepare(null, null);
     setScene(scene);
 
     show();

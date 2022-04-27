@@ -107,7 +107,7 @@ public class NewFileWindow extends Stage {
     createButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(createButtonContainer, new Insets(10));
 
-    rootFolderSelector = new FolderDropdown(scene, processService, false);
+    rootFolderSelector = new FolderDropdown(scene.getWidth(), processService, false, false);
     rootFolderSelector.setFolderClickAction((parentName, parentContainer, target) -> {
       folderPathField.setText("C:\\Users" + (parentName == null ? "" : parentName));
     });
@@ -118,7 +118,7 @@ public class NewFileWindow extends Stage {
   public void showWindow(Consumer<File> openFile) {
     this.openFile = openFile;
 
-    rootFolderSelector.folderExpand(null, null);
+    rootFolderSelector.prepare(null, null);
     setScene(scene);
 
     show();

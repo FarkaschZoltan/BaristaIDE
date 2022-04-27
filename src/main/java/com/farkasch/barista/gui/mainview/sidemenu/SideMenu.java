@@ -1,21 +1,20 @@
 package com.farkasch.barista.gui.mainview.sidemenu;
 
-import com.farkasch.barista.JavaFxApp;
+import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.SimpleDropdown;
-import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.services.ProcessService;
-import com.farkasch.barista.util.enums.JavacEnum;
+import com.farkasch.barista.util.BaristaProject;
 import java.io.File;
-import java.util.HashMap;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javax.annotation.PostConstruct;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,24 +24,29 @@ public class SideMenu extends BorderPane {
   private ProcessService processService;
   @Autowired
   private PersistenceService persistenceService;
-  @Autowired
-  private FileService fileService;
 
   private HBox topMenu;
   private VBox content;
+
+  private ScrollPane contentScrollPane;
   private Button compileButton;
   private Button runButton;
   private SimpleDropdown openFiles;
   private SimpleDropdown recentlyClosed;
+  private FolderDropdown projectFolderDropdown;
+  private BaristaProject openedProject;
 
   @PostConstruct
   private void init() {
+
+    openedProject = null;
+
     setId("side-menu");
     initTopMenu();
     initContent();
 
     setTop(topMenu);
-    setCenter(content);
+    setCenter(contentScrollPane);
   }
 
   private void initTopMenu() {
@@ -55,6 +59,12 @@ public class SideMenu extends BorderPane {
 
   private void initContent() {
     content = new VBox();
+    contentScrollPane = new ScrollPane(content);
+
+    contentScrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
+    contentScrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+    contentScrollPane.setFitToWidth(true);
+    contentScrollPane.setFitToHeight(true);
 
     openFiles = new SimpleDropdown("Open Files", persistenceService.getOpenFiles(), persistenceService);
     openFiles.setMaxWidth(Double.MAX_VALUE);
@@ -63,13 +73,14 @@ public class SideMenu extends BorderPane {
     recentlyClosed.setMaxWidth(Double.MAX_VALUE);
 
     content.setId("side-menu__content");
+    content.setMaxWidth(Double.MAX_VALUE);
     content.getChildren().addAll(recentlyClosed, openFiles);
   }
 
   private void initCompileButton() {
     compileButton = new Button("Compile");
     compileButton.setGraphic(new FontIcon("mdi-wrench"));
-    compileButton.setOnMouseClicked(click -> {
+    compileButton.setOnAction(click -> {
       File f = persistenceService.getMainFiles().get(0);
       String filePath = f.getParentFile().getPath();
       String fileName = f.getName();
@@ -81,7 +92,7 @@ public class SideMenu extends BorderPane {
   private void initRunButton() {
     runButton = new Button("Run");
     runButton.setGraphic(new FontIcon("mdi-play"));
-    runButton.setOnMouseClicked(click -> {
+    runButton.setOnAction(click -> {
       File f = persistenceService.getMainFiles().get(0);
       String filePath = f.getParentFile().getPath();
       String fileName = f.getName();
@@ -91,6 +102,23 @@ public class SideMenu extends BorderPane {
   public void refresh(){
     openFiles.refresh(persistenceService.getOpenFiles());
     recentlyClosed.refresh(persistenceService.getRecentlyClosed());
+  }
+
+  public void openProject(BaristaProject baristaProject){
+    if(content.getChildren().contains(projectFolderDropdown)){
+      closeProject();
+    }
+
+    openedProject = baristaProject;
+    projectFolderDropdown = new FolderDropdown(getWidth(), processService, true, true);
+    projectFolderDropdown.prepare(openedProject.getProjectRoot(), null);
+
+    content.getChildren().add(projectFolderDropdown);
+  }
+
+  public void closeProject(){
+    content.getChildren().remove(projectFolderDropdown);
+    openedProject = null;
   }
 
 }
