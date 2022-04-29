@@ -56,7 +56,6 @@ public class TreeNode<V> {
     int currentHeight = height;
     for(TreeNode child : children){
       int childHeight = child.getHeight(height + 1);
-      System.out.println(childHeight + "    " + currentHeight);
       if(childHeight > currentHeight){
         currentHeight = childHeight;
       }

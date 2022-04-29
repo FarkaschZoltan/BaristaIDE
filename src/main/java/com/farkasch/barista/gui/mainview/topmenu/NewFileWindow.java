@@ -55,7 +55,7 @@ public class NewFileWindow extends Stage {
     fileNameField = new TextField("NewFile.txt");
     fileNameLabel = new Label("File name: ");
 
-    folderPathField = new TextField("C:\\Users");
+    folderPathField = new TextField(System.getProperty("user.home"));
     folderPathLabel = new Label("Folder path: ");
 
     createButton = new Button("Create");
@@ -108,8 +108,8 @@ public class NewFileWindow extends Stage {
     VBox.setMargin(createButtonContainer, new Insets(10));
 
     rootFolderSelector = new FolderDropdown(scene.getWidth(), processService, false, false);
-    rootFolderSelector.setFolderClickAction((parentName, parentContainer, target) -> {
-      folderPathField.setText("C:\\Users" + (parentName == null ? "" : parentName));
+    rootFolderSelector.setFolderLeftClickAction((parentName, parentContainer, target) -> {
+      folderPathField.setText(parentName == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath());
     });
 
     scrollPane.setContent(rootFolderSelector);

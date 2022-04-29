@@ -28,6 +28,10 @@ public class FileService {
   @Autowired
   private SideMenu sideMenu;
 
+  @Lazy
+  @Autowired
+  private PersistenceService persistenceService;
+
   @Autowired
   private FileTemplates fileTemplates;
 
@@ -212,9 +216,20 @@ public class FileService {
       File srcFolder = new File(baristaProject.getProjectRoot() + "\\src");
       srcFolder.mkdir();
 
+      //creating main folder
+      File mainFolder = new File(srcFolder.getAbsolutePath() + "\\main");
+      mainFolder.mkdir();
+
+      //creating java folder
+      File javaFolder = new File(mainFolder.getAbsolutePath() + "\\java");
+      javaFolder.mkdir();
+
       //creating main file
-      File mainFile = new File(srcFolder.getAbsolutePath() + "\\Main.java");
+      File mainFile = new File(javaFolder.getAbsolutePath() + "\\Main.java");
       mainFile.createNewFile();
+      FileWriter writer = new FileWriter(mainFile);
+      writer.write(fileTemplates.mainTemplate());
+      writer.close();
 
       //creating target folder
       File targetFolder = new File(baristaProject.getProjectRoot() + "\\target");
@@ -243,6 +258,7 @@ public class FileService {
 
       project.put("projectName", baristaProject.getProjectName());
       project.put("projectRoot", baristaProject.getProjectRoot());
+      project.put("sourceRoot", baristaProject.getSourceRoot());
       project.put("maven", baristaProject.isMaven());
       project.put("gradle", baristaProject.isGradle());
 
@@ -251,9 +267,11 @@ public class FileService {
       if (!globalProjectConfig.canWrite()) {
         globalProjectConfig.setWritable(true);
       }
-      FileWriter writer = new FileWriter(globalProjectConfig);
+      writer = new FileWriter(globalProjectConfig);
       writer.write(jsonString);
       writer.close();
+
+      loadProject(baristaProject);
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -264,6 +282,7 @@ public class FileService {
 
   public void loadProject(BaristaProject baristaProject) {
     sideMenu.openProject(baristaProject);
+    persistenceService.setOpenProject(baristaProject);
   }
 
   public List<BaristaProject> getProjects() {

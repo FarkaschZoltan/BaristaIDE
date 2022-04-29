@@ -34,7 +34,7 @@ public class LoadProjectWindow extends Stage {
   private GridPane fieldLayout;
   private ScrollPane scrollPane;
   private VBox openButtonContainer;
-  private HBox projectsContainer;
+  private VBox projectsContainer;
   private VBox windowLayout;
   private TextField chosenProject;
   private Scene scene;
@@ -47,7 +47,7 @@ public class LoadProjectWindow extends Stage {
     chosenProject = new TextField();
     fieldLayout = new GridPane();
     scrollPane = new ScrollPane();
-    projectsContainer = new HBox();
+    projectsContainer = new VBox();
     openButtonContainer = new VBox();
     windowLayout = new VBox();
     projectsLabel = new Label("Choose project: ");

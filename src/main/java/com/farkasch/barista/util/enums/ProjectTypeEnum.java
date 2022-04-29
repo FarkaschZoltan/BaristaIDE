@@ -1,7 +1,15 @@
 package com.farkasch.barista.util.enums;
 
 public enum ProjectTypeEnum {
-  BASIC, //basic java project
-  MAVEN, //maven project
-  GRADLE //gradle project
+  BASIC("Basic"), //basic java project
+  MAVEN("Maven"), //maven project
+  GRADLE("Gradle"); //gradle project
+
+  private String name;
+  private ProjectTypeEnum(String name){
+    this.name = name;
+  }
+  public String getName(){
+    return name;
+  }
 }

@@ -7,7 +7,6 @@ import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.enums.ProjectTypeEnum;
 import java.nio.file.Paths;
-import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -21,11 +20,13 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import javafx.util.StringConverter;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -57,13 +58,13 @@ public class NewProjectWindow extends Stage {
   private Scene scene;
 
   @PostConstruct
-  private void init(){
+  private void init() {
     setTitle("New Project");
 
     projectNameField = new TextField("New Project");
     projectNameLabel = new Label("Project name: ");
 
-    folderPathField = new TextField("C:\\Users");
+    folderPathField = new TextField(System.getProperty("user.home"));
     folderPathLabel = new Label("Project creation folder: ");
 
     projectType = new ComboBox<>();
@@ -110,11 +111,22 @@ public class NewProjectWindow extends Stage {
 
     projectType.setItems(FXCollections.observableArrayList(ProjectTypeEnum.BASIC, ProjectTypeEnum.MAVEN, ProjectTypeEnum.GRADLE));
     projectType.setValue(ProjectTypeEnum.BASIC);
+    projectType.setConverter(new StringConverter<>() {
+      @Override
+      public String toString(ProjectTypeEnum projectTypeEnum) {
+        return projectTypeEnum.getName();
+      }
+
+      @Override
+      public ProjectTypeEnum fromString(String s) {
+        return ProjectTypeEnum.valueOf(s.toUpperCase());
+      }
+    });
 
     createButton.setOnAction(actionEvent -> {
       boolean maven;
       boolean gradle;
-      switch(projectType.getValue()){
+      switch (projectType.getValue()) {
         case MAVEN:
           maven = true;
           gradle = false;
@@ -127,9 +139,9 @@ public class NewProjectWindow extends Stage {
           maven = false;
           gradle = false;
       }
-      BaristaProject baristaProject = new BaristaProject(projectNameField.getText(), folderPathField.getText() + "\\" + projectNameField.getText(), maven, gradle);
+      BaristaProject baristaProject = new BaristaProject(projectNameField.getText(), folderPathField.getText() + "\\" + projectNameField.getText(),
+        maven, gradle);
       fileService.createNewProject(baristaProject);
-      persistenceService.setOpenProject(baristaProject);
       close();
     });
 
@@ -137,12 +149,13 @@ public class NewProjectWindow extends Stage {
     VBox.setMargin(createButtonContainer, new Insets(10));
 
     rootFolderSelector = new FolderDropdown(scene.getWidth(), processService, false, false);
-    rootFolderSelector.setFolderClickAction((parentName, parentContainer, target) -> folderPathField.setText("C:\\Users" + parentName + "\\" + target.getText()));
+    rootFolderSelector.setFolderLeftClickAction((parentName, parentContainer, target) -> folderPathField.setText(
+      parentName == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath()));
 
     scrollPane.setContent(rootFolderSelector);
   }
 
-  public void showWindow(){
+  public void showWindow() {
     rootFolderSelector.prepare(null, null);
     setScene(scene);
 

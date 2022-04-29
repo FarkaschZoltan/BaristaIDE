@@ -2,12 +2,12 @@ package com.farkasch.barista.gui.component;
 
 import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.TreeNode;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -18,51 +18,60 @@ import org.springframework.lang.Nullable;
 public class FolderDropdown extends GridPane {
 
   private ProcessService processService;
-  private double buttonWidth; //for maintaining optimal width
-  private double absoluteWidth;
-  private FolderConsumer folderClickAction;
-  private FolderConsumer fileClickAction;
+  private double width; //for maintaining optimal width
+  private FolderConsumer folderLeftClickAction;
+  private FolderConsumer fileLeftClickAction;
+  private List<MenuItem> folderContextMenuItems;
+  private List<MenuItem> fileContextMenuItems;
   private boolean showFiles;
   private boolean withAbsoluteParent;
-  private boolean defaultFolderClick = true;
-  private boolean defaultFileClick = true;
-  private ArrayList<Integer> widthList;
+  private boolean defaultFolderLeftClickAction = true;
+  private boolean defaultFolderRightClickAction = true;
+  private boolean defaultFileLeftClickAction = true;
+  private boolean defaultFileRightClickAction = true;
   private TreeNode<Integer> rootNode;
   private ColumnConstraints columnConstraints;
 
-  public FolderDropdown(double buttonWidth, ProcessService processService, boolean showFiles, boolean withAbsoluteParent) {
-    this.buttonWidth = buttonWidth;
-    this.absoluteWidth = buttonWidth;
+  public FolderDropdown(double width, ProcessService processService, boolean showFiles, boolean withAbsoluteParent) {
+    this.width = width;
     this.processService = processService;
     this.showFiles = showFiles;
     this.withAbsoluteParent = withAbsoluteParent;
 
-    widthList = new ArrayList<>();
     rootNode = new TreeNode<>();
 
     columnConstraints = new ColumnConstraints();
-    columnConstraints.setMinWidth(absoluteWidth);
-
+    columnConstraints.setMinWidth(width);
     getColumnConstraints().add(columnConstraints);
   }
 
-  public void setFolderClickAction(FolderConsumer folderClickAction) {
-    this.folderClickAction = folderClickAction;
-    defaultFolderClick = false;
+  public void setFolderLeftClickAction(FolderConsumer folderLeftClickAction) {
+    this.folderLeftClickAction = folderLeftClickAction;
+    defaultFolderLeftClickAction = false;
   }
 
-  public void setFileClickAction(FolderConsumer fileClickAction) {
-    this.fileClickAction = fileClickAction;
-    defaultFileClick = false;
+  public void setFileLeftClickAction(FolderConsumer fileLeftClickAction) {
+    this.fileLeftClickAction = fileLeftClickAction;
+    defaultFileLeftClickAction = false;
+  }
+
+  public void setFileContextMenuItems(List<MenuItem> fileContextMenuItems){
+    this.fileContextMenuItems = fileContextMenuItems;
+    defaultFileRightClickAction = false;
+  }
+
+  public void setFolderContextMenuItems(List<MenuItem> folderContextMenuItems){
+    this.folderContextMenuItems = folderContextMenuItems;
+    defaultFolderRightClickAction = false;
   }
 
   public void prepare(@Nullable String parentName, @Nullable VBox parentContainer) {
     if (withAbsoluteParent && parentName != null) {
-      Button absoluteParent = new Button();
+      FolderDropDownItem absoluteParent = new FolderDropDownItem();
       VBox absoluteParentContainer = new VBox(absoluteParent);
       String absoluteParentName = parentName.split("\\\\")[parentName.split("\\\\").length - 1];
 
-      absoluteParentContainer.setMinWidth(buttonWidth);
+      absoluteParentContainer.setMinWidth(width);
       absoluteParentContainer.setMaxWidth(Double.MAX_VALUE);
 
       absoluteParent.setText(absoluteParentName);
@@ -70,15 +79,15 @@ public class FolderDropdown extends GridPane {
       absoluteParent.setId("folder");
       absoluteParent.setMaxWidth(Double.MAX_VALUE);
       absoluteParent.setMaxHeight(Double.MAX_VALUE);
-      absoluteParent.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-        if (defaultFolderClick) {
+      absoluteParent.setOnAction(mouseEvent -> {
+        if (defaultFolderLeftClickAction) {
           if (absoluteParentContainer.getChildren().size() > 1) {
             folderClose(absoluteParentContainer, rootNode);
           } else {
             folderExpand(parentName, absoluteParentContainer, rootNode);
           }
         } else {
-          folderClickAction.accept(parentName, parentContainer, absoluteParent);
+          folderLeftClickAction.accept(parentName, parentContainer, absoluteParent);
         }
       });
       addRow(0, absoluteParentContainer);
@@ -89,7 +98,7 @@ public class FolderDropdown extends GridPane {
 
   private void folderExpand(@Nullable String parentName, @Nullable VBox parentContainer, TreeNode parentNode) {;
     List<Pair<String, Boolean>> dirs = processService.getDirsAndFiles(parentName);
-    GridPane folderSelector = null;
+    GridPane folderSelector;
     if (parentContainer == null) {
       folderSelector = this;
     } else {
@@ -102,8 +111,8 @@ public class FolderDropdown extends GridPane {
 
     for (int i = 0; i < dirs.size(); i++) {
       VBox folderContainer = new VBox();
-      folderContainer.setMinWidth(buttonWidth);
-      Button folderButton = new Button(dirs.get(i).getKey());
+      folderContainer.setMinWidth(width);
+      FolderDropDownItem folderButton = new FolderDropDownItem(dirs.get(i).getKey(), parentName);
       Boolean isFile = dirs.get(i).getValue();
       if (isFile) {
         folderButton.setGraphic(new FontIcon("mdi-file"));
@@ -111,26 +120,53 @@ public class FolderDropdown extends GridPane {
         folderButton.setGraphic(new FontIcon("mdi-folder"));
       }
 
-      folderButton.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-        Button target = folderButton;
+      folderButton.setOnAction(mouseEvent -> {
+        FolderDropDownItem target = folderButton;
         VBox parent = (VBox) (target.getParent());
         if (parent.getChildren().size() > 1) {
+          if(!defaultFolderLeftClickAction){
+            folderLeftClickAction.accept(parentName, parentContainer, target);
+          }
           folderClose(parent, node);
         } else if (!isFile.booleanValue()) {
-          if (!defaultFolderClick) {
-            folderClickAction.accept(parentName, parentContainer, target);
+          if (!defaultFolderLeftClickAction) {
+            folderLeftClickAction.accept(parentName, parentContainer, target);
           }
           folderExpand((parentName == null ? System.getProperty("user.home") : parentName) + "\\" + target.getText(),
             folderContainer, node);
         } else {
-          if (defaultFileClick) {
+          if (defaultFileLeftClickAction) {
             //TODO: default file click action
             System.out.println("Click!");
           } else {
-            fileClickAction.accept(parentName, parentContainer, target);
+            fileLeftClickAction.accept(parentName, parentContainer, target);
           }
         }
       });
+
+      if(!defaultFolderRightClickAction && !isFile){
+        ContextMenu contextMenu = new ContextMenu();
+        for(MenuItem item : folderContextMenuItems){
+          MenuItem itemClone = new MenuItem();
+          itemClone.setText(item.getText());
+          itemClone.setOnAction(item.getOnAction());
+          contextMenu.getItems().add(itemClone);
+        }
+        folderButton.setOnContextMenuRequested(click -> {
+          contextMenu.show(folderButton, click.getScreenX(), click.getScreenY());
+        });
+      } else if(!defaultFileRightClickAction && isFile) {
+        ContextMenu contextMenu = new ContextMenu();
+        for(MenuItem item : fileContextMenuItems){
+          MenuItem itemClone = new MenuItem();
+          itemClone.setText(item.getText());
+          itemClone.setOnAction(item.getOnAction());
+          contextMenu.getItems().add(itemClone);
+        }
+        folderButton.setOnContextMenuRequested(click -> {
+          contextMenu.show(folderButton, click.getScreenX(), click.getScreenY());
+        });
+      }
 
       folderButton.setId("folder");
       folderButton.setMaxWidth(Double.MAX_VALUE);
@@ -156,14 +192,36 @@ public class FolderDropdown extends GridPane {
     updateWidth();
   }
 
-  //if add is true, then add to widthList, else remove;
   private void updateWidth(){
-    getColumnConstraints().get(0).setMinWidth(buttonWidth + rootNode.getHeight() * 10);
+    getColumnConstraints().get(0).setMinWidth(width + rootNode.getHeight() * 10);
   }
 
   @FunctionalInterface
   public interface FolderConsumer {
 
-    void accept(String parentName, VBox parentContainer, Button target);
+    void accept(String parentName, VBox parentContainer, FolderDropDownItem target);
+  }
+
+  public class FolderDropDownItem extends Button {
+    private String parentPath;
+
+    public FolderDropDownItem(){
+      super();
+    }
+    public FolderDropDownItem(String text, String parentPath){
+      super(text);
+      this.parentPath = parentPath;
+    }
+    public String getParentPath() {
+      return parentPath;
+    }
+
+    public void setParentPath(String parentPath) {
+      this.parentPath = parentPath;
+    }
+
+    public String getPath(){
+      return parentPath + "\\" + getText();
+    }
   }
 }
