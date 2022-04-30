@@ -2,6 +2,7 @@ package com.farkasch.barista.services;
 
 import com.farkasch.barista.gui.codinginterface.CodingInterface;
 import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
+import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.util.BaristaProject;
 import java.io.File;
@@ -136,6 +137,10 @@ public class PersistenceService {
 
   public void refreshSideMenu() {
     sideMenu.refresh();
+  }
+
+  public void addToProjectDropdown(FolderDropdownItem folder, File file){
+    sideMenu.getProjectFolderDropdown().addFolderDropdownItem(folder, file);
   }
 
   public void openNewFile(File file) {

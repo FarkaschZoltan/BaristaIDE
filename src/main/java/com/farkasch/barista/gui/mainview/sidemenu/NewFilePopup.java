@@ -1,5 +1,6 @@
 package com.farkasch.barista.gui.mainview.sidemenu;
 
+import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.util.FileTemplates;
@@ -49,9 +50,12 @@ public class NewFilePopup extends Stage {
   private Scene scene;
 
   private String fileParentPath;
-  private ObservableList<FileExtensionEnum> fileExtensions = FXCollections.observableArrayList(FileExtensionEnum.JAVA, FileExtensionEnum.TXT, FileExtensionEnum.XML,
+  private FolderDropdownItem creationFolder;
+  private ObservableList<FileExtensionEnum> fileExtensions = FXCollections.observableArrayList(FileExtensionEnum.JAVA, FileExtensionEnum.TXT,
+    FileExtensionEnum.XML,
     FileExtensionEnum.OTHER);
-  private ObservableList<JavaClassTypesEnum> classTypes = FXCollections.observableArrayList(JavaClassTypesEnum.CLASS, JavaClassTypesEnum.ENUM, JavaClassTypesEnum.INTERFACE,
+  private ObservableList<JavaClassTypesEnum> classTypes = FXCollections.observableArrayList(JavaClassTypesEnum.CLASS, JavaClassTypesEnum.ENUM,
+    JavaClassTypesEnum.INTERFACE,
     JavaClassTypesEnum.ANNOTATION, JavaClassTypesEnum.RECORD);
 
   @PostConstruct
@@ -76,7 +80,7 @@ public class NewFilePopup extends Stage {
 
     fileExtensionComboBox.setItems(fileExtensions);
     fileExtensionComboBox.setOnAction(actionEvent -> {
-      if(fileExtensionComboBox.getValue() == FileExtensionEnum.JAVA){
+      if (fileExtensionComboBox.getValue() == FileExtensionEnum.JAVA) {
         classTypeLayout.setVisible(true);
       } else {
         classTypeLayout.setVisible(false);
@@ -84,10 +88,12 @@ public class NewFilePopup extends Stage {
     });
 
     fileNameLabel.setLabelFor(fileNameField);
+    fileExtensionComboBox.setValue(FileExtensionEnum.JAVA);
 
     classTypeLabel.setLabelFor(classTypeComboBox);
     classTypeComboBox.setItems(classTypes);
-    classTypeLayout.setVisible(false);
+    classTypeComboBox.setValue(JavaClassTypesEnum.CLASS);
+    classTypeLayout.setVisible(true);
 
     createButton.setOnAction(click -> {
       try {
@@ -102,8 +108,7 @@ public class NewFilePopup extends Stage {
           extension = fileExtensionComboBox.getValue().getName();
         }
 
-        System.out.println("extension: " + extension);
-        File newFile = fileService.createFile(fileParentPath + "\\" + fileNameField.getText() + extension);
+        File newFile = fileService.createFile(fileParentPath + "\\" + fileNameField.getText() + extension, creationFolder);
 
         if (fileExtensionComboBox.getValue().equals(FileExtensionEnum.JAVA)) {
           FileWriter writer = new FileWriter(newFile);
@@ -142,8 +147,9 @@ public class NewFilePopup extends Stage {
     });
   }
 
-  public void showWindow(String fileParentPath) {
-    this.fileParentPath = fileParentPath;
+  public void showWindow(FolderDropdownItem creationFolder) {
+    this.fileParentPath = creationFolder.getPath();
+    this.creationFolder = creationFolder;
 
     setScene(scene);
     show();

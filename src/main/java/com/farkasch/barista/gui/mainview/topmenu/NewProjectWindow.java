@@ -15,17 +15,13 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import javafx.util.StringConverter;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,8 +145,8 @@ public class NewProjectWindow extends Stage {
     VBox.setMargin(createButtonContainer, new Insets(10));
 
     rootFolderSelector = new FolderDropdown(scene.getWidth(), processService, false, false);
-    rootFolderSelector.setFolderLeftClickAction((parentName, parentContainer, target) -> folderPathField.setText(
-      parentName == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath()));
+    rootFolderSelector.setFolderLeftClickAction(target -> folderPathField.setText(
+      target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath()));
 
     scrollPane.setContent(rootFolderSelector);
   }

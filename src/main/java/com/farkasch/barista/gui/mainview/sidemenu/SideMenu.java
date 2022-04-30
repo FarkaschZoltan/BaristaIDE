@@ -1,17 +1,15 @@
 package com.farkasch.barista.gui.mainview.sidemenu;
 
 import com.farkasch.barista.gui.component.FolderDropdown;
-import com.farkasch.barista.gui.component.FolderDropdown.FolderDropDownItem;
+import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.component.SimpleDropdown;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.BaristaProject;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
@@ -121,14 +119,12 @@ public class SideMenu extends BorderPane {
 
     openedProject = baristaProject;
     projectFolderDropdown = new FolderDropdown(getWidth(), processService, true, true);
-    projectFolderDropdown.setFileLeftClickAction((parentName, parentContainer, target) -> {
-      persistenceService.openNewFile(new File(parentName + "\\" + target.getText()));
+    projectFolderDropdown.setFileLeftClickAction(target -> {
+      persistenceService.openNewFile(new File(target.getParentPath() + "\\" + target.getText()));
     });
 
     MenuItem newFile = new MenuItem("Create New File");
-    newFile.setOnAction(click -> {
-      newFilePopup.showWindow(((FolderDropDownItem) ((MenuItem)(click.getTarget())).getParentPopup().getOwnerNode()).getPath());
-    });
+    newFile.setOnAction(click -> newFilePopup.showWindow((FolderDropdownItem) click.getTarget()));
 
     projectFolderDropdown.setFolderContextMenuItems(Arrays.asList(newFile));
     projectFolderDropdown.prepare(openedProject.getProjectRoot(), null);
@@ -141,4 +137,7 @@ public class SideMenu extends BorderPane {
     openedProject = null;
   }
 
+  public FolderDropdown getProjectFolderDropdown() {
+    return projectFolderDropdown;
+  }
 }

@@ -1,5 +1,6 @@
 package com.farkasch.barista.services;
 
+import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.FileTemplates;
@@ -52,6 +53,12 @@ public class FileService {
     } catch (IOException e) {
       e.printStackTrace();
     }
+    return newFile;
+  }
+
+  public File createFile(String path, FolderDropdownItem creationFolder) throws FileAlreadyExistsException{
+    File newFile = createFile(path);
+    persistenceService.addToProjectDropdown(creationFolder, newFile);
     return newFile;
   }
 

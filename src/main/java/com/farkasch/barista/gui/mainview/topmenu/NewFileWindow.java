@@ -108,8 +108,8 @@ public class NewFileWindow extends Stage {
     VBox.setMargin(createButtonContainer, new Insets(10));
 
     rootFolderSelector = new FolderDropdown(scene.getWidth(), processService, false, false);
-    rootFolderSelector.setFolderLeftClickAction((parentName, parentContainer, target) -> {
-      folderPathField.setText(parentName == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath());
+    rootFolderSelector.setFolderLeftClickAction(target -> {
+      folderPathField.setText(target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath());
     });
 
     scrollPane.setContent(rootFolderSelector);
