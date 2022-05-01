@@ -144,7 +144,7 @@ public class NewProjectWindow extends Stage {
     createButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(createButtonContainer, new Insets(10));
 
-    rootFolderSelector = new FolderDropdown(scene.getWidth(), processService, false, false);
+    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, false, false);
     rootFolderSelector.setFolderLeftClickAction(target -> folderPathField.setText(
       target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath()));
 

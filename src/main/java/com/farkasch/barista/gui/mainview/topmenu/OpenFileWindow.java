@@ -1,6 +1,7 @@
 package com.farkasch.barista.gui.mainview.topmenu;
 
 import com.farkasch.barista.gui.component.FolderDropdown;
+import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.ProcessService;
 import java.io.File;
 import java.nio.file.Paths;
@@ -25,7 +26,7 @@ import org.springframework.stereotype.Component;
 public class OpenFileWindow extends Stage {
 
   @Autowired
-  ProcessService processService;
+  private FileService fileService;
 
   private Label fileName;
   private Label fileNameLabel;
@@ -88,7 +89,7 @@ public class OpenFileWindow extends Stage {
     openButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(openButtonContainer, new Insets(10));
 
-    rootFolderSelector = new FolderDropdown(scene.getWidth(), processService, true, false);
+    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, true, false);
     rootFolderSelector.setFileLeftClickAction(target -> {
       fileName.setText(target.getText());
       filePath = target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath();

@@ -12,14 +12,17 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -325,5 +328,13 @@ public class FileService {
     }
 
     return new ArrayList<>();
+  }
+
+  public List<File> getDirs(@Nullable String folderPath){
+    return Arrays.stream(new File(folderPath == null ? System.getProperty("user.home") : folderPath).listFiles(file -> !file.isFile() && !file.isHidden())).toList();
+  }
+
+  public List<File> getDirsAndFiles(@Nullable String folderPath){
+    return Arrays.stream(new File(folderPath == null ? System.getProperty("user.home") : folderPath).listFiles(file -> !file.isHidden())).toList();
   }
 }

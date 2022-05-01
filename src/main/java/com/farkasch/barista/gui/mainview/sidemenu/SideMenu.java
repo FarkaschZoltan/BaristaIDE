@@ -118,7 +118,7 @@ public class SideMenu extends BorderPane {
     }
 
     openedProject = baristaProject;
-    projectFolderDropdown = new FolderDropdown(getWidth(), processService, true, true);
+    projectFolderDropdown = new FolderDropdown(getWidth(), fileService, true, true);
     projectFolderDropdown.setFileLeftClickAction(target -> {
       persistenceService.openNewFile(new File(target.getParentPath() + "\\" + target.getText()));
     });

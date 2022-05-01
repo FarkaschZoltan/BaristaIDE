@@ -1,5 +1,6 @@
 package com.farkasch.barista.gui.component;
 
+import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.TreeNode;
 import java.io.File;
@@ -22,7 +23,7 @@ import org.springframework.lang.Nullable;
 
 public class FolderDropdown extends GridPane {
 
-  private ProcessService processService;
+  private FileService fileService;
   private double width; //for maintaining optimal width
   private Consumer<FolderDropdownItem> folderLeftClickAction;
   private Consumer<FolderDropdownItem> fileLeftClickAction;
@@ -37,9 +38,9 @@ public class FolderDropdown extends GridPane {
   private TreeNode<FolderDropdownItem> rootNode; //for tracking the depth of the dropdown. Used for width calculations
   private ColumnConstraints columnConstraints;
 
-  public FolderDropdown(double width, ProcessService processService, boolean showFiles, boolean withAbsoluteParent) {
+  public FolderDropdown(double width, FileService fileService, boolean showFiles, boolean withAbsoluteParent) {
     this.width = width;
-    this.processService = processService;
+    this.fileService = fileService;
     this.showFiles = showFiles;
     this.withAbsoluteParent = withAbsoluteParent;
 
@@ -104,7 +105,7 @@ public class FolderDropdown extends GridPane {
   }
 
   private void folderExpand(@Nullable String parentName, @Nullable VBox parentContainer, TreeNode parentNode) {
-    List<Pair<String, Boolean>> dirs = processService.getDirsAndFiles(parentName);
+    List<File> dirs = fileService.getDirsAndFiles(parentName);
     GridPane folderSelector;
     if (parentContainer == null) {
       folderSelector = this;
@@ -119,10 +120,10 @@ public class FolderDropdown extends GridPane {
     for (int i = 0; i < dirs.size(); i++) {
       VBox folderContainer = new VBox();
       folderContainer.setMinWidth(width);
-      FolderDropdownItem folderDropdownItem = new FolderDropdownItem(dirs.get(i).getKey(), parentName, parentContainer, folderContainer,
+      FolderDropdownItem folderDropdownItem = new FolderDropdownItem(dirs.get(i).getName(), parentName, parentContainer, folderContainer,
         folderSelector, node);
       node.setValue(folderDropdownItem);
-      Boolean isFile = dirs.get(i).getValue();
+      Boolean isFile = dirs.get(i).isFile();
       if (isFile) {
         folderDropdownItem.setGraphic(new FontIcon("mdi-file"));
       } else {
