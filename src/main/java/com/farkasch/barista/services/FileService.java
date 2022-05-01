@@ -68,7 +68,7 @@ public class FileService {
 
   public void createNewInJarJson(String fileName, String... jars) {
     try {
-      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\JarConfig.json");
+      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       JSONObject jar = new JSONObject();
@@ -108,7 +108,7 @@ public class FileService {
 
   public void updateNameInJarJson(String oldFileName, String newFileName) {
     try {
-      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\JarConfig.json");
+      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       FileWriter writer = new FileWriter(jarJsonFile);
@@ -139,7 +139,7 @@ public class FileService {
 
   public void updateJarsInJarJson(String fileName, List<String> jars) {
     try {
-      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\JarConfig.json");
+      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       JSONArray array;
@@ -181,7 +181,7 @@ public class FileService {
 
   public List<String> getJarsForFile(String fileName) {
     try {
-      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\JarConfig.json");
+      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       String jsonString = "";

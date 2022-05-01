@@ -124,7 +124,7 @@ public class SideMenu extends BorderPane {
     });
 
     MenuItem newFile = new MenuItem("Create New File");
-    newFile.setOnAction(click -> newFilePopup.showWindow((FolderDropdownItem) click.getTarget()));
+    newFile.setOnAction(click -> newFilePopup.showWindow((FolderDropdownItem) ((MenuItem)click.getTarget()).getParentPopup().getOwnerNode()));
 
     projectFolderDropdown.setFolderContextMenuItems(Arrays.asList(newFile));
     projectFolderDropdown.prepare(openedProject.getProjectRoot(), null);
