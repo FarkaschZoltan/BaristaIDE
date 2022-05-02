@@ -7,6 +7,7 @@ import java.io.File;
 import java.nio.file.Paths;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ public class MainStage extends Stage {
     setTitle("BaristaIDE");
 
     layout = new BorderPane();
-    scene = new Scene(layout, 700, 600);
+    scene = new Scene(layout, Screen.getPrimary().getBounds().getWidth(), Screen.getPrimary().getBounds().getHeight());
 
     layout.setCenter(codingInterfaceContainer);
     layout.setTop(topMenu);
@@ -40,8 +41,9 @@ public class MainStage extends Stage {
       Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
         .toString());
 
-    sideMenu.setPrefWidth(scene.getWidth() * 0.2);
+    sideMenu.setPrefWidth(scene.getWidth() * 0.1);
 
+    setMaximized(true);
     setScene(scene);
   }
 

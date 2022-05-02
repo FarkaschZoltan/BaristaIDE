@@ -37,6 +37,8 @@ public class NewFilePopup extends Stage {
   private PersistenceService persistenceService;
   @Autowired
   private FileTemplates fileTemplates;
+
+  //Design
   private TextField fileNameField;
   private ComboBox<FileExtensionEnum> fileExtensionComboBox;
   private ComboBox<JavaClassTypesEnum> classTypeComboBox;
@@ -49,7 +51,6 @@ public class NewFilePopup extends Stage {
   private HBox buttonLayout;
   private Scene scene;
 
-  private String fileParentPath;
   private FolderDropdownItem creationFolder;
   private ObservableList<FileExtensionEnum> fileExtensions = FXCollections.observableArrayList(FileExtensionEnum.JAVA, FileExtensionEnum.TXT,
     FileExtensionEnum.XML,
@@ -71,12 +72,8 @@ public class NewFilePopup extends Stage {
     buttonLayout = new HBox(createButton);
     windowLayout = new VBox(fieldLayout, classTypeLayout, buttonLayout);
 
-    fileParentPath = "";
-
-    scene = new Scene(windowLayout, 200, 400);
-    scene.getStylesheets().add(
-      Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
-        .toString());
+    scene = new Scene(windowLayout, 400, 200);
+    scene.getStylesheets().add(Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
 
     fileExtensionComboBox.setItems(fileExtensions);
     fileExtensionComboBox.setOnAction(actionEvent -> {
@@ -108,25 +105,25 @@ public class NewFilePopup extends Stage {
           extension = fileExtensionComboBox.getValue().getName();
         }
 
-        File newFile = fileService.createFile(fileParentPath + "\\" + fileNameField.getText() + extension, creationFolder);
+        File newFile = fileService.createFile(creationFolder.getPath() + "\\" + fileNameField.getText() + extension, creationFolder);
 
         if (fileExtensionComboBox.getValue().equals(FileExtensionEnum.JAVA)) {
           FileWriter writer = new FileWriter(newFile);
           switch (classTypeComboBox.getValue()) {
             case ENUM:
-              writer.write(fileTemplates.enumTemplate(fileNameField.getText(), fileParentPath));
+              writer.write(fileTemplates.enumTemplate(fileNameField.getText(), creationFolder.getPath()));
               break;
             case CLASS:
-              writer.write(fileTemplates.classTemplate(fileNameField.getText(), fileParentPath));
+              writer.write(fileTemplates.classTemplate(fileNameField.getText(), creationFolder.getPath()));
               break;
             case RECORD:
-              writer.write(fileTemplates.recordTemplate(fileNameField.getText(), fileParentPath));
+              writer.write(fileTemplates.recordTemplate(fileNameField.getText(), creationFolder.getPath()));
               break;
             case INTERFACE:
-              writer.write(fileTemplates.interfaceTemplate(fileNameField.getText(), fileParentPath));
+              writer.write(fileTemplates.interfaceTemplate(fileNameField.getText(), creationFolder.getPath()));
               break;
             case ANNOTATION:
-              writer.write(fileTemplates.annotationTemplate(fileNameField.getText(), fileParentPath));
+              writer.write(fileTemplates.annotationTemplate(fileNameField.getText(), creationFolder.getPath()));
               break;
             default:
               break;
@@ -136,11 +133,8 @@ public class NewFilePopup extends Stage {
 
         persistenceService.openNewFile(newFile);
         persistenceService.setActiveFile(newFile);
-
         close();
 
-      } catch (FileAlreadyExistsException e) {
-        e.printStackTrace();
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -148,9 +142,7 @@ public class NewFilePopup extends Stage {
   }
 
   public void showWindow(FolderDropdownItem creationFolder) {
-    this.fileParentPath = creationFolder.getPath();
     this.creationFolder = creationFolder;
-
     setScene(scene);
     show();
   }

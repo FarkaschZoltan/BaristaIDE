@@ -60,7 +60,7 @@ public class FileTemplates {
   }
 
   private String createPackage(String classPath) {
-    String packageName = classPath.substring(persistenceService.getOpenProject().getSourceRoot().length());
+    String packageName = classPath.substring(persistenceService.getOpenProject().getSourceRoot().length()+1);
     packageName = packageName.replace("\\", ".");
 
     return packageName.length() == 0 ? "" : "package " + packageName + ";\n\n";

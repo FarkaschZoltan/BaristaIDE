@@ -32,6 +32,8 @@ public class SideMenu extends BorderPane {
   private FileService fileService;
   @Autowired
   private NewFilePopup newFilePopup;
+  @Autowired
+  private NewFolderPopup newFolderPopup;
 
   private HBox topMenu;
   private VBox content;
@@ -126,7 +128,10 @@ public class SideMenu extends BorderPane {
     MenuItem newFile = new MenuItem("Create New File");
     newFile.setOnAction(click -> newFilePopup.showWindow((FolderDropdownItem) ((MenuItem)click.getTarget()).getParentPopup().getOwnerNode()));
 
-    projectFolderDropdown.setFolderContextMenuItems(Arrays.asList(newFile));
+    MenuItem newFolder = new MenuItem("Create New Folder");
+    newFolder.setOnAction(click -> newFolderPopup.showWindow((FolderDropdownItem) ((MenuItem)click.getTarget()).getParentPopup().getOwnerNode()));
+
+    projectFolderDropdown.setFolderContextMenuItems(Arrays.asList(newFile, newFolder));
     projectFolderDropdown.prepare(openedProject.getProjectRoot(), null);
 
     content.getChildren().add(projectFolderDropdown);

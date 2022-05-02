@@ -149,6 +149,10 @@ public class FolderDropdown extends GridPane {
   }
 
   public void addFolderDropdownItem(FolderDropdownItem folder, File file) {
+    if (folder.getItemContainer().getChildren().size() < 2) {
+      folderExpand(folder.getParentPath() == null ? System.getProperty("user.home") : folder.getPath(), folder.getItemContainer(), folder.getNode());
+      return;
+    }
     GridPane childGrid = ((GridPane) (folder.getItemContainer().getChildren().get(1)));
     VBox folderContainer = new VBox();
     folderContainer.setMinWidth(width);
@@ -157,26 +161,34 @@ public class FolderDropdown extends GridPane {
     folderContainer.getChildren().add(newItem);
     newItem.setOnMouseClicked(getFolderDropdownItemMouseClick(newItem, file.isFile(), folder.getNode()));
     newItem.setId("folder");
+    newItem.setMaxWidth(Double.MAX_VALUE);
+    newItem.setMaxHeight(Double.MAX_VALUE);
     if (file.isFile()) {
       newItem.setGraphic(new FontIcon("mdi-file"));
     } else {
       newItem.setGraphic(new FontIcon("mdi-folder"));
     }
-    newItem.setMaxWidth(Double.MAX_VALUE);
-    newItem.setMaxHeight(Double.MAX_VALUE);
 
     int i = 0;
     int newItemIndex = 0;
-    for(Node node : childGrid.getChildren()){
-      if(((FolderDropdownItem)((VBox) node).getChildren().get(0)).getText().compareTo(newItem.getText()) > 0){
-        if(newItemIndex == 0){
+    boolean foundIndex = false;
+    for (Node node : childGrid.getChildren()) {
+      if (((FolderDropdownItem) ((VBox) node).getChildren().get(0)).getText().toLowerCase().compareTo(newItem.getText().toLowerCase()) > 0) {
+        if (!foundIndex) {
           newItemIndex = i;
+          foundIndex = true;
+          System.out.println("here!");
         }
-        GridPane.setRowIndex(node, i+1);
+        GridPane.setRowIndex(node, i + 1);
       }
       i++;
     }
-    childGrid.addRow(newItemIndex, newItem);
+
+    if (!foundIndex) {
+      newItemIndex = childGrid.getRowCount();
+    }
+    childGrid.addRow(newItemIndex, folderContainer);
+
   }
 
   private void folderClose(VBox parent, TreeNode node) {

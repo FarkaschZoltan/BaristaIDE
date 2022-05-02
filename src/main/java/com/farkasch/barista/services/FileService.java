@@ -1,5 +1,6 @@
 package com.farkasch.barista.services;
 
+import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.util.BaristaProject;
@@ -63,6 +64,18 @@ public class FileService {
     File newFile = createFile(path);
     persistenceService.addToProjectDropdown(creationFolder, newFile);
     return newFile;
+  }
+
+  public File createFolder(String path) throws FileAlreadyExistsException {
+    File newFolder = new File(path);
+    newFolder.mkdir();
+    return newFolder;
+  }
+
+  public File createFolder(String path, FolderDropdownItem creationFolder) throws FileAlreadyExistsException {
+    File newFolder = createFolder(path);
+    persistenceService.addToProjectDropdown(creationFolder, newFolder);
+    return newFolder;
   }
 
   public void cleanupJarJson() {
@@ -331,10 +344,18 @@ public class FileService {
   }
 
   public List<File> getDirs(@Nullable String folderPath){
-    return Arrays.stream(new File(folderPath == null ? System.getProperty("user.home") : folderPath).listFiles(file -> !file.isFile() && !file.isHidden())).toList();
+    File f = new File(folderPath == null ? System.getProperty("user.home") : folderPath);
+    if(f.listFiles(file -> !file.isHidden() && file.isDirectory()) != null){
+      return Arrays.stream(f.listFiles(file -> !file.isHidden() && file.isDirectory())).toList();
+    }
+    return new ArrayList<>();
   }
 
   public List<File> getDirsAndFiles(@Nullable String folderPath){
-    return Arrays.stream(new File(folderPath == null ? System.getProperty("user.home") : folderPath).listFiles(file -> !file.isHidden())).toList();
+    File f = new File(folderPath == null ? System.getProperty("user.home") : folderPath);
+    if(f.listFiles(file -> !file.isHidden()) != null){
+      return Arrays.stream(f.listFiles(file -> !file.isHidden())).toList();
+    }
+    return new ArrayList<>();
   }
 }

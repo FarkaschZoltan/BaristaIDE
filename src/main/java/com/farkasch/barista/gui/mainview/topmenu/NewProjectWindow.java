@@ -2,8 +2,6 @@ package com.farkasch.barista.gui.mainview.topmenu;
 
 import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.services.FileService;
-import com.farkasch.barista.services.PersistenceService;
-import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.enums.ProjectTypeEnum;
 import java.nio.file.Paths;
@@ -31,11 +29,7 @@ import org.springframework.stereotype.Component;
 public class NewProjectWindow extends Stage {
 
   @Autowired
-  private ProcessService processService;
-  @Autowired
   private FileService fileService;
-  @Autowired
-  private PersistenceService persistenceService;
 
   //Design
   private TextField projectNameField;
