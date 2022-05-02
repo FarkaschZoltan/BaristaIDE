@@ -1,15 +1,22 @@
 package com.farkasch.barista.services;
 
+import com.farkasch.barista.gui.codinginterface.SwitchMenu;
+import com.farkasch.barista.gui.codinginterface.SwitchMenu.SwitchMenuItem;
 import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.FileTemplates;
+import com.google.common.io.Files;
 import com.sun.jdi.ObjectCollectedException;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.FileAlreadyExistsException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+import javafx.scene.Node;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -357,5 +365,64 @@ public class FileService {
       return Arrays.stream(f.listFiles(file -> !file.isHidden())).toList();
     }
     return new ArrayList<>();
+  }
+
+  private File renameFile(File file, String name){
+    File renamedFile = new File(file.getAbsolutePath().replace(file.getName(), name));
+    file.renameTo(renamedFile);
+
+    SwitchMenu switchMenu = persistenceService.getActiveInterface().getSwitchMenu();
+    for(Node node : switchMenu.getChildren()){
+      SwitchMenuItem switchMenuItem = (SwitchMenuItem) node;
+      if(switchMenuItem.getFile().getAbsolutePath().equals(file.getAbsolutePath())){
+        switchMenuItem.setFile(renamedFile);
+        switchMenuItem.setText(renamedFile.getName());
+      }
+    }
+    return renamedFile;
+  }
+
+  public File renameFile(File file, String name, @Nullable FolderDropdownItem folderDropdownItem) {
+    File renamedFile = renameFile(file, name);
+    if (folderDropdownItem == null) {
+      for (File f : sideMenu.getOpenFiles().getItems()) {
+        if (f.getAbsolutePath().equals(file.getAbsolutePath())) {
+          f = renamedFile;
+          break;
+        }
+      }
+      for (File f : sideMenu.getRecentlyClosed().getItems()) {
+        if (f.getAbsolutePath().equals(file.getAbsolutePath())) {
+          f = renamedFile;
+          break;
+        }
+      }
+      sideMenu.refresh();
+    } else {
+      folderDropdownItem.setText(renamedFile.getName());
+      persistenceService.getOpenProject().getSourceRoot();
+    }
+    return renamedFile;
+  }
+
+  private void renameReferences(File file, String oldReference, String newReference){
+    if(file.isFile() && Files.getFileExtension(file.getAbsolutePath()) == "java"){
+      try{
+        Scanner scanner = new Scanner(file);
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while(scanner.hasNextLine()){
+          line = scanner.nextLine();
+          sb.append(line.replace(oldReference, newReference) + "\n");
+        }
+        saveFile(file, sb.toString());
+      } catch(FileNotFoundException e) {
+        e.printStackTrace();
+      }
+    } else if(file.isDirectory() && file.listFiles() != null){
+      for(File f : file.listFiles()){
+        renameReferences(f, oldReference, newReference);
+      }
+    }
   }
 }

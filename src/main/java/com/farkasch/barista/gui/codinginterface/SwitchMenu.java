@@ -77,7 +77,7 @@ public class SwitchMenu extends HBox {
     return false;
   }
 
-  private class SwitchMenuItem extends HBox {
+  public class SwitchMenuItem extends HBox {
 
     private File file;
     private Button openButton;
@@ -94,6 +94,10 @@ public class SwitchMenu extends HBox {
     public void setContentId(String id) {
       openButton.setId(id);
       closeButton.setId(id);
+    }
+
+    public void setText(String text){
+      openButton.setText(text);
     }
 
     public SwitchMenuItem(File file) {

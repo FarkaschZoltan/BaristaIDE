@@ -21,6 +21,14 @@ public class SimpleDropdown extends GridPane {
   private PersistenceService persistenceService;
   private boolean open;
 
+  public List<File> getItems() {
+    return items;
+  }
+
+  public void setItems(List<File> items) {
+    this.items = items;
+  }
+
   public SimpleDropdown(String dropdownName, List<File> items, PersistenceService persistenceService) {
     this.dropdownName = dropdownName;
     this.items = items;

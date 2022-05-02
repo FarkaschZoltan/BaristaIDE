@@ -37,6 +37,10 @@ public class CodingInterface extends BorderPane {
     this.parent = parent;
   }
 
+  public SwitchMenu getSwitchMenu(){
+    return switchMenu;
+  }
+
   @PostConstruct
   private void init(){
     content = new WebView();

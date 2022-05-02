@@ -46,6 +46,22 @@ public class SideMenu extends BorderPane {
   private FolderDropdown projectFolderDropdown;
   private BaristaProject openedProject;
 
+  public SimpleDropdown getOpenFiles() {
+    return openFiles;
+  }
+
+  public void setOpenFiles(SimpleDropdown openFiles) {
+    this.openFiles = openFiles;
+  }
+
+  public SimpleDropdown getRecentlyClosed() {
+    return recentlyClosed;
+  }
+
+  public void setRecentlyClosed(SimpleDropdown recentlyClosed) {
+    this.recentlyClosed = recentlyClosed;
+  }
+
   @PostConstruct
   private void init() {
 
