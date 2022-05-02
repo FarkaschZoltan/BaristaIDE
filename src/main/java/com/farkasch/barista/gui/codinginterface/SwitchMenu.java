@@ -1,5 +1,6 @@
 package com.farkasch.barista.gui.codinginterface;
 
+import com.farkasch.barista.services.JavaScriptService;
 import com.farkasch.barista.services.PersistenceService;
 import java.io.File;
 import javafx.beans.Observable;

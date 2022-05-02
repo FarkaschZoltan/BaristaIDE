@@ -2,6 +2,7 @@ package com.farkasch.barista.services;
 
 import javafx.concurrent.Worker.State;
 import javafx.scene.web.WebView;
+import netscape.javascript.JSException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,6 +23,11 @@ public class JavaScriptService {
         open(view, script, "highlight()");
       } else {
         view.getEngine().executeScript(script);
+        try{
+          view.getEngine().executeScript("highlight()");
+        } catch(JSException e){
+
+        }
       }
     }
   }
