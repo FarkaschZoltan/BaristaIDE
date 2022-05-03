@@ -48,16 +48,12 @@ public class NewFolderPopup extends Stage {
     folderNameLabel.setLabelFor(folderNameField);
 
     createButton.setOnAction(click -> {
-      try {
-        fileService.createFolder(creationFolder.getPath() + "\\" + folderNameField.getText(), creationFolder);
-        close();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      fileService.createFolder(creationFolder.getPath() + "\\" + folderNameField.getText(), creationFolder);
+      close();
     });
   }
 
-  public void showWindow(FolderDropdownItem creationFolder){
+  public void showWindow(FolderDropdownItem creationFolder) {
     this.creationFolder = creationFolder;
     setScene(scene);
     show();

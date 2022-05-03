@@ -41,6 +41,10 @@ public class CodingInterface extends BorderPane {
     return switchMenu;
   }
 
+  public WebView getContentWebView(){
+    return content;
+  }
+
   @PostConstruct
   private void init(){
     content = new WebView();
@@ -79,7 +83,9 @@ public class CodingInterface extends BorderPane {
       Scanner contentScanner = new Scanner(file);
       String textContent = new String();
       while (contentScanner.hasNextLine()) {
-        textContent = textContent.concat(contentScanner.nextLine() + "\n");
+        String line = contentScanner.nextLine();
+        System.out.println(line);
+        textContent = textContent.concat(line + "\n");
       }
       contentScanner.close();
       javaScriptService.setContent(content, textContent, !interfaceLoaded);

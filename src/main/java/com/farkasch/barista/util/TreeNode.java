@@ -66,23 +66,26 @@ public class TreeNode<V> implements Cloneable {
   }
 
   public void cutBelow() {
-    for (TreeNode child : children) {
-      child.cutBelow();
-    }
+    children.forEach(TreeNode::cutBelow);
     children.clear();
   }
 
   public void doActionTopToBottom(Consumer<V> action) {
     action.accept(value);
-    for (TreeNode child : children) {
-      child.doActionTopToBottom(action);
-    }
+    children.forEach(child -> child.doActionTopToBottom(action));
   }
 
   public void doActionBottomToTop(Consumer<V> action) {
-    for (TreeNode child : children) {
-      child.doActionBottomToTop(action);
-    }
+    children.forEach(child -> child.doActionBottomToTop(action));
     action.accept(value);
+  }
+
+  public boolean removeNode(TreeNode node){
+    if(children.contains(node)){
+      return children.remove(node);
+    } else {
+      children.forEach(child -> child.removeNode(node));
+    }
+    return false;
   }
 }

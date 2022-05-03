@@ -188,7 +188,24 @@ public class FolderDropdown extends GridPane {
       newItemIndex = childGrid.getRowCount();
     }
     childGrid.addRow(newItemIndex, folderContainer);
+  }
 
+  public void removeFolderDropdownItem(FolderDropdownItem folderDropdownItem){
+    GridPane grid = folderDropdownItem.getParentGrid();
+    VBox nodeToRemove = new VBox();
+    boolean removed = false;
+    for(Node node : grid.getChildren()){
+      VBox itemContainer = (VBox) node;
+      if(itemContainer.equals(folderDropdownItem.getItemContainer())){
+        removed = true;
+        nodeToRemove = itemContainer;
+      }
+      if(removed){
+        GridPane.setRowIndex(itemContainer, GridPane.getRowIndex(itemContainer) - 1);
+      }
+    }
+    rootNode.removeNode(folderDropdownItem.getNode());
+    grid.getChildren().remove(nodeToRemove);
   }
 
   private void folderClose(VBox parent, TreeNode node) {

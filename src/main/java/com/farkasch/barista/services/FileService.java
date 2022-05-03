@@ -51,6 +51,7 @@ public class FileService {
       FileOutputStream fos = new FileOutputStream(file, false);
       fos.write(content.getBytes());
       fos.close();
+
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -66,24 +67,36 @@ public class FileService {
     return newFile;
   }
 
-  public File createFile(String path, FolderDropdownItem creationFolder)
-    throws FileAlreadyExistsException {
+  public File createFile(String path, FolderDropdownItem creationFolder) throws FileAlreadyExistsException {
     File newFile = createFile(path);
     persistenceService.addToProjectDropdown(creationFolder, newFile);
     return newFile;
   }
 
-  public File createFolder(String path) throws FileAlreadyExistsException {
+  public File createFolder(String path) {
     File newFolder = new File(path);
     newFolder.mkdir();
     return newFolder;
   }
 
-  public File createFolder(String path, FolderDropdownItem creationFolder)
-    throws FileAlreadyExistsException {
+  public File createFolder(String path, FolderDropdownItem creationFolder) {
     File newFolder = createFolder(path);
     persistenceService.addToProjectDropdown(creationFolder, newFolder);
     return newFolder;
+  }
+
+  public boolean deleteFile(File file, boolean partOfProject){
+    if(file.isFile()){
+      if(!partOfProject) {
+        sideMenu.refresh();
+      }
+      return file.delete();
+    } else {
+      return false;
+    }
+  }
+  public boolean deleteFolder(File folder, @Nullable FolderDropdownItem folderDropdownItem){
+    return false;
   }
 
   public void cleanupJarJson() {
@@ -384,12 +397,11 @@ public class FileService {
     File renamedFile = new File(file.getParent() + "\\" + name);
     System.out.println(renamedFile.getAbsolutePath());
     try {
-      renamedFile.createNewFile();
-      Files.copy(file, renamedFile);
+      Files.move(file, renamedFile);
     } catch (IOException e) {
       e.printStackTrace();
     }
-    if(persistenceService.getActiveInterface() != null){
+    if (persistenceService.getActiveInterface() != null) {
       SwitchMenu switchMenu = persistenceService.getActiveInterface().getSwitchMenu();
       for (Node node : switchMenu.getChildren()) {
         SwitchMenuItem switchMenuItem = (SwitchMenuItem) node;
@@ -420,14 +432,11 @@ public class FileService {
       sideMenu.refresh();
     } else {
       folderDropdownItem.setText(renamedFile.getName());
-      if(persistenceService.getActiveFile() == file){
+      if (persistenceService.getActiveFile().equals(file)) {
         persistenceService.setActiveFile(renamedFile);
       }
       renameReferences(new File(persistenceService.getOpenProject().getSourceRoot()),
         file.getName().split("\\.")[0], name.split("\\.")[0]);
-    }
-    if(!file.delete()){
-      file.deleteOnExit(); //if deletion fails, the unused file will get deleted at program termination.
     }
     return renamedFile;
   }
@@ -448,8 +457,8 @@ public class FileService {
         }
         scanner.close();
         saveFile(file, sb.toString());
-        if(persistenceService.getActiveFile() == file){
-          persistenceService.getActiveInterface().showFile(persistenceService.getActiveFile());
+        if (persistenceService.getActiveFile().equals(file)) {
+          javaScriptService.setContent(persistenceService.getActiveInterface().getContentWebView(), sb.toString(), false);
         }
       } catch (FileNotFoundException e) {
         e.printStackTrace();
