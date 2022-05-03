@@ -15,7 +15,6 @@ public class JavaScriptService {
 
   public void setContent(WebView view, String content, boolean firstOpen) {
     if (!content.equals("")) {
-      System.out.println(content);
       String script = "(function(){"
         + "document.getElementById(\"code-area\").textContent = `" + content + "`;"
         + "})();";

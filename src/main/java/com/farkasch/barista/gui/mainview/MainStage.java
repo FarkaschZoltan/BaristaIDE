@@ -42,6 +42,7 @@ public class MainStage extends Stage {
         .toString());
 
     sideMenu.setPrefWidth(scene.getWidth() * 0.1);
+    sideMenu.setMinWidth(200);
 
     setMaximized(true);
     setScene(scene);

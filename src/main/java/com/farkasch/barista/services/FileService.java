@@ -2,28 +2,22 @@ package com.farkasch.barista.services;
 
 import com.farkasch.barista.gui.codinginterface.SwitchMenu;
 import com.farkasch.barista.gui.codinginterface.SwitchMenu.SwitchMenuItem;
-import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.FileTemplates;
 import com.google.common.io.Files;
-import com.sun.jdi.ObjectCollectedException;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.FileAlreadyExistsException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 import javafx.scene.Node;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -44,6 +38,10 @@ public class FileService {
   @Lazy
   @Autowired
   private PersistenceService persistenceService;
+
+  @Lazy
+  @Autowired
+  private JavaScriptService javaScriptService;
 
   @Autowired
   private FileTemplates fileTemplates;
@@ -68,7 +66,8 @@ public class FileService {
     return newFile;
   }
 
-  public File createFile(String path, FolderDropdownItem creationFolder) throws FileAlreadyExistsException{
+  public File createFile(String path, FolderDropdownItem creationFolder)
+    throws FileAlreadyExistsException {
     File newFile = createFile(path);
     persistenceService.addToProjectDropdown(creationFolder, newFile);
     return newFile;
@@ -80,7 +79,8 @@ public class FileService {
     return newFolder;
   }
 
-  public File createFolder(String path, FolderDropdownItem creationFolder) throws FileAlreadyExistsException {
+  public File createFolder(String path, FolderDropdownItem creationFolder)
+    throws FileAlreadyExistsException {
     File newFolder = createFolder(path);
     persistenceService.addToProjectDropdown(creationFolder, newFolder);
     return newFolder;
@@ -92,7 +92,8 @@ public class FileService {
 
   public void createNewInJarJson(String fileName, String... jars) {
     try {
-      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
+      File jarJsonFile = new File(
+        System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       JSONObject jar = new JSONObject();
@@ -102,6 +103,7 @@ public class FileService {
       while (scanner.hasNextLine()) {
         jsonString = jsonString.concat(scanner.nextLine());
       }
+      scanner.close();
 
       if (jsonString != "") {
         array = ((JSONArray) parser.parse(jsonString));
@@ -132,7 +134,8 @@ public class FileService {
 
   public void updateNameInJarJson(String oldFileName, String newFileName) {
     try {
-      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
+      File jarJsonFile = new File(
+        System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       FileWriter writer = new FileWriter(jarJsonFile);
@@ -141,6 +144,7 @@ public class FileService {
       while (scanner.hasNextLine()) {
         jsonString = jsonString.concat(scanner.nextLine());
       }
+      scanner.close();
       JSONArray array = (JSONArray) parser.parse(jsonString);
 
       for (int i = 0; i < array.size(); i++) {
@@ -163,7 +167,8 @@ public class FileService {
 
   public void updateJarsInJarJson(String fileName, List<String> jars) {
     try {
-      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
+      File jarJsonFile = new File(
+        System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       JSONArray array;
@@ -172,7 +177,7 @@ public class FileService {
       while (scanner.hasNextLine()) {
         jsonString = jsonString.concat(scanner.nextLine());
       }
-
+      scanner.close();
       if (jsonString == "") {
         array = new JSONArray();
       } else {
@@ -205,7 +210,8 @@ public class FileService {
 
   public List<String> getJarsForFile(String fileName) {
     try {
-      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
+      File jarJsonFile = new File(
+        System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       String jsonString = "";
@@ -213,6 +219,7 @@ public class FileService {
       while (scanner.hasNextLine()) {
         jsonString = jsonString.concat(scanner.nextLine());
       }
+      scanner.close();
       JSONArray array = (JSONArray) parser.parse(jsonString);
 
       for (Object j : array) {
@@ -266,7 +273,8 @@ public class FileService {
       File targetFolder = new File(baristaProject.getProjectRoot() + "\\target");
       targetFolder.mkdir();
 
-      File globalProjectConfig = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
+      File globalProjectConfig = new File(System.getProperty("user.home")
+        + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
       Scanner scanner = new Scanner(globalProjectConfig);
       JSONParser parser = new JSONParser();
       JSONObject project = new JSONObject();
@@ -276,6 +284,7 @@ public class FileService {
       while (scanner.hasNextLine()) {
         jsonString = jsonString.concat(scanner.nextLine());
       }
+      scanner.close();
 
       if (jsonString != "") {
         array = ((JSONArray) parser.parse(jsonString));
@@ -318,7 +327,8 @@ public class FileService {
 
   public List<BaristaProject> getProjects() {
     try {
-      File projectConfig = new File( System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
+      File projectConfig = new File(System.getProperty("user.home")
+        + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
       Scanner scanner = new Scanner(projectConfig);
       JSONParser parser = new JSONParser();
       JSONArray array = new JSONArray();
@@ -328,6 +338,7 @@ public class FileService {
       while (scanner.hasNextLine()) {
         jsonString = jsonString.concat(scanner.nextLine());
       }
+      scanner.close();
 
       if (jsonString != "") {
         array = ((JSONArray) parser.parse(jsonString));
@@ -336,8 +347,10 @@ public class FileService {
       for (Object o : array) {
         System.out.println("project found!");
         JSONObject jso = (JSONObject) o;
-        projects.add(new BaristaProject((String) jso.get("projectName"), (String) jso.get("projectRoot"), (boolean) jso.get("maven"),
-          (boolean) jso.get("gradle")));
+        projects.add(
+          new BaristaProject((String) jso.get("projectName"), (String) jso.get("projectRoot"),
+            (boolean) jso.get("maven"),
+            (boolean) jso.get("gradle")));
       }
 
       return projects;
@@ -351,32 +364,39 @@ public class FileService {
     return new ArrayList<>();
   }
 
-  public List<File> getDirs(@Nullable String folderPath){
+  public List<File> getDirs(@Nullable String folderPath) {
     File f = new File(folderPath == null ? System.getProperty("user.home") : folderPath);
-    if(f.listFiles(file -> !file.isHidden() && file.isDirectory()) != null){
+    if (f.listFiles(file -> !file.isHidden() && file.isDirectory()) != null) {
       return Arrays.stream(f.listFiles(file -> !file.isHidden() && file.isDirectory())).toList();
     }
     return new ArrayList<>();
   }
 
-  public List<File> getDirsAndFiles(@Nullable String folderPath){
+  public List<File> getDirsAndFiles(@Nullable String folderPath) {
     File f = new File(folderPath == null ? System.getProperty("user.home") : folderPath);
-    if(f.listFiles(file -> !file.isHidden()) != null){
+    if (f.listFiles(file -> !file.isHidden()) != null) {
       return Arrays.stream(f.listFiles(file -> !file.isHidden())).toList();
     }
     return new ArrayList<>();
   }
 
-  private File renameFile(File file, String name){
-    File renamedFile = new File(file.getAbsolutePath().replace(file.getName(), name));
-    file.renameTo(renamedFile);
-
-    SwitchMenu switchMenu = persistenceService.getActiveInterface().getSwitchMenu();
-    for(Node node : switchMenu.getChildren()){
-      SwitchMenuItem switchMenuItem = (SwitchMenuItem) node;
-      if(switchMenuItem.getFile().getAbsolutePath().equals(file.getAbsolutePath())){
-        switchMenuItem.setFile(renamedFile);
-        switchMenuItem.setText(renamedFile.getName());
+  private File renameFile(File file, String name) {
+    File renamedFile = new File(file.getParent() + "\\" + name);
+    System.out.println(renamedFile.getAbsolutePath());
+    try {
+      renamedFile.createNewFile();
+      Files.copy(file, renamedFile);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    if(persistenceService.getActiveInterface() != null){
+      SwitchMenu switchMenu = persistenceService.getActiveInterface().getSwitchMenu();
+      for (Node node : switchMenu.getChildren()) {
+        SwitchMenuItem switchMenuItem = (SwitchMenuItem) node;
+        if (switchMenuItem.getFile().getAbsolutePath().equals(file.getAbsolutePath())) {
+          switchMenuItem.setFile(renamedFile);
+          switchMenuItem.setText(renamedFile.getName());
+        }
       }
     }
     return renamedFile;
@@ -400,27 +420,42 @@ public class FileService {
       sideMenu.refresh();
     } else {
       folderDropdownItem.setText(renamedFile.getName());
-      persistenceService.getOpenProject().getSourceRoot();
+      if(persistenceService.getActiveFile() == file){
+        persistenceService.setActiveFile(renamedFile);
+      }
+      renameReferences(new File(persistenceService.getOpenProject().getSourceRoot()),
+        file.getName().split("\\.")[0], name.split("\\.")[0]);
+    }
+    if(!file.delete()){
+      file.deleteOnExit(); //if deletion fails, the unused file will get deleted at program termination.
     }
     return renamedFile;
   }
 
-  private void renameReferences(File file, String oldReference, String newReference){
-    if(file.isFile() && Files.getFileExtension(file.getAbsolutePath()) == "java"){
-      try{
+  private void renameReferences(File file, String oldReference, String newReference) {
+    System.out.println(file.getName());
+    System.out.println(file.isFile());
+    System.out.println(Files.getFileExtension(file.getAbsolutePath()));
+    if (file.isFile() && Files.getFileExtension(file.getAbsolutePath()).equals("java")) {
+      try {
         Scanner scanner = new Scanner(file);
         StringBuilder sb = new StringBuilder();
         String line;
-        while(scanner.hasNextLine()){
+        scanner.reset();
+        while (scanner.hasNextLine()) {
           line = scanner.nextLine();
-          sb.append(line.replace(oldReference, newReference) + "\n");
+          sb.append(line.replaceAll("(?<!\\w)" + oldReference + "(?!\\w)", newReference) + "\n");
         }
+        scanner.close();
         saveFile(file, sb.toString());
-      } catch(FileNotFoundException e) {
+        if(persistenceService.getActiveFile() == file){
+          persistenceService.getActiveInterface().showFile(persistenceService.getActiveFile());
+        }
+      } catch (FileNotFoundException e) {
         e.printStackTrace();
       }
-    } else if(file.isDirectory() && file.listFiles() != null){
-      for(File f : file.listFiles()){
+    } else if (file.isDirectory() && file.listFiles() != null) {
+      for (File f : file.listFiles()) {
         renameReferences(f, oldReference, newReference);
       }
     }

@@ -34,6 +34,8 @@ public class SideMenu extends BorderPane {
   private NewFilePopup newFilePopup;
   @Autowired
   private NewFolderPopup newFolderPopup;
+  @Autowired
+  private RenameFilePopup renameFilePopup;
 
   private HBox topMenu;
   private VBox content;
@@ -125,35 +127,41 @@ public class SideMenu extends BorderPane {
       processService.Run(filePath, fileName);
     });
   }
-  public void refresh(){
+
+  public void refresh() {
     openFiles.refresh(persistenceService.getOpenFiles());
     recentlyClosed.refresh(persistenceService.getRecentlyClosed());
   }
 
-  public void openProject(BaristaProject baristaProject){
-    if(content.getChildren().contains(projectFolderDropdown)){
+  public void openProject(BaristaProject baristaProject) {
+    if (content.getChildren().contains(projectFolderDropdown)) {
       closeProject();
     }
 
     openedProject = baristaProject;
     projectFolderDropdown = new FolderDropdown(getWidth(), fileService, true, true);
-    projectFolderDropdown.setFileLeftClickAction(target -> {
-      persistenceService.openNewFile(new File(target.getParentPath() + "\\" + target.getText()));
-    });
+    projectFolderDropdown.setFileLeftClickAction(
+      target -> persistenceService.openNewFile(new File(target.getParentPath() + "\\" + target.getText())));
 
     MenuItem newFile = new MenuItem("Create New File");
-    newFile.setOnAction(click -> newFilePopup.showWindow((FolderDropdownItem) ((MenuItem)click.getTarget()).getParentPopup().getOwnerNode()));
+    newFile.setOnAction(click -> newFilePopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
 
     MenuItem newFolder = new MenuItem("Create New Folder");
-    newFolder.setOnAction(click -> newFolderPopup.showWindow((FolderDropdownItem) ((MenuItem)click.getTarget()).getParentPopup().getOwnerNode()));
+    newFolder.setOnAction(click -> newFolderPopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
 
     projectFolderDropdown.setFolderContextMenuItems(Arrays.asList(newFile, newFolder));
+
+    MenuItem renameFile = new MenuItem("Rename");
+    renameFile.setOnAction(click -> renameFilePopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
+
+    projectFolderDropdown.setFileContextMenuItems(Arrays.asList(renameFile));
+
     projectFolderDropdown.prepare(openedProject.getProjectRoot(), null);
 
     content.getChildren().add(projectFolderDropdown);
   }
 
-  public void closeProject(){
+  public void closeProject() {
     content.getChildren().remove(projectFolderDropdown);
     openedProject = null;
   }

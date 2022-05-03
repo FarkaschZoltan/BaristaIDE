@@ -123,6 +123,7 @@ public class PersistenceService {
         while (scanner.hasNextLine()) {
           fileContent = fileContent.concat(scanner.nextLine());
         }
+        scanner.close();
         if (fileContent.replaceAll("\\s", "").contains(mainString)) {
           newMainFiles.add(f);
           fileService.createNewInJarJson(f.getAbsolutePath(), null);

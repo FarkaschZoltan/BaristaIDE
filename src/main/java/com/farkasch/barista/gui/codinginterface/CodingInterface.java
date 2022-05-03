@@ -81,6 +81,7 @@ public class CodingInterface extends BorderPane {
       while (contentScanner.hasNextLine()) {
         textContent = textContent.concat(contentScanner.nextLine() + "\n");
       }
+      contentScanner.close();
       javaScriptService.setContent(content, textContent, !interfaceLoaded);
       persistenceService.setActiveInterface(this);
       interfaceLoaded = true;

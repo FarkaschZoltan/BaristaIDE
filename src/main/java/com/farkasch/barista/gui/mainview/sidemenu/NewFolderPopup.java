@@ -49,7 +49,7 @@ public class NewFolderPopup extends Stage {
 
     createButton.setOnAction(click -> {
       try {
-        File newFolder = fileService.createFolder(creationFolder.getPath() + "\\" + folderNameField.getText(), creationFolder);
+        fileService.createFolder(creationFolder.getPath() + "\\" + folderNameField.getText(), creationFolder);
         close();
       } catch (IOException e) {
         e.printStackTrace();

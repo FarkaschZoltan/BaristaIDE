@@ -133,6 +133,7 @@ public class SwitchMenu extends HBox {
         int index = menu.getChildren().indexOf(this);
         if (menu.getChildren().size() == 1) {
           menu.removeFile(index);
+          persistenceService.setActiveFile(null);
           parent.close();
         } else if (index > 0) {
           parent.showFile(
