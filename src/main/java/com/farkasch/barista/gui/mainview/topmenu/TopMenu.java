@@ -54,8 +54,8 @@ public class TopMenu extends MenuBar {
     MenuItem newFile = new MenuItem("New File");
     newFile.setOnAction(actionEvent -> {
       newFileWindow.showWindow(file -> {
-        persistenceService.addOpenFile(file);
         mainStage.openNewFile(file);
+        persistenceService.addOpenFile(file);
       });
     });
 
@@ -67,8 +67,8 @@ public class TopMenu extends MenuBar {
     MenuItem openFile = new MenuItem("Open File");
     openFile.setOnAction(actionEvent -> {
       openFileWindow.showWindow(file -> {
-        persistenceService.addOpenFile(file);
         mainStage.openNewFile(file);
+        persistenceService.addOpenFile(file);
       });
     });
 

@@ -1,14 +1,18 @@
 package com.farkasch.barista.gui.mainview.sidemenu;
 
+import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.util.FileTemplates;
+import com.farkasch.barista.util.Result;
 import com.farkasch.barista.util.enums.FileExtensionEnum;
 import com.farkasch.barista.util.enums.JavaClassTypesEnum;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -37,6 +41,8 @@ public class NewFilePopup extends Stage {
   private PersistenceService persistenceService;
   @Autowired
   private FileTemplates fileTemplates;
+  @Autowired
+  private ErrorPopup errorPopup;
 
   //Design
   private TextField fileNameField;
@@ -137,6 +143,13 @@ public class NewFilePopup extends Stage {
         close();
 
       } catch (IOException e) {
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        e.printStackTrace(printWriter);
+        File errorFile = fileService.createErrorLog(stringWriter.toString());
+        errorPopup.showWindow(Result.ERROR("Error while creating new file!", errorFile));
+
+        printWriter.close();
         e.printStackTrace();
       }
     });

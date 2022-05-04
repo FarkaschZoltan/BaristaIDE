@@ -16,7 +16,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javax.annotation.PostConstruct;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ErrorPopup extends Stage {
 
   private Text message;
@@ -50,7 +52,7 @@ public class ErrorPopup extends Stage {
     buttonLayout.addColumn(1, acceptButton);
     buttonLayout.setHgap(5);
     buttonLayout.setAlignment(Pos.BOTTOM_RIGHT);
-    BorderPane.setMargin(buttonLayout, new Insets(0, 0, 10, 10));
+    BorderPane.setMargin(buttonLayout, new Insets(10));
 
     windowLayout.setMinHeight(scene.getHeight());
     windowLayout.setMinWidth(scene.getWidth());
@@ -79,5 +81,7 @@ public class ErrorPopup extends Stage {
         errorLogButton.setVisible(false);
       }
     }
+    setScene(scene);
+    show();
   }
 }

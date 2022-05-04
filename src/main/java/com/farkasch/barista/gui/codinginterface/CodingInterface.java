@@ -1,11 +1,17 @@
 package com.farkasch.barista.gui.codinginterface;
 
+import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.JavaScriptService;
 import com.farkasch.barista.services.PersistenceService;
+import com.farkasch.barista.util.Result;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebView;
 import javax.annotation.PostConstruct;
@@ -27,6 +33,8 @@ public class CodingInterface extends BorderPane {
   private FileService fileService;
   @Autowired
   private ApplicationContext applicationContext;
+  @Autowired
+  private ErrorPopup errorPopup;
 
   private CodingInterfaceContainer parent;
   private SwitchMenu switchMenu;
@@ -92,9 +100,14 @@ public class CodingInterface extends BorderPane {
       persistenceService.setActiveInterface(this);
       interfaceLoaded = true;
     } catch (FileNotFoundException e) {
-      //TODO error popup!
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = fileService.createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while opening file!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
-      System.out.println("Error while opening file!");
     }
   }
 

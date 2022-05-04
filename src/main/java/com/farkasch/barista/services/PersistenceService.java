@@ -2,11 +2,15 @@ package com.farkasch.barista.services;
 
 import com.farkasch.barista.gui.codinginterface.CodingInterface;
 import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
+import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.util.BaristaProject;
+import com.farkasch.barista.util.Result;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -26,6 +30,9 @@ public class PersistenceService {
   @Lazy
   @Autowired
   private CodingInterfaceContainer codingInterfaceContainer;
+  @Lazy
+  @Autowired
+  private ErrorPopup errorPopup;
 
   private File activeFile;
   private List<File> openFiles;
@@ -129,6 +136,13 @@ public class PersistenceService {
           fileService.createNewInJarJson(f.getAbsolutePath(), null);
         }
       } catch (FileNotFoundException e) {
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        e.printStackTrace(printWriter);
+        File errorFile = fileService.createErrorLog(stringWriter.toString());
+        errorPopup.showWindow(Result.ERROR("Error while updating main files!", errorFile));
+
+        printWriter.close();
         e.printStackTrace();
       }
     }

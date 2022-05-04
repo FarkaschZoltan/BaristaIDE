@@ -1,5 +1,7 @@
 package com.farkasch.barista.services;
 
+import com.farkasch.barista.gui.component.ErrorPopup;
+import com.farkasch.barista.util.Result;
 import com.farkasch.barista.util.enums.JavacEnum;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -7,6 +9,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +24,9 @@ public class ProcessService {
   @Lazy
   @Autowired
   private FileService fileService;
+  @Lazy
+  @Autowired
+  private ErrorPopup errorPopup;
 
   public File Compile(String filePath, String fileName) {
     HashMap<JavacEnum, Object> args = new HashMap<>();
@@ -44,6 +51,13 @@ public class ProcessService {
         System.out.println(line);
       }
     } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = fileService.createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while trying to compile!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
 
@@ -56,6 +70,13 @@ public class ProcessService {
       String[] command = new String[]{"cmd.exe", "/c", "start cmd.exe /k \"java @" + argFile.getName() + " " + fileName + "\""};
       Process process = Runtime.getRuntime().exec(command, null, new File(filePath));
     } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = fileService.createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while trying to run!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
   }
@@ -89,6 +110,13 @@ public class ProcessService {
       }
       writer.close();
     } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = fileService.createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while creating argument file!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
     return file;
@@ -105,6 +133,13 @@ public class ProcessService {
       }
       writer.close();
     } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = fileService.createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while creating source file!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
     return file;

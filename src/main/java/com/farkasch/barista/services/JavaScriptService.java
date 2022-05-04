@@ -25,7 +25,7 @@ public class JavaScriptService {
         try{
           view.getEngine().executeScript("highlight()");
         } catch(JSException e){
-
+          e.printStackTrace();
         }
       }
     }

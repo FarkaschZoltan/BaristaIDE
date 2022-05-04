@@ -80,9 +80,7 @@ public class SimpleDropdown extends GridPane {
     this.items = items;
     if(!open){
       dropdownButton.setGraphic(new FontIcon("mdi-chevron-right"));
-      System.out.println("refresh: " + open);
     } else {
-      System.out.println("refresh: " + open);
       dropdownButton.setGraphic(new FontIcon("mdi-chevron-down"));
       getChildren().remove(1, getChildren().size());
       items.stream().forEach(file -> {

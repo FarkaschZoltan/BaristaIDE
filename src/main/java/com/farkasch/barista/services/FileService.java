@@ -2,20 +2,26 @@ package com.farkasch.barista.services;
 
 import com.farkasch.barista.gui.codinginterface.SwitchMenu;
 import com.farkasch.barista.gui.codinginterface.SwitchMenu.SwitchMenuItem;
+import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.FileTemplates;
+import com.farkasch.barista.util.Result;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.FileAlreadyExistsException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import javafx.scene.Node;
@@ -34,15 +40,15 @@ public class FileService {
   @Lazy
   @Autowired
   private SideMenu sideMenu;
-
+  @Lazy
+  @Autowired
+  private ErrorPopup errorPopup;
   @Lazy
   @Autowired
   private PersistenceService persistenceService;
-
   @Lazy
   @Autowired
   private JavaScriptService javaScriptService;
-
   @Autowired
   private FileTemplates fileTemplates;
 
@@ -53,6 +59,13 @@ public class FileService {
       fos.close();
 
     } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while saving file!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
   }
@@ -62,6 +75,13 @@ public class FileService {
     try {
       newFile.createNewFile();
     } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while creating file!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
     return newFile;
@@ -137,9 +157,14 @@ public class FileService {
       FileWriter writer = new FileWriter(jarJsonFile);
       writer.write(jsonString);
       writer.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ParseException e) {
+    } catch (IOException | ParseException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while modifying jar configurations!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
 
@@ -171,9 +196,14 @@ public class FileService {
 
       jsonString = JSONArray.toJSONString(array);
       writer.write(jsonString);
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ParseException e) {
+    } catch (IOException | ParseException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while modifying jar configurations!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
   }
@@ -214,9 +244,14 @@ public class FileService {
       FileWriter writer = new FileWriter(jarJsonFile);
       writer.write(jsonString);
       writer.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ParseException e) {
+    } catch (IOException | ParseException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while modifying jar configurations!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
   }
@@ -241,9 +276,14 @@ public class FileService {
         }
       }
 
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ParseException e) {
+    } catch (IOException | ParseException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while accessing jar configurations!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
     return new ArrayList<String>();
@@ -326,9 +366,14 @@ public class FileService {
 
       loadProject(baristaProject);
 
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ParseException e) {
+    } catch (IOException | ParseException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while creating project!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
   }
@@ -368,9 +413,14 @@ public class FileService {
 
       return projects;
 
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ParseException e) {
+    } catch (IOException | ParseException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while accessing projects!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
 
@@ -399,6 +449,13 @@ public class FileService {
     try {
       Files.move(file, renamedFile);
     } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while renaming file!", errorFile));
+
+      printWriter.close();
       e.printStackTrace();
     }
     if (persistenceService.getActiveInterface() != null) {
@@ -461,6 +518,13 @@ public class FileService {
           javaScriptService.setContent(persistenceService.getActiveInterface().getContentWebView(), sb.toString(), false);
         }
       } catch (FileNotFoundException e) {
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        e.printStackTrace(printWriter);
+        File errorFile = createErrorLog(stringWriter.toString());
+        errorPopup.showWindow(Result.ERROR("Error while renaming file references!", errorFile));
+
+        printWriter.close();
         e.printStackTrace();
       }
     } else if (file.isDirectory() && file.listFiles() != null) {
@@ -468,5 +532,20 @@ public class FileService {
         renameReferences(f, oldReference, newReference);
       }
     }
+  }
+
+  public File createErrorLog(String content){
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+    String logName = "error_log_" + format.format(new Date(System.currentTimeMillis())) + ".txt";
+    File logFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\logs\\" + logName);
+    try {
+      logFile.createNewFile();
+      FileOutputStream fos = new FileOutputStream(logFile);
+      fos.write(content.getBytes());
+      fos.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return logFile;
   }
 }
