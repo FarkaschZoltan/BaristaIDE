@@ -1,5 +1,6 @@
 package com.farkasch.barista.gui.component;
 
+import com.farkasch.barista.util.Result;
 import java.nio.file.Paths;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -21,16 +22,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class WarningPopup extends Stage {
 
-  protected Text message;
-  protected Button acceptButton;
-  protected Button cancelButton;
-  protected BorderPane windowLayout;
-  protected HBox textLayout;
-  protected GridPane buttonLayout;
-
-  protected Scene scene;
-  protected EventHandler<ActionEvent> acceptButtonClick;
-  protected EventHandler<ActionEvent> cancelButtonClick;
+  private  Text message;
+  private  Button acceptButton;
+  private  Button cancelButton;
+  private  BorderPane windowLayout;
+  private  HBox textLayout;
+  private  GridPane buttonLayout;
+  private  Scene scene;
+  private  EventHandler<ActionEvent> acceptButtonClick;
+  private  EventHandler<ActionEvent> cancelButtonClick;
 
   @PostConstruct
   private void init(){
@@ -52,14 +52,15 @@ public class WarningPopup extends Stage {
     buttonLayout.addColumn(0, cancelButton);
     buttonLayout.addColumn(1, acceptButton);
     buttonLayout.setHgap(10);
+    buttonLayout.setAlignment(Pos.BOTTOM_CENTER);
     BorderPane.setMargin(buttonLayout, new Insets(0, 0, 10, 0));
 
     windowLayout.setMinHeight(scene.getHeight());
     windowLayout.setMinWidth(scene.getWidth());
     windowLayout.setMaxWidth(Double.MAX_VALUE);
     windowLayout.setMaxHeight(Double.MAX_VALUE);
+
     textLayout.setAlignment(Pos.CENTER);
-    buttonLayout.setAlignment(Pos.BOTTOM_CENTER);
 
     acceptButton.setOnAction(click -> {
       if(acceptButtonClick != null){
@@ -79,7 +80,20 @@ public class WarningPopup extends Stage {
     this.message.setText(message);
     this.acceptButtonClick = acceptButtonClick;
     this.cancelButtonClick = cancelButtonClick;
+
+    cancelButton.setVisible(true);
+    buttonLayout.setAlignment(Pos.CENTER);
+
     setTitle(title);
+    setScene(scene);
+    show();
+  }
+
+  public void showWindow(Result result){
+    cancelButton.setVisible(false);
+    buttonLayout.setAlignment(Pos.CENTER_RIGHT);
+    message.setText(result.getMessage());
+
     setScene(scene);
     show();
   }

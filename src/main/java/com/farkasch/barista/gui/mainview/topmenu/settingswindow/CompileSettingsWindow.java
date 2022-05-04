@@ -29,7 +29,6 @@ public class CompileSettingsWindow extends AbstractSettingsWindow {
 
   @Autowired
   private PersistenceService persistenceService;
-
   @Autowired
   private FileService fileService;
 
