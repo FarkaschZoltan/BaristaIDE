@@ -3,12 +3,14 @@ package com.farkasch.barista.gui.mainview.sidemenu;
 import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.component.SimpleDropdown;
+import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.BaristaProject;
 import java.io.File;
 import java.util.Arrays;
+import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
@@ -36,6 +38,8 @@ public class SideMenu extends BorderPane {
   private NewFolderPopup newFolderPopup;
   @Autowired
   private RenameFilePopup renameFilePopup;
+  @Autowired
+  private WarningPopup warningPopup;
 
   private HBox topMenu;
   private VBox content;
@@ -149,7 +153,11 @@ public class SideMenu extends BorderPane {
     MenuItem newFolder = new MenuItem("Create New Folder");
     newFolder.setOnAction(click -> newFolderPopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
 
-    projectFolderDropdown.setFolderContextMenuItems(Arrays.asList(newFile, newFolder));
+    MenuItem renameFolder = new MenuItem("Rename");
+
+    MenuItem deleteFolder = new MenuItem("Delete");
+
+    projectFolderDropdown.setFolderContextMenuItems(Arrays.asList(renameFolder, newFile, newFolder, deleteFolder));
 
     MenuItem renameFile = new MenuItem("Rename");
     renameFile.setOnAction(click -> renameFilePopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
@@ -157,8 +165,11 @@ public class SideMenu extends BorderPane {
     MenuItem deleteFile = new MenuItem("Delete");
     deleteFile.setOnAction(click -> {
       FolderDropdownItem folderDropdownItem = (FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode();
-      fileService.deleteFile(new File(folderDropdownItem.getPath()), true);
-      projectFolderDropdown.removeFolderDropdownItem(folderDropdownItem);
+      warningPopup.showWindow("Delete File", "Are you sure you want to delete this file?",
+        acceptClick -> {
+          fileService.deleteFile(new File(folderDropdownItem.getPath()), true);
+          projectFolderDropdown.removeFolderDropdownItem(folderDropdownItem);
+        }, null);
     });
     projectFolderDropdown.setFileContextMenuItems(Arrays.asList(renameFile, deleteFile));
 

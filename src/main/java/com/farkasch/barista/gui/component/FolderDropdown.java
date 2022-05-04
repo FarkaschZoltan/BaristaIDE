@@ -196,12 +196,12 @@ public class FolderDropdown extends GridPane {
     boolean removed = false;
     for(Node node : grid.getChildren()){
       VBox itemContainer = (VBox) node;
+      if(removed){
+        GridPane.setRowIndex(itemContainer, GridPane.getRowIndex(itemContainer) - 1);
+      }
       if(itemContainer.equals(folderDropdownItem.getItemContainer())){
         removed = true;
         nodeToRemove = itemContainer;
-      }
-      if(removed){
-        GridPane.setRowIndex(itemContainer, GridPane.getRowIndex(itemContainer) - 1);
       }
     }
     rootNode.removeNode(folderDropdownItem.getNode());

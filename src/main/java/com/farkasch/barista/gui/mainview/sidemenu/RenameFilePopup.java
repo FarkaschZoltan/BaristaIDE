@@ -34,6 +34,7 @@ public class RenameFilePopup extends Stage {
 
   @PostConstruct
   private void init() {
+    setTitle("Rename File");
     newFileNameField = new TextField();
     newFileNameLabel = new Label("File name: ");
     applyButton = new Button("Apply");

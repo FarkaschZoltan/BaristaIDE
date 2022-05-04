@@ -35,6 +35,7 @@ public class NewFolderPopup extends Stage {
 
   @PostConstruct
   private void init() {
+    setTitle("Create New Folder");
     folderNameField = new TextField();
     folderNameLabel = new Label("Folder Name: ");
     createButton = new Button("Create");

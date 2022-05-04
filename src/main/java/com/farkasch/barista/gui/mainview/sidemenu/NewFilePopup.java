@@ -61,11 +61,12 @@ public class NewFilePopup extends Stage {
 
   @PostConstruct
   private void init() {
+    setTitle("Create New File");
     fileNameField = new TextField();
     fileExtensionComboBox = new ComboBox<>();
     classTypeComboBox = new ComboBox<>();
     fileNameLabel = new Label("File Name: ");
-    classTypeLabel = new Label("Class preset: ");
+    classTypeLabel = new Label("Class Preset: ");
     createButton = new Button("Create");
     fieldLayout = new HBox(fileNameLabel, fileNameField, fileExtensionComboBox);
     classTypeLayout = new HBox(classTypeLabel, classTypeComboBox);
