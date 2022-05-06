@@ -1,18 +1,39 @@
 package com.farkasch.barista.util;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 public class BaristaProject {
+
   private String projectName;
   private String projectRoot;
   private String sourceRoot;
+  private String targetFolder;
+  private File mainFile;
+  private ArrayList<String> jars;
+  private ArrayList<String> sourceFiles;
   private boolean maven;
   private boolean gradle;
 
-  public BaristaProject() {}
+  public BaristaProject() {
+  }
 
-  public BaristaProject(String projectName, String projectRoot, boolean maven, boolean gradle){
+  public BaristaProject(String projectName, String projectRoot) {
+    this.projectName = projectName;
+    this.projectRoot = projectRoot;
+  }
+
+  public BaristaProject(String projectName, String projectRoot, boolean maven, boolean gradle) {
     this.projectName = projectName;
     this.projectRoot = projectRoot;
     this.sourceRoot = projectRoot + "\\src\\main\\java";
+    this.targetFolder = projectRoot + "\\target";
+    this.jars = new ArrayList<>();
+    this.sourceFiles = new ArrayList<>();
     this.maven = maven;
     this.gradle = gradle;
   }
@@ -56,4 +77,76 @@ public class BaristaProject {
   public void setSourceRoot(String sourceRoot) {
     this.sourceRoot = sourceRoot;
   }
+
+  public String getTargetFolder() {
+    return targetFolder;
+  }
+
+  public void setTargetFolder(String targetFolder) {
+    this.targetFolder = targetFolder;
+  }
+
+  public ArrayList<String> getJars() {
+    return jars;
+  }
+
+  public void setJars(ArrayList<String> jars) {
+    this.jars = jars;
+  }
+
+  public ArrayList<String> getSourceFiles() {
+    return sourceFiles;
+  }
+
+  public void setSourceFiles(ArrayList<String> sourceFiles) {
+    this.sourceFiles = sourceFiles;
+  }
+
+  public void addSourceFile(File sourceFile) {
+    sourceFiles.add(sourceFile.getAbsolutePath());
+  }
+
+  public void removeSourceFile(File sourceFile) {
+    sourceFiles.remove(sourceFile.getAbsolutePath());
+  }
+
+  public File getMainFile() {
+    return mainFile;
+  }
+
+  public void setMainFile(File mainFile) {
+    this.mainFile = mainFile;
+  }
+
+  public String toJsonString() {
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("projectName", projectName);
+    jsonObject.put("projectRoot", projectRoot);
+    jsonObject.put("sourceRoot", sourceRoot);
+    jsonObject.put("mainFile", mainFile.getAbsolutePath());
+    jsonObject.put("targetFolder", targetFolder);
+    jsonObject.put("jars", jars);
+    jsonObject.put("sourceFiles", sourceFiles);
+    jsonObject.put("maven", maven);
+    jsonObject.put("gradle", gradle);
+
+    return jsonObject.toJSONString();
+  }
+
+  public void fromJsonString(String jsonString) throws ParseException {
+    JSONParser parser = new JSONParser();
+    JSONObject jsonObject = (JSONObject) parser.parse(jsonString);
+
+    projectName = (String) jsonObject.get("projectName");
+    projectRoot = (String) jsonObject.get("projectRoot");
+    sourceRoot = (String) jsonObject.get("sourceRoot");
+    targetFolder = (String) jsonObject.get("targetFolder");
+    jars = (ArrayList<String>) jsonObject.get("jars");
+    sourceFiles = (ArrayList<String>) jsonObject.get("sourceFiles");
+    mainFile = new File((String) jsonObject.get("mainFile"));
+    maven = (boolean) jsonObject.get("maven");
+    gradle = (boolean) jsonObject.get("gradle");
+
+  }
+
 }

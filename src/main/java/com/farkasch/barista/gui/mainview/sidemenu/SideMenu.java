@@ -10,7 +10,8 @@ import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.BaristaProject;
 import java.io.File;
 import java.util.Arrays;
-import javafx.event.ActionEvent;
+import java.util.concurrent.Callable;
+import java.util.concurrent.RunnableFuture;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
@@ -112,23 +113,39 @@ public class SideMenu extends BorderPane {
   private void initCompileButton() {
     compileButton = new Button("Compile");
     compileButton.setGraphic(new FontIcon("mdi-wrench"));
+    Runnable compileRunnable = () -> {
+      if (persistenceService.getOpenProject() == null) {
+        File f = persistenceService.getMainFiles().get(0);
+        String filePath = f.getParentFile().getPath();
+        String fileName = f.getName();
+        //TODO: main file selector
+        processService.CompileFile(filePath, fileName);
+      } else {
+        processService.CompileProject(persistenceService.getOpenProject());
+      }
+    };
     compileButton.setOnAction(click -> {
-      File f = persistenceService.getMainFiles().get(0);
-      String filePath = f.getParentFile().getPath();
-      String fileName = f.getName();
-      //TODO: main file selector
-      processService.Compile(filePath, fileName);
+      Thread compileThread = new Thread(compileRunnable);
+      compileThread.start();
     });
   }
 
   private void initRunButton() {
     runButton = new Button("Run");
     runButton.setGraphic(new FontIcon("mdi-play"));
+    Runnable runRunnable = () -> {
+      if (persistenceService.getOpenProject() == null) {
+        File f = persistenceService.getMainFiles().get(0);
+        String filePath = f.getParentFile().getPath();
+        String fileName = f.getName();
+        processService.RunFile(filePath, fileName);
+      } else {
+        processService.RunProject(persistenceService.getOpenProject());
+      }
+    };
     runButton.setOnAction(click -> {
-      File f = persistenceService.getMainFiles().get(0);
-      String filePath = f.getParentFile().getPath();
-      String fileName = f.getName();
-      processService.Run(filePath, fileName);
+      Thread runThread = new Thread(runRunnable);
+      runThread.start();
     });
   }
 
@@ -170,6 +187,7 @@ public class SideMenu extends BorderPane {
           fileService.deleteFile(new File(folderDropdownItem.getPath()), true);
           projectFolderDropdown.removeFolderDropdownItem(folderDropdownItem);
         }, null);
+
     });
     projectFolderDropdown.setFileContextMenuItems(Arrays.asList(renameFile, deleteFile));
 

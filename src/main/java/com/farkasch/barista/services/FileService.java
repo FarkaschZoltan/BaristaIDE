@@ -16,6 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -90,6 +91,10 @@ public class FileService {
   public File createFile(String path, FolderDropdownItem creationFolder) throws FileAlreadyExistsException {
     File newFile = createFile(path);
     persistenceService.addToProjectDropdown(creationFolder, newFile);
+    if (Files.getFileExtension(newFile.getAbsolutePath()).equals("java")) {
+      persistenceService.getOpenProject().addSourceFile(newFile);
+      saveProject();
+    }
     return newFile;
   }
 
@@ -102,20 +107,25 @@ public class FileService {
   public File createFolder(String path, FolderDropdownItem creationFolder) {
     File newFolder = createFolder(path);
     persistenceService.addToProjectDropdown(creationFolder, newFolder);
+    saveProject();
     return newFolder;
   }
 
-  public boolean deleteFile(File file, boolean partOfProject){
-    if(file.isFile()){
-      if(!partOfProject) {
+  public boolean deleteFile(File file, boolean partOfProject) {
+    if (file.isFile()) {
+      if (!partOfProject) {
         sideMenu.refresh();
+      } else {
+        persistenceService.getOpenProject().removeSourceFile(file);
+        saveProject();
       }
       return file.delete();
     } else {
       return false;
     }
   }
-  public boolean deleteFolder(File folder, @Nullable FolderDropdownItem folderDropdownItem){
+
+  public boolean deleteFolder(File folder, @Nullable FolderDropdownItem folderDropdownItem) {
     return false;
   }
 
@@ -289,7 +299,7 @@ public class FileService {
     return new ArrayList<String>();
   }
 
-  public void createNewProject(BaristaProject baristaProject) {
+  public Result createNewProject(BaristaProject baristaProject) {
     try {
       //creating root folder;
       File projectRoot = new File(baristaProject.getProjectRoot());
@@ -298,10 +308,6 @@ public class FileService {
       //creating .barista folder
       File baristaFolder = new File(baristaProject.getProjectRoot() + "\\.barista");
       baristaFolder.mkdir();
-
-      //creating ProjectConfig.json inside .barista
-      File projectConfig = new File(baristaFolder.getAbsolutePath() + "\\ProjectConfig.json");
-      projectConfig.createNewFile();
 
       //creating src folder
       File srcFolder = new File(baristaProject.getProjectRoot() + "\\src");
@@ -321,13 +327,21 @@ public class FileService {
       FileWriter writer = new FileWriter(mainFile);
       writer.write(fileTemplates.mainTemplate());
       writer.close();
+      baristaProject.addSourceFile(mainFile);
+      baristaProject.setMainFile(mainFile);
 
       //creating target folder
       File targetFolder = new File(baristaProject.getProjectRoot() + "\\target");
       targetFolder.mkdir();
 
-      File globalProjectConfig = new File(System.getProperty("user.home")
-        + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
+      //creating ProjectConfig.json inside .barista
+      File projectConfig = new File(baristaFolder.getAbsolutePath() + "\\ProjectConfig.json");
+      projectConfig.createNewFile();
+      writer = new FileWriter(projectConfig);
+      writer.write(baristaProject.toJsonString());
+      writer.close();
+
+      File globalProjectConfig = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
       Scanner scanner = new Scanner(globalProjectConfig);
       JSONParser parser = new JSONParser();
       JSONObject project = new JSONObject();
@@ -345,15 +359,12 @@ public class FileService {
 
       for (Object json : array) {
         if (((JSONObject) json).get("projectName").equals(baristaProject.getProjectName())) {
-          return; //TODO create cutsom "RESULT" to return
+          return Result.FAIL("A project with this name already exists!");
         }
       }
 
       project.put("projectName", baristaProject.getProjectName());
       project.put("projectRoot", baristaProject.getProjectRoot());
-      project.put("sourceRoot", baristaProject.getSourceRoot());
-      project.put("maven", baristaProject.isMaven());
-      project.put("gradle", baristaProject.isGradle());
 
       array.add(project);
       jsonString = JSONArray.toJSONString(array);
@@ -376,11 +387,51 @@ public class FileService {
       printWriter.close();
       e.printStackTrace();
     }
+
+    return Result.OK();
   }
 
   public void loadProject(BaristaProject baristaProject) {
-    sideMenu.openProject(baristaProject);
-    persistenceService.setOpenProject(baristaProject);
+    try {
+      Scanner scanner = new Scanner(new File(baristaProject.getProjectRoot() + "\\.barista\\ProjectConfig.json"));
+      String jsonString = "";
+
+      while (scanner.hasNextLine()) {
+        jsonString = jsonString.concat(scanner.nextLine());
+      }
+      scanner.close();
+      baristaProject.fromJsonString(jsonString);
+
+      sideMenu.openProject(baristaProject);
+      persistenceService.setOpenProject(baristaProject);
+    } catch (FileNotFoundException | ParseException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while loading project!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
+    }
+  }
+
+  public void saveProject() {
+    try {
+      File projectConfig = new File(persistenceService.getOpenProject().getProjectRoot() + "\\.barista\\ProjectConfig.json");
+      FileWriter writer = new FileWriter(projectConfig);
+      writer.write(persistenceService.getOpenProject().toJsonString());
+      writer.close();
+    } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while saving project!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
+    }
   }
 
   public List<BaristaProject> getProjects() {
@@ -406,9 +457,7 @@ public class FileService {
         System.out.println("project found!");
         JSONObject jso = (JSONObject) o;
         projects.add(
-          new BaristaProject((String) jso.get("projectName"), (String) jso.get("projectRoot"),
-            (boolean) jso.get("maven"),
-            (boolean) jso.get("gradle")));
+          new BaristaProject((String) jso.get("projectName"), (String) jso.get("projectRoot")));
       }
 
       return projects;
@@ -492,16 +541,21 @@ public class FileService {
       if (persistenceService.getActiveFile().equals(file)) {
         persistenceService.setActiveFile(renamedFile);
       }
-      renameReferences(new File(persistenceService.getOpenProject().getSourceRoot()),
-        file.getName().split("\\.")[0], name.split("\\.")[0]);
+      if (Files.getFileExtension(file.getAbsolutePath()).equals("java") && (Files.getFileExtension(name).equals("java") || Files.getFileExtension(
+          name)
+        .equals(""))) {
+        renameReferences(new File(persistenceService.getOpenProject().getSourceRoot()),
+          file.getName().split("\\.")[0], name.split("\\.")[0]);
+        persistenceService.getOpenProject().removeSourceFile(file);
+        persistenceService.getOpenProject().addSourceFile(renamedFile);
+      } else if (Files.getFileExtension(file.getAbsolutePath()).equals("java")) {
+        persistenceService.getOpenProject().removeSourceFile(file);
+      }
     }
     return renamedFile;
   }
 
   private void renameReferences(File file, String oldReference, String newReference) {
-    System.out.println(file.getName());
-    System.out.println(file.isFile());
-    System.out.println(Files.getFileExtension(file.getAbsolutePath()));
     if (file.isFile() && Files.getFileExtension(file.getAbsolutePath()).equals("java")) {
       try {
         Scanner scanner = new Scanner(file);
@@ -534,7 +588,7 @@ public class FileService {
     }
   }
 
-  public File createErrorLog(String content){
+  public File createErrorLog(String content) {
     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
     String logName = "error_log_" + format.format(new Date(System.currentTimeMillis())) + ".txt";
     File logFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\logs\\" + logName);
