@@ -3,6 +3,7 @@ package com.farkasch.barista.util;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import org.checkerframework.checker.units.qual.A;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -16,6 +17,7 @@ public class BaristaProject {
   private File mainFile;
   private ArrayList<String> jars;
   private ArrayList<String> sourceFiles;
+  private ArrayList<String> folders;
   private boolean maven;
   private boolean gradle;
 
@@ -34,6 +36,7 @@ public class BaristaProject {
     this.targetFolder = projectRoot + "\\target";
     this.jars = new ArrayList<>();
     this.sourceFiles = new ArrayList<>();
+    this.folders = new ArrayList<>();
     this.maven = maven;
     this.gradle = gradle;
   }
@@ -118,6 +121,22 @@ public class BaristaProject {
     this.mainFile = mainFile;
   }
 
+  public ArrayList<String> getFolders() {
+    return folders;
+  }
+
+  public void setFolders(ArrayList<String> folders) {
+    this.folders = folders;
+  }
+
+  public void addFolder(File folder){
+    this.folders.add(folder.getAbsolutePath());
+  }
+
+  public void removeFolder(File folder){
+    this.folders.remove(folder.getAbsolutePath());
+  }
+
   public String toJsonString() {
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("projectName", projectName);
@@ -127,6 +146,7 @@ public class BaristaProject {
     jsonObject.put("targetFolder", targetFolder);
     jsonObject.put("jars", jars);
     jsonObject.put("sourceFiles", sourceFiles);
+    jsonObject.put("folders", folders);
     jsonObject.put("maven", maven);
     jsonObject.put("gradle", gradle);
 
@@ -143,6 +163,7 @@ public class BaristaProject {
     targetFolder = (String) jsonObject.get("targetFolder");
     jars = (ArrayList<String>) jsonObject.get("jars");
     sourceFiles = (ArrayList<String>) jsonObject.get("sourceFiles");
+    folders = (ArrayList<String>) jsonObject.get("folders");
     mainFile = new File((String) jsonObject.get("mainFile"));
     maven = (boolean) jsonObject.get("maven");
     gradle = (boolean) jsonObject.get("gradle");

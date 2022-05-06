@@ -1,7 +1,10 @@
 package com.farkasch.barista.gui.mainview.sidemenu;
 
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
+import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
+import com.farkasch.barista.services.PersistenceService;
+import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -22,6 +25,10 @@ public class NewFolderPopup extends Stage {
 
   @Autowired
   private FileService fileService;
+  @Autowired
+  private PersistenceService persistenceService;
+  @Autowired
+  private WarningPopup warningPopup;
 
   private TextField folderNameField;
   private Label folderNameLabel;
@@ -49,8 +56,12 @@ public class NewFolderPopup extends Stage {
     folderNameLabel.setLabelFor(folderNameField);
 
     createButton.setOnAction(click -> {
-      fileService.createFolder(creationFolder.getPath() + "\\" + folderNameField.getText(), creationFolder);
-      close();
+      if (!persistenceService.getOpenProject().getFolders().contains(creationFolder.getPath() + "\\" + folderNameField.getText())) {
+        fileService.createFolder(creationFolder.getPath() + "\\" + folderNameField.getText(), creationFolder);
+        close();
+      } else {
+        warningPopup.showWindow("Error", "A folder with this name already exists!", null);
+      }
     });
   }
 

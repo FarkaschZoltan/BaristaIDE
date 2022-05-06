@@ -2,6 +2,7 @@ package com.farkasch.barista.gui.mainview.sidemenu;
 
 import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
+import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.util.FileTemplates;
@@ -43,6 +44,8 @@ public class NewFilePopup extends Stage {
   private FileTemplates fileTemplates;
   @Autowired
   private ErrorPopup errorPopup;
+  @Autowired
+  private WarningPopup warningPopup;
 
   //Design
   private TextField fileNameField;
@@ -112,36 +115,39 @@ public class NewFilePopup extends Stage {
           extension = fileExtensionComboBox.getValue().getName();
         }
 
-        File newFile = fileService.createFile(creationFolder.getPath() + "\\" + fileNameField.getText() + extension, creationFolder);
+        if(!persistenceService.getOpenProject().getSourceFiles().contains(creationFolder.getPath() + "\\" + fileNameField.getText() + extension)) {
+          File newFile = fileService.createFile(creationFolder.getPath() + "\\" + fileNameField.getText() + extension, creationFolder);
 
-        if (fileExtensionComboBox.getValue().equals(FileExtensionEnum.JAVA)) {
-          FileWriter writer = new FileWriter(newFile);
-          switch (classTypeComboBox.getValue()) {
-            case ENUM:
-              writer.write(fileTemplates.enumTemplate(fileNameField.getText(), creationFolder.getPath()));
-              break;
-            case CLASS:
-              writer.write(fileTemplates.classTemplate(fileNameField.getText(), creationFolder.getPath()));
-              break;
-            case RECORD:
-              writer.write(fileTemplates.recordTemplate(fileNameField.getText(), creationFolder.getPath()));
-              break;
-            case INTERFACE:
-              writer.write(fileTemplates.interfaceTemplate(fileNameField.getText(), creationFolder.getPath()));
-              break;
-            case ANNOTATION:
-              writer.write(fileTemplates.annotationTemplate(fileNameField.getText(), creationFolder.getPath()));
-              break;
-            default:
-              break;
+          if (fileExtensionComboBox.getValue().equals(FileExtensionEnum.JAVA)) {
+            FileWriter writer = new FileWriter(newFile);
+            switch (classTypeComboBox.getValue()) {
+              case ENUM:
+                writer.write(fileTemplates.enumTemplate(fileNameField.getText(), creationFolder.getPath()));
+                break;
+              case CLASS:
+                writer.write(fileTemplates.classTemplate(fileNameField.getText(), creationFolder.getPath()));
+                break;
+              case RECORD:
+                writer.write(fileTemplates.recordTemplate(fileNameField.getText(), creationFolder.getPath()));
+                break;
+              case INTERFACE:
+                writer.write(fileTemplates.interfaceTemplate(fileNameField.getText(), creationFolder.getPath()));
+                break;
+              case ANNOTATION:
+                writer.write(fileTemplates.annotationTemplate(fileNameField.getText(), creationFolder.getPath()));
+                break;
+              default:
+                break;
+            }
+            writer.close();
           }
-          writer.close();
+
+          persistenceService.openNewFile(newFile);
+          persistenceService.setActiveFile(newFile);
+          close();
+        } else {
+          warningPopup.showWindow("Error", "A file with this name already exists!", null);
         }
-
-        persistenceService.openNewFile(newFile);
-        persistenceService.setActiveFile(newFile);
-        close();
-
       } catch (IOException e) {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);

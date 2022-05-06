@@ -49,8 +49,8 @@ public class WarningPopup extends Stage {
     buttonLayout.addColumn(0, cancelButton);
     buttonLayout.addColumn(1, acceptButton);
     buttonLayout.setHgap(10);
-    buttonLayout.setAlignment(Pos.BOTTOM_CENTER);
-    BorderPane.setMargin(buttonLayout, new Insets(0, 0, 10, 0));
+    buttonLayout.setAlignment(Pos.CENTER_RIGHT);
+    BorderPane.setMargin(buttonLayout, new Insets(10));
 
     windowLayout.setMinHeight(scene.getHeight());
     windowLayout.setMinWidth(scene.getWidth());
@@ -77,9 +77,17 @@ public class WarningPopup extends Stage {
     this.message.setText(message);
     this.acceptButtonClick = acceptButtonClick;
     this.cancelButtonClick = cancelButtonClick;
-
     cancelButton.setVisible(true);
-    buttonLayout.setAlignment(Pos.CENTER);
+
+    setTitle(title);
+    setScene(scene);
+    show();
+  }
+
+  public void showWindow(String title, String message, EventHandler acceptButtonClick){
+    cancelButton.setVisible(false);
+    this.message.setText(message);
+    this.acceptButtonClick = acceptButtonClick;
 
     setTitle(title);
     setScene(scene);
@@ -88,7 +96,6 @@ public class WarningPopup extends Stage {
 
   public void showWindow(Result result){
     cancelButton.setVisible(false);
-    buttonLayout.setAlignment(Pos.CENTER_RIGHT);
     message.setText(result.getMessage());
 
     setScene(scene);

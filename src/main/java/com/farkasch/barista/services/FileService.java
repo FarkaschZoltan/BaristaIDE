@@ -107,6 +107,7 @@ public class FileService {
   public File createFolder(String path, FolderDropdownItem creationFolder) {
     File newFolder = createFolder(path);
     persistenceService.addToProjectDropdown(creationFolder, newFolder);
+    persistenceService.getOpenProject().addFolder(newFolder);
     saveProject();
     return newFolder;
   }
@@ -304,22 +305,27 @@ public class FileService {
       //creating root folder;
       File projectRoot = new File(baristaProject.getProjectRoot());
       projectRoot.mkdir();
+      baristaProject.addFolder(projectRoot);
 
       //creating .barista folder
       File baristaFolder = new File(baristaProject.getProjectRoot() + "\\.barista");
       baristaFolder.mkdir();
+      baristaProject.addFolder(baristaFolder);
 
       //creating src folder
       File srcFolder = new File(baristaProject.getProjectRoot() + "\\src");
       srcFolder.mkdir();
+      baristaProject.addFolder(srcFolder);
 
       //creating main folder
       File mainFolder = new File(srcFolder.getAbsolutePath() + "\\main");
       mainFolder.mkdir();
+      baristaProject.addFolder(mainFolder);
 
       //creating java folder
       File javaFolder = new File(mainFolder.getAbsolutePath() + "\\java");
       javaFolder.mkdir();
+      baristaProject.addFolder(javaFolder);
 
       //creating main file
       File mainFile = new File(javaFolder.getAbsolutePath() + "\\Main.java");
@@ -333,6 +339,7 @@ public class FileService {
       //creating target folder
       File targetFolder = new File(baristaProject.getProjectRoot() + "\\target");
       targetFolder.mkdir();
+      baristaProject.addFolder(targetFolder);
 
       //creating ProjectConfig.json inside .barista
       File projectConfig = new File(baristaFolder.getAbsolutePath() + "\\ProjectConfig.json");
