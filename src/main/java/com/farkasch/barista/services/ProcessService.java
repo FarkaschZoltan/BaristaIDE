@@ -29,6 +29,9 @@ public class ProcessService {
   private FileService fileService;
   @Lazy
   @Autowired
+  private PersistenceService persistenceService;
+  @Lazy
+  @Autowired
   private ErrorPopup errorPopup;
 
   public File CompileFile(String filePath, String fileName) {
@@ -42,7 +45,7 @@ public class ProcessService {
     return Compile(filePath, Arrays.asList(fileName), args);
   }
 
-  public File CompileProject(BaristaProject baristaProject){
+  public File CompileProject(BaristaProject baristaProject) {
     HashMap<JavacEnum, Object> args = new HashMap<>();
     args.put(JavacEnum.CLASSPATH, baristaProject.getJars());
     args.put(JavacEnum.D, baristaProject.getTargetFolder());
@@ -50,7 +53,7 @@ public class ProcessService {
     return Compile(baristaProject.getSourceRoot(), baristaProject.getSourceFiles(), args);
   }
 
-  private File Compile(String sourceDirectory, List<String> files, HashMap<JavacEnum, Object> args){
+  private File Compile(String sourceDirectory, List<String> files, HashMap<JavacEnum, Object> args) {
 
     File argFile = createArgumentFile(sourceDirectory, args);
     File sourceFile = createSourceFile(sourceDirectory, files);
@@ -59,8 +62,6 @@ public class ProcessService {
       Process process = Runtime.getRuntime().exec(command, null, new File(sourceDirectory));
       process.waitFor();
       System.out.println(process.exitValue());
-      new BufferedReader(new FileReader(argFile)).lines().forEach(System.out::println);
-      new BufferedReader(new InputStreamReader(process.getErrorStream())).lines().forEach(System.out::println);
     } catch (IOException | InterruptedException e) {
       StringWriter stringWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -86,21 +87,29 @@ public class ProcessService {
     Run(runArgs, fileName, filePath);
   }
 
-  public void RunProject(BaristaProject baristaProject){
+  public void RunProject(BaristaProject baristaProject) {
     File runArgs = CompileProject(baristaProject);
     String mainClassPath = baristaProject.getMainFile().getAbsolutePath().replace(baristaProject.getSourceRoot(), baristaProject.getTargetFolder());
     Run(runArgs, mainClassPath, baristaProject.getTargetFolder());
   }
 
-  private void Run(File argFile, String mainFile, String sourcePath){
+  private void Run(File argFile, String mainFile, String sourcePath) {
     try {
       mainFile = mainFile.replace(sourcePath + "\\", "");
       mainFile = mainFile.replace(".java", "");
       mainFile = mainFile.replace("\\", ".");
-      String command = "cmd /c start /wait cmd.exe /k \"java @" + argFile.getName() + " " + mainFile + "\"" ;
+
+      File batch = new File(sourcePath + "\\run.bat");
+      FileWriter writer = new FileWriter(batch, false);
+      writer.write("@Echo off\n" + "java @" + argFile.getName() + " " + mainFile + "\n" + "pause");
+      writer.close();
+
+      String command = "cmd /c start /wait cmd /c " + batch.getName();
       Process process = Runtime.getRuntime().exec(command, null, new File(sourcePath));
       process.waitFor();
+
       argFile.delete();
+      batch.delete();
     } catch (IOException | InterruptedException e) {
       StringWriter stringWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -117,7 +126,7 @@ public class ProcessService {
   private File createArgumentFile(String path, HashMap<JavacEnum, Object> args) {
     File file = new File(path + "\\arguments.txt");
     try {
-      if(!file.exists()){
+      if (!file.exists()) {
         System.out.println("argfile created: " + file.createNewFile());
       }
       System.out.println(file.getAbsolutePath());

@@ -3,6 +3,7 @@ package com.farkasch.barista.gui.mainview.topmenu;
 import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.services.FileService;
+import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.Result;
 import java.io.File;
@@ -33,6 +34,8 @@ public class NewFileWindow extends Stage {
 
   @Autowired
   private FileService fileService;
+  @Autowired
+  private PersistenceService persistenceService;
   @Autowired
   private ErrorPopup errorPopup;
 
@@ -102,6 +105,9 @@ public class NewFileWindow extends Stage {
         File newFile = fileService.createFile(
           folderPathField.getText() + "\\" + fileNameField.getText());
         openFile.accept(newFile);
+        if(persistenceService.getOpenProject() != null){
+          persistenceService.getSideMenu().closeProject();
+        }
         close();
       } catch (FileAlreadyExistsException e) {
         StringWriter stringWriter = new StringWriter();

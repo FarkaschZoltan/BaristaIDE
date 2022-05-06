@@ -118,10 +118,11 @@ public class SideMenu extends BorderPane {
         File f = persistenceService.getMainFiles().get(0);
         String filePath = f.getParentFile().getPath();
         String fileName = f.getName();
-        //TODO: main file selector
-        processService.CompileFile(filePath, fileName);
+        File runArgs = processService.CompileFile(filePath, fileName);
+        runArgs.delete();
       } else {
-        processService.CompileProject(persistenceService.getOpenProject());
+        File runArgs = processService.CompileProject(persistenceService.getOpenProject());
+        runArgs.delete();
       }
     };
     compileButton.setOnAction(click -> {

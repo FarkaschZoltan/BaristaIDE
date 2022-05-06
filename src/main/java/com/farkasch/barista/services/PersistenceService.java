@@ -109,6 +109,14 @@ public class PersistenceService {
     return openProject;
   }
 
+  public SideMenu getSideMenu() {
+    return sideMenu;
+  }
+
+  public void setSideMenu(SideMenu sideMenu) {
+    this.sideMenu = sideMenu;
+  }
+
   public void setOpenProject(BaristaProject openProject) {
     this.openProject = openProject;
   }
