@@ -160,6 +160,9 @@ public class SideMenu extends BorderPane {
       closeProject();
     }
 
+    openFiles.setVisible(false);
+    recentlyClosed.setVisible(false);
+
     openedProject = baristaProject;
     projectFolderDropdown = new FolderDropdown(getWidth(), fileService, true, true);
     projectFolderDropdown.setFileLeftClickAction(
@@ -200,6 +203,8 @@ public class SideMenu extends BorderPane {
   public void closeProject() {
     content.getChildren().remove(projectFolderDropdown);
     openedProject = null;
+    openFiles.setVisible(true);
+    recentlyClosed.setVisible(true);
   }
 
   public FolderDropdown getProjectFolderDropdown() {

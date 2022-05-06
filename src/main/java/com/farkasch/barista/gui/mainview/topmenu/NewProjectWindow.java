@@ -100,7 +100,6 @@ public class NewProjectWindow extends Stage {
     GridPane.setMargin(rootFolderLabel, new Insets(10, 0, 0, 10));
 
     projectType.setItems(FXCollections.observableArrayList(ProjectTypeEnum.BASIC, ProjectTypeEnum.MAVEN, ProjectTypeEnum.GRADLE));
-    projectType.setValue(ProjectTypeEnum.BASIC);
     projectType.setConverter(new StringConverter<>() {
       @Override
       public String toString(ProjectTypeEnum projectTypeEnum) {
@@ -137,18 +136,24 @@ public class NewProjectWindow extends Stage {
 
     createButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(createButtonContainer, new Insets(10));
+  }
+
+  private void onLoad(){
+    projectNameField.setText("");
+    folderPathField.setText(System.getProperty("user.home"));
+    projectType.setValue(ProjectTypeEnum.BASIC);
 
     rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, false, false);
     rootFolderSelector.setFolderLeftClickAction(target -> folderPathField.setText(
       target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath()));
 
+    rootFolderSelector.prepare(null, null);
     scrollPane.setContent(rootFolderSelector);
   }
 
   public void showWindow() {
-    rootFolderSelector.prepare(null, null);
+    onLoad();
     setScene(scene);
-
     show();
   }
 }

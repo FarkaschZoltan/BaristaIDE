@@ -3,7 +3,6 @@ package com.farkasch.barista.gui.mainview.topmenu;
 import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
-import com.farkasch.barista.services.ProcessService;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.function.Consumer;
@@ -100,16 +99,23 @@ public class OpenFileWindow extends Stage {
       fileName.setText(target.getText());
       filePath = target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath();
     });
+  }
 
+  private void onLoad(Consumer<File> openFile){
+    this.openFile = openFile;
+    fileName.setText("");
+    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, true, false);
+    rootFolderSelector.setFileLeftClickAction(target -> {
+      fileName.setText(target.getText());
+      filePath = target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath();
+    });
+    rootFolderSelector.prepare(null, null);
     scrollPane.setContent(rootFolderSelector);
   }
 
   public void showWindow(Consumer<File> openFile) {
-    this.openFile = openFile;
-
-    rootFolderSelector.prepare(null, null);
+    onLoad(openFile);
     setScene(scene);
-
     show();
   }
 }

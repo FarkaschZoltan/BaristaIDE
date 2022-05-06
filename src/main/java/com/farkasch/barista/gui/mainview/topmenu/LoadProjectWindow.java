@@ -14,7 +14,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javax.annotation.PostConstruct;
@@ -94,7 +93,8 @@ public class LoadProjectWindow extends Stage {
         .toString());
   }
 
-  public void showWindow(){
+  private void onLoad(){
+    chosenProject.setText("");
     List<BaristaProject> projects = fileService.getProjects();
     projectsContainer.getChildren().clear();
     for(BaristaProject project : projects){
@@ -110,7 +110,10 @@ public class LoadProjectWindow extends Stage {
       openProject.setMaxHeight(Double.MAX_VALUE);
       projectsContainer.getChildren().add(openProject);
     }
+  }
 
+  public void showWindow(){
+    onLoad();
     setScene(scene);
     show();
   }

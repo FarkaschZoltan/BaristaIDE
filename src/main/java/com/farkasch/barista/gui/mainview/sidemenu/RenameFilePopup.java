@@ -1,5 +1,6 @@
 package com.farkasch.barista.gui.mainview.sidemenu;
 
+import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
@@ -68,8 +69,13 @@ public class RenameFilePopup extends Stage {
     });
   }
 
-  public void showWindow(FolderDropdownItem fileToRename) {
+  private void onLoad(FolderDropdownItem fileToRename){
     this.fileToRename = fileToRename;
+    newFileNameField.setText("");
+  }
+
+  public void showWindow(FolderDropdownItem fileToRename) {
+    onLoad(fileToRename);
     setScene(scene);
     show();
   }

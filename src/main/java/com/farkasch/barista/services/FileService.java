@@ -4,7 +4,6 @@ import com.farkasch.barista.gui.codinginterface.SwitchMenu;
 import com.farkasch.barista.gui.codinginterface.SwitchMenu.SwitchMenuItem;
 import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
-import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.FileTemplates;
 import com.farkasch.barista.util.Result;
@@ -16,7 +15,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -38,9 +36,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class FileService {
 
-  @Lazy
-  @Autowired
-  private SideMenu sideMenu;
   @Lazy
   @Autowired
   private ErrorPopup errorPopup;
@@ -115,7 +110,7 @@ public class FileService {
   public boolean deleteFile(File file, boolean partOfProject) {
     if (file.isFile()) {
       if (!partOfProject) {
-        sideMenu.refresh();
+        persistenceService.getSideMenu().refresh();
       } else {
         persistenceService.getOpenProject().removeSourceFile(file);
         saveProject();
@@ -409,7 +404,7 @@ public class FileService {
       scanner.close();
       baristaProject.fromJsonString(jsonString);
 
-      sideMenu.openProject(baristaProject);
+      persistenceService.getSideMenu().openProject(baristaProject);
       persistenceService.setOpenProject(baristaProject);
     } catch (FileNotFoundException | ParseException e) {
       StringWriter stringWriter = new StringWriter();
@@ -530,19 +525,19 @@ public class FileService {
   public File renameFile(File file, String name, @Nullable FolderDropdownItem folderDropdownItem) {
     File renamedFile = renameFile(file, name);
     if (folderDropdownItem == null) {
-      for (File f : sideMenu.getOpenFiles().getItems()) {
+      for (File f : persistenceService.getSideMenu().getOpenFiles().getItems()) {
         if (f.getAbsolutePath().equals(file.getAbsolutePath())) {
           f = renamedFile;
           break;
         }
       }
-      for (File f : sideMenu.getRecentlyClosed().getItems()) {
+      for (File f : persistenceService.getSideMenu().getRecentlyClosed().getItems()) {
         if (f.getAbsolutePath().equals(file.getAbsolutePath())) {
           f = renamedFile;
           break;
         }
       }
-      sideMenu.refresh();
+      persistenceService.getSideMenu().refresh();
     } else {
       folderDropdownItem.setText(renamedFile.getName());
       if (persistenceService.getActiveFile().equals(file)) {

@@ -14,11 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -161,8 +157,15 @@ public class NewFilePopup extends Stage {
     });
   }
 
-  public void showWindow(FolderDropdownItem creationFolder) {
+  private void onLoad(FolderDropdownItem creationFolder){
     this.creationFolder = creationFolder;
+    fileNameField.setText("");
+    fileExtensionComboBox.setValue(FileExtensionEnum.JAVA);
+    classTypeComboBox.setValue(JavaClassTypesEnum.CLASS);
+  }
+
+  public void showWindow(FolderDropdownItem creationFolder) {
+    onLoad(creationFolder);
     setScene(scene);
     show();
   }

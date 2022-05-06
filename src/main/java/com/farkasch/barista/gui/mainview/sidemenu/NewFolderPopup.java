@@ -4,10 +4,6 @@ import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
-import com.google.common.io.Files;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Paths;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -65,8 +61,13 @@ public class NewFolderPopup extends Stage {
     });
   }
 
-  public void showWindow(FolderDropdownItem creationFolder) {
+  private void onLoad(FolderDropdownItem creationFolder){
     this.creationFolder = creationFolder;
+    folderNameField.setText("");
+  }
+
+  public void showWindow(FolderDropdownItem creationFolder) {
+    onLoad(creationFolder);
     setScene(scene);
     show();
   }

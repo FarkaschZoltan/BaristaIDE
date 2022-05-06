@@ -123,6 +123,11 @@ public class NewFileWindow extends Stage {
 
     createButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(createButtonContainer, new Insets(10));
+  }
+
+  private void onLoad(){
+    fileNameField.setText("");
+    folderPathLabel.setText(System.getProperty("user.home"));
 
     rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, false, false);
     rootFolderSelector.setFolderLeftClickAction(target -> {
@@ -133,8 +138,8 @@ public class NewFileWindow extends Stage {
   }
 
   public void showWindow(Consumer<File> openFile) {
+    onLoad();
     this.openFile = openFile;
-
     rootFolderSelector.prepare(null, null);
     setScene(scene);
 
