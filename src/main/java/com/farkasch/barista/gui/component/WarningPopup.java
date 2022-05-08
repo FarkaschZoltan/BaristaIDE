@@ -12,6 +12,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
@@ -43,6 +44,9 @@ public class WarningPopup extends Stage {
     scene = new Scene(windowLayout, 300, 100);
     scene.getStylesheets().add(Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
 
+    message.setWrappingWidth(scene.getWidth() - 20);
+    message.setTextAlignment(TextAlignment.CENTER);
+
     windowLayout.setCenter(textLayout);
     windowLayout.setBottom(buttonLayout);
 
@@ -58,6 +62,7 @@ public class WarningPopup extends Stage {
     windowLayout.setMaxHeight(Double.MAX_VALUE);
 
     textLayout.setAlignment(Pos.CENTER);
+    BorderPane.setMargin(textLayout, new Insets(10));
 
     acceptButton.setOnAction(click -> {
       if(acceptButtonClick != null){
@@ -74,6 +79,7 @@ public class WarningPopup extends Stage {
   }
 
   public void showWindow(String title, String message, EventHandler acceptButtonClick, EventHandler cancelButtonClick){
+    System.out.println("Warning popup show window!");
     this.message.setText(message);
     this.acceptButtonClick = acceptButtonClick;
     this.cancelButtonClick = cancelButtonClick;

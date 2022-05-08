@@ -169,9 +169,12 @@ public class SideMenu extends BorderPane {
     newFolder.setOnAction(click -> newFolderPopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
 
     MenuItem renameFolder = new MenuItem("Rename");
-    renameFolder.setOnAction(click -> renameFolderPopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
+    renameFolder.setOnAction(
+      click -> renameFolderPopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
 
     MenuItem deleteFolder = new MenuItem("Delete");
+    deleteFolder.setOnAction(click -> warningPopup.showWindow("Delete Folder", "Are you sure you want to delete this folder and all of its contents?",
+      acceptClick -> fileService.deleteFolder((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()), null));
 
     projectFolderDropdown.setFolderContextMenuItems(Arrays.asList(renameFolder, newFile, newFolder, deleteFolder));
 

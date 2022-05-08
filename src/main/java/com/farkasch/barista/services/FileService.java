@@ -3,6 +3,7 @@ package com.farkasch.barista.services;
 import com.farkasch.barista.gui.codinginterface.SwitchMenu;
 import com.farkasch.barista.gui.codinginterface.SwitchMenu.SwitchMenuItem;
 import com.farkasch.barista.gui.component.ErrorPopup;
+import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.FileTemplates;
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 
 @Service
 public class FileService {
@@ -116,14 +118,42 @@ public class FileService {
         persistenceService.getOpenProject().removeSourceFile(file);
         saveProject();
       }
+      persistenceService.getActiveInterface().getSwitchMenu().closeFile(file);
       return file.delete();
     } else {
       return false;
     }
   }
 
-  public boolean deleteFolder(File folder, @Nullable FolderDropdownItem folderDropdownItem) {
-    return false;
+  //deleting the specified folder and ALL ITS CONTENTS from the project
+  public boolean deleteFolder(FolderDropdownItem folderDropdownItem) {
+    System.out.println("delete Folder!");
+    //removing the folder, and all its children from the project
+    File folderToDelete = new File(folderDropdownItem.getPath());
+    BaristaProject baristaProject = persistenceService.getOpenProject();
+    baristaProject.setFolders(
+      new ArrayList<>(baristaProject.getFolders().stream().filter(folder -> !folder.contains(folderToDelete.getAbsolutePath())).toList()));
+    baristaProject.setSourceFiles(
+      new ArrayList<>(baristaProject.getSourceFiles().stream().filter(file -> !file.contains(folderToDelete.getAbsolutePath())).toList()));
+
+    if (baristaProject.getSourceRoot().contains(folderToDelete.getAbsolutePath())) {
+      baristaProject.setSourceRoot("");
+    }
+
+    //removing the folder and its contents from project dropdown
+    FolderDropdown projectDropdown = persistenceService.getSideMenu().getProjectFolderDropdown();
+    projectDropdown.removeFolderDropdownItem(folderDropdownItem);
+
+    //removing all the files from the switch menu
+    if(persistenceService.getActiveInterface() != null) {
+      SwitchMenu switchMenu = persistenceService.getActiveInterface().getSwitchMenu();
+      List<Node> menusToClose = switchMenu.getChildren().stream()
+        .filter(switchMenuItem -> ((SwitchMenuItem) switchMenuItem).getFile().getAbsolutePath().contains(folderToDelete.getAbsolutePath())).toList();
+      menusToClose.forEach(item -> switchMenu.closeFile(((SwitchMenuItem) item).getFile()));
+    }
+
+    saveProject();
+    return FileSystemUtils.deleteRecursively(folderToDelete);
   }
 
   public void cleanupJarJson() {
@@ -571,13 +601,13 @@ public class FileService {
     openProject.setSourceFiles(new ArrayList<>(openProject.getSourceFiles().stream()
       .map(sourceFile -> sourceFile.replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath())).toList()));
 
-    if(openProject.getTargetFolder().contains(oldFolder.getAbsolutePath())){
+    if (openProject.getTargetFolder().contains(oldFolder.getAbsolutePath())) {
       openProject.setTargetFolder(openProject.getTargetFolder().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
     }
-    if(openProject.getSourceRoot().contains(oldFolder.getAbsolutePath())){
+    if (openProject.getSourceRoot().contains(oldFolder.getAbsolutePath())) {
       openProject.setSourceRoot(openProject.getSourceRoot().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
     }
-    if(openProject.getProjectRoot().contains(oldFolder.getAbsolutePath())){
+    if (openProject.getProjectRoot().contains(oldFolder.getAbsolutePath())) {
       openProject.setProjectRoot(openProject.getProjectRoot().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
     }
 

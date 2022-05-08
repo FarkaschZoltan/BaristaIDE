@@ -1,10 +1,8 @@
 package com.farkasch.barista.gui.codinginterface;
 
-import com.farkasch.barista.services.JavaScriptService;
 import com.farkasch.barista.services.PersistenceService;
 import java.io.File;
-import javafx.beans.Observable;
-import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
@@ -63,7 +61,7 @@ public class SwitchMenu extends HBox {
     }
   }
 
-  public void removeFile(int index) {
+  private void removeFile(int index) {
     if(persistenceService.getOpenProject() == null){
       persistenceService.removeOpenFile(((SwitchMenuItem)(getChildren().get(index))).getFile());
       persistenceService.addRecentlyClosed(((SwitchMenuItem)(getChildren().get(index))).getFile());
@@ -79,6 +77,16 @@ public class SwitchMenu extends HBox {
       }
     }
     return false;
+  }
+
+  public void closeFile(File file){
+    for(Node node : getChildren()){
+      SwitchMenuItem switchMenuItem = (SwitchMenuItem) node;
+      if(switchMenuItem.getFile().equals(file)){
+        switchMenuItem.closeButton.getOnAction().handle(new ActionEvent());
+        return;
+      }
+    }
   }
 
   public class SwitchMenuItem extends HBox {
@@ -136,23 +144,23 @@ public class SwitchMenu extends HBox {
         SwitchMenu menu = SwitchMenu.this;
         int index = menu.getChildren().indexOf(this);
         if (menu.getChildren().size() == 1) {
-          menu.removeFile(index);
           persistenceService.setActiveFile(null);
+          menu.removeFile(index);
           parent.close();
         } else if (index > 0) {
           parent.showFile(
             ((SwitchMenuItem) menu.getChildren().get(index - 1)).getFile());
-          menu.removeFile(index);
           currentlyActive = (SwitchMenuItem) menu.getChildren().get(index - 1);
           currentlyActive.setContentId("switch-menu__item--selected");
           persistenceService.setActiveFile(currentlyActive.getFile());
+          menu.removeFile(index);
         } else {
           parent.showFile(
             ((SwitchMenuItem) menu.getChildren().get(index + 1)).getFile());
-          menu.removeFile(index);
           currentlyActive = (SwitchMenuItem) menu.getChildren().get(index + 1);
           currentlyActive.setContentId("switch-menu__item--selected");
           persistenceService.setActiveFile(currentlyActive.getFile());
+          menu.removeFile(index);
         }
       });
       closeButton.setGraphic(new FontIcon("mdi-close"));

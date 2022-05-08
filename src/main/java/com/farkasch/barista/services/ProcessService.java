@@ -20,6 +20,7 @@ import javafx.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 
 @Service
 public class ProcessService {
@@ -54,6 +55,15 @@ public class ProcessService {
   }
 
   private File Compile(String sourceDirectory, List<String> files, HashMap<JavacEnum, Object> args) {
+
+    File target = new File(args.get(JavacEnum.D) == null ? System.getProperty("user.home") : (String)args.get(JavacEnum.D));
+    if(args.get(JavacEnum.D) != null && !target.exists()){
+      target.mkdir();
+    } else {
+      for(File file : target.listFiles()){
+        FileSystemUtils.deleteRecursively(file);
+      }
+    }
 
     File argFile = createArgumentFile(sourceDirectory, args);
     File sourceFile = createSourceFile(sourceDirectory, files);

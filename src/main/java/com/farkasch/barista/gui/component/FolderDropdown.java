@@ -196,6 +196,10 @@ public class FolderDropdown extends GridPane {
   }
 
   public void removeFolderDropdownItem(FolderDropdownItem folderDropdownItem) {
+
+    if(new File(folderDropdownItem.getPath()).isDirectory()){
+      folderClose(folderDropdownItem.getItemContainer(), folderDropdownItem.getNode());
+    }
     GridPane grid = folderDropdownItem.getParentGrid();
     VBox nodeToRemove = new VBox();
     boolean removed = false;
