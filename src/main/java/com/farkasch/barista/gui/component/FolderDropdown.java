@@ -1,7 +1,6 @@
 package com.farkasch.barista.gui.component;
 
 import com.farkasch.barista.services.FileService;
-import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.TreeNode;
 import java.io.File;
 import java.util.List;
@@ -17,7 +16,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.util.Pair;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.lang.Nullable;
 
@@ -71,6 +69,10 @@ public class FolderDropdown extends GridPane {
     defaultFolderRightClickAction = false;
   }
 
+  public TreeNode<FolderDropdownItem> getRootNode() {
+    return rootNode;
+  }
+
   public void prepare(@Nullable String parentPath, @Nullable VBox parentContainer) {
     if (withAbsoluteParent && parentPath != null) {
       VBox absoluteParentContainer = new VBox();
@@ -113,15 +115,13 @@ public class FolderDropdown extends GridPane {
       folderSelector = new GridPane();
     }
 
-    TreeNode<FolderDropdownItem> node = new TreeNode<>();
-    node.setParent(parentNode);
-    updateWidth();
-
     for (int i = 0; i < dirs.size(); i++) {
+      TreeNode<FolderDropdownItem> node = new TreeNode<>();
       VBox folderContainer = new VBox();
       folderContainer.setMinWidth(width);
       FolderDropdownItem folderDropdownItem = new FolderDropdownItem(dirs.get(i).getName(), parentName, parentContainer, folderContainer,
         folderSelector, node);
+      node.setParent(parentNode);
       node.setValue(folderDropdownItem);
       Boolean isFile = dirs.get(i).isFile();
       if (isFile) {
@@ -143,23 +143,29 @@ public class FolderDropdown extends GridPane {
       }
     }
 
+    updateWidth();
+
     if (parentContainer != null) {
       parentContainer.getChildren().add(folderSelector);
     }
   }
 
-  public void addFolderDropdownItem(FolderDropdownItem folder, File file) {
-    if (folder.getItemContainer().getChildren().size() < 2) {
-      folderExpand(folder.getParentPath() == null ? System.getProperty("user.home") : folder.getPath(), folder.getItemContainer(), folder.getNode());
+  public void addFolderDropdownItem(FolderDropdownItem parentFolder, File file) {
+    if (parentFolder.getItemContainer().getChildren().size() < 2) {
+      folderExpand(parentFolder.getParentPath() == null ? System.getProperty("user.home") : parentFolder.getPath(), parentFolder.getItemContainer(),
+        parentFolder.getNode());
       return;
     }
-    GridPane childGrid = ((GridPane) (folder.getItemContainer().getChildren().get(1)));
+    GridPane childGrid = ((GridPane) (parentFolder.getItemContainer().getChildren().get(1)));
     VBox folderContainer = new VBox();
+    TreeNode<FolderDropdownItem> node = new TreeNode<>();
     folderContainer.setMinWidth(width);
-    FolderDropdownItem newItem = new FolderDropdownItem(file.getName(), file.getParent(), folder.getItemContainer(), folderContainer, childGrid,
-      folder.getNode());
+    FolderDropdownItem newItem = new FolderDropdownItem(file.getName(), file.getParent(), parentFolder.getItemContainer(), folderContainer, childGrid,
+      node);
+    node.setParent(parentFolder.getNode());
+    node.setValue(newItem);
     folderContainer.getChildren().add(newItem);
-    newItem.setOnMouseClicked(getFolderDropdownItemMouseClick(newItem, file.isFile(), folder.getNode()));
+    newItem.setOnMouseClicked(getFolderDropdownItemMouseClick(newItem, file.isFile(), parentFolder.getNode()));
     newItem.setId("folder");
     newItem.setMaxWidth(Double.MAX_VALUE);
     newItem.setMaxHeight(Double.MAX_VALUE);
@@ -172,14 +178,13 @@ public class FolderDropdown extends GridPane {
     int i = 0;
     int newItemIndex = 0;
     boolean foundIndex = false;
-    for (Node node : childGrid.getChildren()) {
-      if (((FolderDropdownItem) ((VBox) node).getChildren().get(0)).getText().toLowerCase().compareTo(newItem.getText().toLowerCase()) > 0) {
+    for (Node child : childGrid.getChildren()) {
+      if (((FolderDropdownItem) ((VBox) child).getChildren().get(0)).getText().toLowerCase().compareTo(newItem.getText().toLowerCase()) > 0) {
         if (!foundIndex) {
           newItemIndex = i;
           foundIndex = true;
-          System.out.println("here!");
         }
-        GridPane.setRowIndex(node, i + 1);
+        GridPane.setRowIndex(child, i + 1);
       }
       i++;
     }
@@ -190,16 +195,16 @@ public class FolderDropdown extends GridPane {
     childGrid.addRow(newItemIndex, folderContainer);
   }
 
-  public void removeFolderDropdownItem(FolderDropdownItem folderDropdownItem){
+  public void removeFolderDropdownItem(FolderDropdownItem folderDropdownItem) {
     GridPane grid = folderDropdownItem.getParentGrid();
     VBox nodeToRemove = new VBox();
     boolean removed = false;
-    for(Node node : grid.getChildren()){
+    for (Node node : grid.getChildren()) {
       VBox itemContainer = (VBox) node;
-      if(removed){
+      if (removed) {
         GridPane.setRowIndex(itemContainer, GridPane.getRowIndex(itemContainer) - 1);
       }
-      if(itemContainer.equals(folderDropdownItem.getItemContainer())){
+      if (itemContainer.equals(folderDropdownItem.getItemContainer())) {
         removed = true;
         nodeToRemove = itemContainer;
       }

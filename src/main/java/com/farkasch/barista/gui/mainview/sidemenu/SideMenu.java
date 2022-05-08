@@ -38,6 +38,8 @@ public class SideMenu extends BorderPane {
   @Autowired
   private NewFolderPopup newFolderPopup;
   @Autowired
+  private RenameFolderPopup renameFolderPopup;
+  @Autowired
   private RenameFilePopup renameFilePopup;
   @Autowired
   private WarningPopup warningPopup;
@@ -57,16 +59,8 @@ public class SideMenu extends BorderPane {
     return openFiles;
   }
 
-  public void setOpenFiles(SimpleDropdown openFiles) {
-    this.openFiles = openFiles;
-  }
-
   public SimpleDropdown getRecentlyClosed() {
     return recentlyClosed;
-  }
-
-  public void setRecentlyClosed(SimpleDropdown recentlyClosed) {
-    this.recentlyClosed = recentlyClosed;
   }
 
   @PostConstruct
@@ -160,8 +154,8 @@ public class SideMenu extends BorderPane {
       closeProject();
     }
 
-    openFiles.setVisible(false);
-    recentlyClosed.setVisible(false);
+    content.getChildren().remove(openFiles);
+    content.getChildren().remove(recentlyClosed);
 
     openedProject = baristaProject;
     projectFolderDropdown = new FolderDropdown(getWidth(), fileService, true, true);
@@ -175,6 +169,7 @@ public class SideMenu extends BorderPane {
     newFolder.setOnAction(click -> newFolderPopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
 
     MenuItem renameFolder = new MenuItem("Rename");
+    renameFolder.setOnAction(click -> renameFolderPopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
 
     MenuItem deleteFolder = new MenuItem("Delete");
 
@@ -203,8 +198,7 @@ public class SideMenu extends BorderPane {
   public void closeProject() {
     content.getChildren().remove(projectFolderDropdown);
     openedProject = null;
-    openFiles.setVisible(true);
-    recentlyClosed.setVisible(true);
+    content.getChildren().addAll(openFiles, recentlyClosed);
   }
 
   public FolderDropdown getProjectFolderDropdown() {

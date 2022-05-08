@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import javafx.scene.Node;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -458,8 +459,7 @@ public class FileService {
       for (Object o : array) {
         System.out.println("project found!");
         JSONObject jso = (JSONObject) o;
-        projects.add(
-          new BaristaProject((String) jso.get("projectName"), (String) jso.get("projectRoot")));
+        projects.add(new BaristaProject((String) jso.get("projectName"), (String) jso.get("projectRoot")));
       }
 
       return projects;
@@ -495,8 +495,7 @@ public class FileService {
   }
 
   private File renameFile(File file, String name) {
-    File renamedFile = new File(file.getParent() + "\\" + name);
-    System.out.println(renamedFile.getAbsolutePath());
+    File renamedFile = new File(file.getAbsolutePath().replace(file.getName(), name));
     try {
       Files.move(file, renamedFile);
     } catch (IOException e) {
@@ -553,8 +552,49 @@ public class FileService {
       } else if (Files.getFileExtension(file.getAbsolutePath()).equals("java")) {
         persistenceService.getOpenProject().removeSourceFile(file);
       }
+      saveProject();
     }
     return renamedFile;
+  }
+
+  public void renameFolder(File oldFolder, String name, FolderDropdownItem folderDropdownItem) {
+    //renaming the actual file
+    File newFolder = new File(oldFolder.getAbsolutePath().replace(oldFolder.getName(), name));
+    oldFolder.renameTo(newFolder);
+    BaristaProject openProject = persistenceService.getOpenProject();
+
+    //renaming the files/folders inside the project
+    openProject.setFolders(new ArrayList<>(
+      openProject.getFolders().stream().map(folder -> folder.replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()))
+        .collect(Collectors.toList())));
+    openProject.getFolders().forEach(System.out::println);
+    openProject.setSourceFiles(new ArrayList<>(openProject.getSourceFiles().stream()
+      .map(sourceFile -> sourceFile.replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath())).toList()));
+
+    if(openProject.getTargetFolder().contains(oldFolder.getAbsolutePath())){
+      openProject.setTargetFolder(openProject.getTargetFolder().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
+    }
+    if(openProject.getSourceRoot().contains(oldFolder.getAbsolutePath())){
+      openProject.setSourceRoot(openProject.getSourceRoot().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
+    }
+    if(openProject.getProjectRoot().contains(oldFolder.getAbsolutePath())){
+      openProject.setProjectRoot(openProject.getProjectRoot().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
+    }
+
+    //renaming files inside SwitchMenus
+    //TODO compatible with multiple interfaces
+    if (persistenceService.getActiveInterface() != null) {
+      persistenceService.getActiveInterface().getSwitchMenu().getChildren().stream()
+        .forEach(child -> ((SwitchMenuItem) child).setFile(new File(((SwitchMenuItem) child).getFile().getAbsolutePath().replace(
+          oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()))));
+    }
+
+    //renaming the files/folders in the dropdown
+    persistenceService.getSideMenu().getProjectFolderDropdown().getRootNode().doActionTopToBottom(item -> {
+      item.setParentPath(item.getParentPath().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
+    });
+    folderDropdownItem.setText(name);
+    saveProject();
   }
 
   private void renameReferences(File file, String oldReference, String newReference) {
