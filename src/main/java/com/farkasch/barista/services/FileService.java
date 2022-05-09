@@ -98,7 +98,8 @@ public class FileService {
 
   public File createFolder(String path) {
     File newFolder = new File(path);
-    newFolder.mkdir();
+    System.out.println(path);
+    System.out.println(newFolder.mkdir());
     return newFolder;
   }
 
@@ -127,7 +128,7 @@ public class FileService {
 
   //deleting the specified folder and ALL ITS CONTENTS from the project
   public boolean deleteFolder(FolderDropdownItem folderDropdownItem) {
-    System.out.println("delete Folder!");
+
     //removing the folder, and all its children from the project
     File folderToDelete = new File(folderDropdownItem.getPath());
     BaristaProject baristaProject = persistenceService.getOpenProject();
@@ -145,7 +146,7 @@ public class FileService {
     projectDropdown.removeFolderDropdownItem(folderDropdownItem);
 
     //removing all the files from the switch menu
-    if(persistenceService.getActiveInterface() != null) {
+    if (persistenceService.getActiveInterface() != null) {
       SwitchMenu switchMenu = persistenceService.getActiveInterface().getSwitchMenu();
       List<Node> menusToClose = switchMenu.getChildren().stream()
         .filter(switchMenuItem -> ((SwitchMenuItem) switchMenuItem).getFile().getAbsolutePath().contains(folderToDelete.getAbsolutePath())).toList();
@@ -401,9 +402,6 @@ public class FileService {
 
       array.add(project);
       jsonString = JSONArray.toJSONString(array);
-      if (!globalProjectConfig.canWrite()) {
-        globalProjectConfig.setWritable(true);
-      }
       writer = new FileWriter(globalProjectConfig);
       writer.write(jsonString);
       writer.close();
@@ -461,6 +459,54 @@ public class FileService {
       e.printStackTrace(printWriter);
       File errorFile = createErrorLog(stringWriter.toString());
       errorPopup.showWindow(Result.ERROR("Error while saving project!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
+    }
+  }
+
+  public void renameProject(String name, FolderDropdownItem folderDropdownItem) {
+    BaristaProject baristaProject = persistenceService.getOpenProject();
+    String oldProjectRoot = baristaProject.getProjectRoot();
+    baristaProject.setProjectName(name);
+    renameFolder(new File(baristaProject.getProjectRoot()), name, folderDropdownItem);
+    saveProject();
+
+    try {
+      File globalProjectConfig = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
+      Scanner scanner = new Scanner(globalProjectConfig);
+      JSONParser parser = new JSONParser();
+      JSONArray array = new JSONArray();
+      String jsonString = "";
+
+      while (scanner.hasNextLine()) {
+        jsonString = jsonString.concat(scanner.nextLine());
+      }
+      scanner.close();
+
+      if (jsonString != "") {
+        array = ((JSONArray) parser.parse(jsonString));
+      }
+
+      for (Object json : array) {
+        if (((JSONObject) json).get("projectRoot").equals(oldProjectRoot)) {
+          ((JSONObject) json).replace("projectName", baristaProject.getProjectName());
+          ((JSONObject) json).replace("projectRoot", baristaProject.getProjectRoot());
+          break;
+        }
+      }
+
+      jsonString = JSONArray.toJSONString(array);
+      FileWriter writer = new FileWriter(globalProjectConfig);
+      writer.write(jsonString);
+      writer.close();
+
+    } catch (IOException | ParseException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while renaming project!", errorFile));
 
       printWriter.close();
       e.printStackTrace();
@@ -610,6 +656,9 @@ public class FileService {
     if (openProject.getProjectRoot().contains(oldFolder.getAbsolutePath())) {
       openProject.setProjectRoot(openProject.getProjectRoot().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
     }
+    if(openProject.getMainFile().getAbsolutePath().contains(oldFolder.getAbsolutePath())){
+      openProject.setMainFile(new File(openProject.getMainFile().getAbsolutePath().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath())));
+    }
 
     //renaming files inside SwitchMenus
     //TODO compatible with multiple interfaces
@@ -620,10 +669,16 @@ public class FileService {
     }
 
     //renaming the files/folders in the dropdown
-    persistenceService.getSideMenu().getProjectFolderDropdown().getRootNode().doActionTopToBottom(item -> {
-      item.setParentPath(item.getParentPath().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
-    });
     folderDropdownItem.setText(name);
+    persistenceService.getSideMenu().getProjectFolderDropdown().getRootNode().doActionTopToBottom(item -> {
+      System.out.println("-----old-----");
+      System.out.println("parent: " + item.getParentPath());
+      System.out.println("path: " + item.getPath());
+      item.setParentPath(item.getParentPath().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
+      System.out.println("-----new-----");
+      System.out.println("parent: " + item.getParentPath());
+      System.out.println("path: " + item.getPath());
+    });
     saveProject();
   }
 

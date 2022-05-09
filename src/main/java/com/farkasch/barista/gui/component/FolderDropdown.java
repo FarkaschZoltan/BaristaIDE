@@ -25,16 +25,21 @@ public class FolderDropdown extends GridPane {
   private double width; //for maintaining optimal width
   private Consumer<FolderDropdownItem> folderLeftClickAction;
   private Consumer<FolderDropdownItem> fileLeftClickAction;
+  private Consumer<FolderDropdownItem> absoluteParentLeftClickAction;
   private List<MenuItem> folderContextMenuItems;
   private List<MenuItem> fileContextMenuItems;
+  private List<MenuItem> absoluteParentContextMenuItems;
   private boolean showFiles;
   private boolean withAbsoluteParent;
   private boolean defaultFolderLeftClickAction = true;
   private boolean defaultFolderRightClickAction = true;
   private boolean defaultFileLeftClickAction = true;
   private boolean defaultFileRightClickAction = true;
+  private boolean defaultAbsoluteParentRightClickAction = true;
+  private boolean defaultAbsoluteParentLeftClickAction = true;
   private TreeNode<FolderDropdownItem> rootNode; //for tracking the depth of the dropdown. Used for width calculations
   private ColumnConstraints columnConstraints;
+  private ContextMenu activeContextMenu; //for handling multiple left-clicks on the same item
 
   public FolderDropdown(double width, FileService fileService, boolean showFiles, boolean withAbsoluteParent) {
     this.width = width;
@@ -59,6 +64,12 @@ public class FolderDropdown extends GridPane {
     defaultFileLeftClickAction = false;
   }
 
+  public void setAbsoluteParentClickAction(
+    Consumer<FolderDropdownItem> absoluteParentClickAction) {
+    this.absoluteParentLeftClickAction = absoluteParentClickAction;
+    defaultAbsoluteParentLeftClickAction = false;
+  }
+
   public void setFileContextMenuItems(List<MenuItem> fileContextMenuItems) {
     this.fileContextMenuItems = fileContextMenuItems;
     defaultFileRightClickAction = false;
@@ -69,6 +80,11 @@ public class FolderDropdown extends GridPane {
     defaultFolderRightClickAction = false;
   }
 
+  public void setAbsoluteParentContextMenuItems(List<MenuItem> absoluteParentContextMenuItems) {
+    this.absoluteParentContextMenuItems = absoluteParentContextMenuItems;
+    defaultAbsoluteParentRightClickAction = false;
+  }
+
   public TreeNode<FolderDropdownItem> getRootNode() {
     return rootNode;
   }
@@ -77,8 +93,8 @@ public class FolderDropdown extends GridPane {
     if (withAbsoluteParent && parentPath != null) {
       VBox absoluteParentContainer = new VBox();
       String absoluteParentName = parentPath.split("\\\\")[parentPath.split("\\\\").length - 1];
-      FolderDropdownItem absoluteParent = new FolderDropdownItem(absoluteParentName, parentPath, absoluteParentContainer, rootNode);
-      absoluteParent.setParentContainer(absoluteParentContainer);
+      FolderDropdownItem absoluteParent = new FolderDropdownItem(absoluteParentName, new File(parentPath).getParent(), parentContainer, rootNode);
+      absoluteParent.setItemContainer(absoluteParentContainer);
 
       rootNode.setValue(absoluteParent);
 
@@ -90,14 +106,24 @@ public class FolderDropdown extends GridPane {
       absoluteParent.setId("folder");
       absoluteParent.setMaxWidth(Double.MAX_VALUE);
       absoluteParent.setMaxHeight(Double.MAX_VALUE);
-      absoluteParent.setOnAction(mouseEvent -> {
-        if (!defaultFolderLeftClickAction) {
-          folderLeftClickAction.accept(absoluteParent);
-        }
-        if (absoluteParentContainer.getChildren().size() > 1) {
-          folderClose(absoluteParentContainer, rootNode);
-        } else {
-          folderExpand(parentPath, absoluteParentContainer, rootNode);
+      absoluteParent.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+        if (event.getButton() == MouseButton.PRIMARY) {
+          if (!defaultAbsoluteParentLeftClickAction) {
+            absoluteParentLeftClickAction.accept(absoluteParent);
+          }
+          if (absoluteParentContainer.getChildren().size() > 1) {
+            folderClose(absoluteParent.getItemContainer(), absoluteParent.getNode());
+          } else {
+            folderExpand(absoluteParent.getPath(), absoluteParent.getItemContainer(), absoluteParent.getNode());
+          }
+        } else if (event.getButton() == MouseButton.SECONDARY) {
+          if (!defaultAbsoluteParentRightClickAction) {
+            if (activeContextMenu != null) {
+              activeContextMenu.hide();
+            }
+            activeContextMenu = createContextMenu(absoluteParentContextMenuItems);
+            activeContextMenu.show(absoluteParent, event.getScreenX(), event.getScreenY());
+          }
         }
       });
       addRow(0, absoluteParentContainer);
@@ -106,8 +132,8 @@ public class FolderDropdown extends GridPane {
     }
   }
 
-  private void folderExpand(@Nullable String parentName, @Nullable VBox parentContainer, TreeNode parentNode) {
-    List<File> dirs = fileService.getDirsAndFiles(parentName);
+  private void folderExpand(@Nullable String parentPath, @Nullable VBox parentContainer, TreeNode parentNode) {
+    List<File> dirs = fileService.getDirsAndFiles(parentPath);
     GridPane folderSelector;
     if (parentContainer == null) {
       folderSelector = this;
@@ -119,7 +145,7 @@ public class FolderDropdown extends GridPane {
       TreeNode<FolderDropdownItem> node = new TreeNode<>();
       VBox folderContainer = new VBox();
       folderContainer.setMinWidth(width);
-      FolderDropdownItem folderDropdownItem = new FolderDropdownItem(dirs.get(i).getName(), parentName, parentContainer, folderContainer,
+      FolderDropdownItem folderDropdownItem = new FolderDropdownItem(dirs.get(i).getName(), parentPath, parentContainer, folderContainer,
         folderSelector, node);
       node.setParent(parentNode);
       node.setValue(folderDropdownItem);
@@ -154,6 +180,7 @@ public class FolderDropdown extends GridPane {
     if (parentFolder.getItemContainer().getChildren().size() < 2) {
       folderExpand(parentFolder.getParentPath() == null ? System.getProperty("user.home") : parentFolder.getPath(), parentFolder.getItemContainer(),
         parentFolder.getNode());
+      System.out.println("open!");
       return;
     }
     GridPane childGrid = ((GridPane) (parentFolder.getItemContainer().getChildren().get(1)));
@@ -197,7 +224,7 @@ public class FolderDropdown extends GridPane {
 
   public void removeFolderDropdownItem(FolderDropdownItem folderDropdownItem) {
 
-    if(new File(folderDropdownItem.getPath()).isDirectory()){
+    if (new File(folderDropdownItem.getPath()).isDirectory()) {
       folderClose(folderDropdownItem.getItemContainer(), folderDropdownItem.getNode());
     }
     GridPane grid = folderDropdownItem.getParentGrid();
@@ -251,8 +278,8 @@ public class FolderDropdown extends GridPane {
           if (itemContainer.getChildren().size() > 1) {
             folderClose(itemContainer, node);
           } else {
-            folderExpand((folderDropdownItem.getParentPath() == null ? System.getProperty("user.home") : folderDropdownItem.getParentPath()) + "\\"
-              + folderDropdownItem.getText(), folderDropdownItem.getItemContainer(), node);
+            folderExpand((folderDropdownItem.getParentPath() == null ? System.getProperty("user.home") : folderDropdownItem.getPath()),
+              folderDropdownItem.getItemContainer(), node);
           }
         } else {
           //file actions
@@ -263,10 +290,18 @@ public class FolderDropdown extends GridPane {
       } else if (click.getButton() == MouseButton.SECONDARY) {
         if (!isFile.booleanValue() && !defaultFolderRightClickAction) {
           //folder actions
-          createContextMenu(folderContextMenuItems).show(folderDropdownItem, click.getScreenX(), click.getScreenY());
+          if (activeContextMenu != null) {
+            activeContextMenu.hide();
+          }
+          activeContextMenu = createContextMenu(folderContextMenuItems);
+          activeContextMenu.show(folderDropdownItem, click.getScreenX(), click.getScreenY());
         } else if (isFile && !defaultFileRightClickAction) {
           //file actions
-          createContextMenu(fileContextMenuItems).show(folderDropdownItem, click.getScreenX(), click.getScreenY());
+          if (activeContextMenu != null) {
+            activeContextMenu.hide();
+          }
+          activeContextMenu = createContextMenu(fileContextMenuItems);
+          activeContextMenu.show(folderDropdownItem, click.getScreenX(), click.getScreenY());
         }
       }
     };

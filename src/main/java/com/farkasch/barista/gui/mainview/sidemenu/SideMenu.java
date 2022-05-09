@@ -9,6 +9,7 @@ import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.BaristaProject;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.RunnableFuture;
@@ -41,6 +42,8 @@ public class SideMenu extends BorderPane {
   private RenameFolderPopup renameFolderPopup;
   @Autowired
   private RenameFilePopup renameFilePopup;
+  @Autowired
+  private RenameProjectPopup renameProjectPopup;
   @Autowired
   private WarningPopup warningPopup;
 
@@ -192,6 +195,15 @@ public class SideMenu extends BorderPane {
 
     });
     projectFolderDropdown.setFileContextMenuItems(Arrays.asList(renameFile, deleteFile));
+
+    MenuItem renameProject = new MenuItem("Rename Project");
+    renameProject.setOnAction(click -> renameProjectPopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
+
+    MenuItem closeProject = new MenuItem("Close Project");
+
+    MenuItem deleteProject = new MenuItem("Delete Project");
+
+    projectFolderDropdown.setAbsoluteParentContextMenuItems(Arrays.asList(renameProject, newFile, newFolder, closeProject, deleteProject));
 
     projectFolderDropdown.prepare(openedProject.getProjectRoot(), null);
 

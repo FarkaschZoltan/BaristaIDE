@@ -9,7 +9,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class BaristaProject {
-
+  //TODO: Create a list with all files
   private String projectName;
   private String projectRoot;
   private String sourceRoot;
