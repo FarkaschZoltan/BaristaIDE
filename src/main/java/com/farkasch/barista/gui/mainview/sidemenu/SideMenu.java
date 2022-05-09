@@ -7,6 +7,7 @@ import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.services.ProcessService;
+import com.farkasch.barista.util.BaristaDragBoard;
 import com.farkasch.barista.util.BaristaProject;
 import java.io.File;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.input.Dragboard;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -46,6 +48,8 @@ public class SideMenu extends BorderPane {
   private RenameProjectPopup renameProjectPopup;
   @Autowired
   private WarningPopup warningPopup;
+  @Autowired
+  private BaristaDragBoard dragBoard;
 
   private HBox topMenu;
   private VBox content;
@@ -105,6 +109,9 @@ public class SideMenu extends BorderPane {
     content.setId("side-menu__content");
     content.setMaxWidth(Double.MAX_VALUE);
     content.getChildren().addAll(recentlyClosed, openFiles);
+    content.setOnDragOver(event -> {
+      System.out.println("content");
+    });
   }
 
   private void initCompileButton() {
@@ -208,6 +215,8 @@ public class SideMenu extends BorderPane {
       acceptClick -> fileService.deleteProject(persistenceService.getOpenProject())));
 
     projectFolderDropdown.setAbsoluteParentContextMenuItems(Arrays.asList(renameProject, newFile, newFolder, closeProject, deleteProject));
+    //enabling file/folder dragging
+    projectFolderDropdown.setDragBoard(dragBoard);
 
     projectFolderDropdown.prepare(openedProject.getProjectRoot(), null);
 

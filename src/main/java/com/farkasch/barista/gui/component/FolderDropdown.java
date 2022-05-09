@@ -1,7 +1,9 @@
 package com.farkasch.barista.gui.component;
 
 import com.farkasch.barista.services.FileService;
+import com.farkasch.barista.util.BaristaDragBoard;
 import com.farkasch.barista.util.TreeNode;
+import com.google.common.io.Files;
 import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
@@ -11,8 +13,11 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -22,6 +27,7 @@ import org.springframework.lang.Nullable;
 public class FolderDropdown extends GridPane {
 
   private FileService fileService;
+  private BaristaDragBoard dragBoard;
   private double width; //for maintaining optimal width
   private Consumer<FolderDropdownItem> folderLeftClickAction;
   private Consumer<FolderDropdownItem> fileLeftClickAction;
@@ -37,6 +43,7 @@ public class FolderDropdown extends GridPane {
   private boolean defaultFileRightClickAction = true;
   private boolean defaultAbsoluteParentRightClickAction = true;
   private boolean defaultAbsoluteParentLeftClickAction = true;
+  private boolean dragAndDropEnabled = false;
   private TreeNode<FolderDropdownItem> rootNode; //for tracking the depth of the dropdown. Used for width calculations
   private ColumnConstraints columnConstraints;
   private ContextMenu activeContextMenu; //for handling multiple left-clicks on the same item
@@ -83,6 +90,11 @@ public class FolderDropdown extends GridPane {
   public void setAbsoluteParentContextMenuItems(List<MenuItem> absoluteParentContextMenuItems) {
     this.absoluteParentContextMenuItems = absoluteParentContextMenuItems;
     defaultAbsoluteParentRightClickAction = false;
+  }
+
+  public void setDragBoard(BaristaDragBoard dragBoard) {
+    this.dragBoard = dragBoard;
+    this.dragAndDropEnabled = true;
   }
 
   public TreeNode<FolderDropdownItem> getRootNode() {
@@ -156,6 +168,7 @@ public class FolderDropdown extends GridPane {
         folderDropdownItem.setGraphic(new FontIcon("mdi-folder"));
       }
 
+      enableDragAndDrop(folderDropdownItem);
       folderDropdownItem.setOnMouseClicked(getFolderDropdownItemMouseClick(folderDropdownItem, isFile, node));
       folderDropdownItem.setId("folder");
       folderDropdownItem.setMaxWidth(Double.MAX_VALUE);
@@ -180,9 +193,10 @@ public class FolderDropdown extends GridPane {
     if (parentFolder.getItemContainer().getChildren().size() < 2) {
       folderExpand(parentFolder.getParentPath() == null ? System.getProperty("user.home") : parentFolder.getPath(), parentFolder.getItemContainer(),
         parentFolder.getNode());
-      System.out.println("open!");
+      System.out.println("closed");
       return;
     }
+    System.out.println("open");
     GridPane childGrid = ((GridPane) (parentFolder.getItemContainer().getChildren().get(1)));
     VBox folderContainer = new VBox();
     TreeNode<FolderDropdownItem> node = new TreeNode<>();
@@ -192,6 +206,7 @@ public class FolderDropdown extends GridPane {
     node.setParent(parentFolder.getNode());
     node.setValue(newItem);
     folderContainer.getChildren().add(newItem);
+    enableDragAndDrop(newItem);
     newItem.setOnMouseClicked(getFolderDropdownItemMouseClick(newItem, file.isFile(), parentFolder.getNode()));
     newItem.setId("folder");
     newItem.setMaxWidth(Double.MAX_VALUE);
@@ -306,6 +321,94 @@ public class FolderDropdown extends GridPane {
       }
     };
     return event;
+  }
+
+  private void enableDragAndDrop(FolderDropdownItem folderDropdownItem) {
+    if (dragAndDropEnabled) {
+      //Drag start, same for folder and file
+      folderDropdownItem.setOnDragDetected(event -> {
+        Dragboard db = folderDropdownItem.startDragAndDrop(TransferMode.MOVE);
+        //This needs to be here, because JavaFX only starts a dragEvent, when there is something in the drag board
+        //-------------------------------------------------------------
+        ClipboardContent cc = new ClipboardContent();
+        cc.putString("dummy");
+        db.setContent(cc);
+        //-------------------------------------------------------------
+        dragBoard.setDraggedItem(folderDropdownItem);
+        event.consume();
+      });
+      //Only accept the drag, if the dragged item is a FolderDropdownItem
+      folderDropdownItem.setOnDragOver(event -> {
+        if (event.getGestureSource() != folderDropdownItem && dragBoard.getDraggedItem().getClass().equals(FolderDropdownItem.class)) {
+          event.acceptTransferModes(TransferMode.MOVE);
+        }
+        event.consume();
+      });
+      //Drag Done, same for folder and file
+      folderDropdownItem.setOnDragDone(event -> {
+        if (event.getTransferMode() == TransferMode.MOVE) {
+          removeFolderDropdownItem((FolderDropdownItem) dragBoard.getDraggedItem());
+        }
+        dragBoard.dragDone();
+        event.consume();
+      });
+      if (new File(folderDropdownItem.getPath()).isFile()) {
+        //We change the style of the parent folder
+        folderDropdownItem.setOnDragEntered(event -> {
+          FolderDropdownItem parentFolder = (FolderDropdownItem) folderDropdownItem.getNode().getParent().getValue();
+          parentFolder.setId("folder--on-drag-entered");
+          event.consume();
+        });
+        //We change back the style of the parent folder
+        folderDropdownItem.setOnDragExited(event -> {
+          FolderDropdownItem parentFolder = (FolderDropdownItem) folderDropdownItem.getNode().getParent().getValue();
+          parentFolder.setId("folder");
+        });
+        //We add the dragged item to the grid
+        folderDropdownItem.setOnDragDropped(event -> {
+          if (dragBoard.getDraggedItem().getClass().equals(FolderDropdownItem.class)) {
+            FolderDropdownItem parentFolder = (FolderDropdownItem) folderDropdownItem.getNode().getParent().getValue();
+            FolderDropdownItem draggedItem = (FolderDropdownItem) dragBoard.getDraggedItem();
+            File destination = null;
+            if (new File(draggedItem.getPath()).isFile()) {
+              destination = fileService.moveFile(new File(draggedItem.getPath()), parentFolder.getPath());
+            }
+            addFolderDropdownItem(parentFolder, destination);
+            event.setDropCompleted(true);
+          } else {
+            event.setDropCompleted(false);
+          }
+          event.consume();
+        });
+      } else {
+        //We change the style of this folder
+        folderDropdownItem.setOnDragEntered(event -> {
+          if (event.getGestureSource() != folderDropdownItem && dragBoard.getDraggedItem().getClass().equals(FolderDropdownItem.class)) {
+            folderDropdownItem.setId("folder--on-drag-entered");
+          }
+          event.consume();
+        });
+        //We change the style back to normal
+        folderDropdownItem.setOnDragExited(event -> {
+          folderDropdownItem.setId("folder");
+        });
+        //We add the dragged item to the grid
+        folderDropdownItem.setOnDragDropped(event -> {
+          if (dragBoard.getDraggedItem().getClass().equals(FolderDropdownItem.class)) {
+            FolderDropdownItem draggedItem = (FolderDropdownItem) dragBoard.getDraggedItem();
+            File destination = null;
+            if (new File(draggedItem.getPath()).isFile()) {
+              destination = fileService.moveFile(new File(draggedItem.getPath()), folderDropdownItem.getPath());
+            }
+            addFolderDropdownItem(folderDropdownItem, destination);
+            event.setDropCompleted(true);
+          } else {
+            event.setDropCompleted(false);
+          }
+          event.consume();
+        });
+      }
+    }
   }
 
   public class FolderDropdownItem extends Button {

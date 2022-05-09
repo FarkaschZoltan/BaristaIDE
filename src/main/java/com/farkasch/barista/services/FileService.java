@@ -724,6 +724,42 @@ public class FileService {
     saveProject();
   }
 
+  public File moveFile(File fileToMove, String destinationPath){
+    try{
+      File destinationFile = new File(destinationPath + "\\" + fileToMove.getName());
+      //changing file path in project config
+      BaristaProject baristaProject = persistenceService.getOpenProject();
+      for(String file : baristaProject.getSourceFiles()){
+        if(file.equals(fileToMove.getAbsolutePath())){
+          file = destinationFile.getAbsolutePath();
+          break;
+        }
+      }
+      //changing the file in the switch menu(s)
+      if(persistenceService.getActiveInterface() != null){
+        for(Node node : persistenceService.getActiveInterface().getSwitchMenu().getChildren()){
+          SwitchMenuItem item = (SwitchMenuItem) node;
+          if(item.getFile().getAbsolutePath().equals(fileToMove.getAbsolutePath())){
+            item.setFile(destinationFile);
+          }
+        }
+      }
+      //moving the actual file
+      Files.move(fileToMove, destinationFile);
+      return destinationFile;
+    } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while moving file!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
+    }
+    return null;
+  }
+
   private void renameReferences(File file, String oldReference, String newReference) {
     if (file.isFile() && Files.getFileExtension(file.getAbsolutePath()).equals("java")) {
       try {
