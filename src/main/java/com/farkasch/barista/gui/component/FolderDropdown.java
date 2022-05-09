@@ -5,6 +5,7 @@ import com.farkasch.barista.util.BaristaDragBoard;
 import com.farkasch.barista.util.TreeNode;
 import com.google.common.io.Files;
 import java.io.File;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import javafx.event.EventHandler;
@@ -193,10 +194,8 @@ public class FolderDropdown extends GridPane {
     if (parentFolder.getItemContainer().getChildren().size() < 2) {
       folderExpand(parentFolder.getParentPath() == null ? System.getProperty("user.home") : parentFolder.getPath(), parentFolder.getItemContainer(),
         parentFolder.getNode());
-      System.out.println("closed");
       return;
     }
-    System.out.println("open");
     GridPane childGrid = ((GridPane) (parentFolder.getItemContainer().getChildren().get(1)));
     VBox folderContainer = new VBox();
     TreeNode<FolderDropdownItem> node = new TreeNode<>();
@@ -217,10 +216,20 @@ public class FolderDropdown extends GridPane {
       newItem.setGraphic(new FontIcon("mdi-folder"));
     }
 
+    Comparator<Node> comparator = (a, b) -> {
+      String text1 = ((FolderDropdownItem)(((VBox) a).getChildren().get(0))).getText().toLowerCase();
+      String text2 = ((FolderDropdownItem)(((VBox) b).getChildren().get(0))).getText().toLowerCase();
+      return text1.compareTo(text2);
+    };
+
     int i = 0;
     int newItemIndex = 0;
     boolean foundIndex = false;
-    for (Node child : childGrid.getChildren()) {
+    for (Node child : childGrid.getChildren().sorted(comparator)) {
+      System.out.println(((FolderDropdownItem) ((VBox) child).getChildren().get(0)).getText().toLowerCase());
+      System.out.println(newItem.getText().toLowerCase());
+      System.out.println(
+        ((FolderDropdownItem) ((VBox) child).getChildren().get(0)).getText().toLowerCase().compareTo(newItem.getText().toLowerCase()));
       if (((FolderDropdownItem) ((VBox) child).getChildren().get(0)).getText().toLowerCase().compareTo(newItem.getText().toLowerCase()) > 0) {
         if (!foundIndex) {
           newItemIndex = i;
@@ -234,7 +243,10 @@ public class FolderDropdown extends GridPane {
     if (!foundIndex) {
       newItemIndex = childGrid.getRowCount();
     }
+    System.out.println(newItemIndex);
+    System.out.println(newItem.getText());
     childGrid.addRow(newItemIndex, folderContainer);
+    System.out.println(childGrid.getChildren().size());
   }
 
   public void removeFolderDropdownItem(FolderDropdownItem folderDropdownItem) {
