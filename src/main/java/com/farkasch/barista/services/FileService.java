@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -464,6 +465,53 @@ public class FileService {
       e.printStackTrace();
     }
   }
+  //deletes given project
+  public void deleteProject(BaristaProject baristaProject){
+    try{
+      File globalProjectConfig = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
+      Scanner scanner = new Scanner(globalProjectConfig);
+      JSONParser parser = new JSONParser();
+      JSONArray array = new JSONArray();
+      String jsonString = "";
+
+      while (scanner.hasNextLine()) {
+        jsonString = jsonString.concat(scanner.nextLine());
+      }
+      scanner.close();
+
+      if (jsonString != "") {
+        array = ((JSONArray) parser.parse(jsonString));
+      }
+
+      JSONObject toDelete = null;
+      for (Object json : array) {
+        if (((JSONObject) json).get("projectRoot").equals(baristaProject.getProjectRoot())) {
+          toDelete = (JSONObject) json;
+          break;
+        }
+      }
+
+      FileSystemUtils.deleteRecursively(new File(baristaProject.getProjectRoot()));
+      if(persistenceService.getOpenProject().getProjectRoot().equals(baristaProject.getProjectRoot())){
+        persistenceService.getSideMenu().closeProject();
+      }
+      array.remove(toDelete);
+
+      jsonString = JSONArray.toJSONString(array);
+      FileWriter writer = new FileWriter(globalProjectConfig);
+      writer.write(jsonString);
+      writer.close();
+    } catch (IOException | ParseException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while deleting project!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
+    }
+  }
 
   public void renameProject(String name, FolderDropdownItem folderDropdownItem) {
     BaristaProject baristaProject = persistenceService.getOpenProject();
@@ -671,13 +719,7 @@ public class FileService {
     //renaming the files/folders in the dropdown
     folderDropdownItem.setText(name);
     persistenceService.getSideMenu().getProjectFolderDropdown().getRootNode().doActionTopToBottom(item -> {
-      System.out.println("-----old-----");
-      System.out.println("parent: " + item.getParentPath());
-      System.out.println("path: " + item.getPath());
       item.setParentPath(item.getParentPath().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
-      System.out.println("-----new-----");
-      System.out.println("parent: " + item.getParentPath());
-      System.out.println("path: " + item.getPath());
     });
     saveProject();
   }
