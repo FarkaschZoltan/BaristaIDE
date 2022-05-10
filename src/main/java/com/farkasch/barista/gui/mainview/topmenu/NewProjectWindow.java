@@ -1,6 +1,7 @@
 package com.farkasch.barista.gui.mainview.topmenu;
 
 import com.farkasch.barista.gui.component.FolderDropdown;
+import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.enums.ProjectTypeEnum;
@@ -30,6 +31,8 @@ public class NewProjectWindow extends Stage {
 
   @Autowired
   private FileService fileService;
+  @Autowired
+  private WarningPopup warningPopup;
 
   //Design
   private TextField projectNameField;
@@ -143,7 +146,7 @@ public class NewProjectWindow extends Stage {
     folderPathField.setText(System.getProperty("user.home"));
     projectType.setValue(ProjectTypeEnum.BASIC);
 
-    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, false, false);
+    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, warningPopup, false, false);
     rootFolderSelector.setFolderLeftClickAction(target -> folderPathField.setText(
       target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath()));
 

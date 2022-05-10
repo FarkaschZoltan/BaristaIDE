@@ -2,6 +2,7 @@ package com.farkasch.barista.gui.mainview.topmenu;
 
 import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.gui.component.FolderDropdown;
+import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.services.ProcessService;
@@ -38,6 +39,8 @@ public class NewFileWindow extends Stage {
   private PersistenceService persistenceService;
   @Autowired
   private ErrorPopup errorPopup;
+  @Autowired
+  private WarningPopup warningPopup;
 
   //Design
   private TextField fileNameField;
@@ -129,7 +132,7 @@ public class NewFileWindow extends Stage {
     fileNameField.setText("");
     folderPathLabel.setText(System.getProperty("user.home"));
 
-    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, false, false);
+    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, warningPopup, false, false);
     rootFolderSelector.setFolderLeftClickAction(target -> {
       folderPathField.setText(target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath());
     });

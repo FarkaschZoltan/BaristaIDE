@@ -2,7 +2,9 @@ package com.farkasch.barista.gui.component;
 
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.util.BaristaDragBoard;
+import com.farkasch.barista.util.Result;
 import com.farkasch.barista.util.TreeNode;
+import com.farkasch.barista.util.enums.ResultTypeEnum;
 import com.google.common.io.Files;
 import java.io.File;
 import java.util.Comparator;
@@ -27,6 +29,7 @@ import org.springframework.lang.Nullable;
 
 public class FolderDropdown extends GridPane {
 
+  private WarningPopup warningPopup;
   private FileService fileService;
   private BaristaDragBoard dragBoard;
   private double width; //for maintaining optimal width
@@ -49,9 +52,10 @@ public class FolderDropdown extends GridPane {
   private ColumnConstraints columnConstraints;
   private ContextMenu activeContextMenu; //for handling multiple left-clicks on the same item
 
-  public FolderDropdown(double width, FileService fileService, boolean showFiles, boolean withAbsoluteParent) {
+  public FolderDropdown(double width, FileService fileService, WarningPopup warningPopup, boolean showFiles, boolean withAbsoluteParent) {
     this.width = width;
     this.fileService = fileService;
+    this.warningPopup = warningPopup;
     this.showFiles = showFiles;
     this.withAbsoluteParent = withAbsoluteParent;
 
@@ -217,8 +221,8 @@ public class FolderDropdown extends GridPane {
     }
 
     Comparator<Node> comparator = (a, b) -> {
-      String text1 = ((FolderDropdownItem)(((VBox) a).getChildren().get(0))).getText().toLowerCase();
-      String text2 = ((FolderDropdownItem)(((VBox) b).getChildren().get(0))).getText().toLowerCase();
+      String text1 = ((FolderDropdownItem) (((VBox) a).getChildren().get(0))).getText().toLowerCase();
+      String text2 = ((FolderDropdownItem) (((VBox) b).getChildren().get(0))).getText().toLowerCase();
       return text1.compareTo(text2);
     };
 
@@ -226,10 +230,6 @@ public class FolderDropdown extends GridPane {
     int newItemIndex = 0;
     boolean foundIndex = false;
     for (Node child : childGrid.getChildren().sorted(comparator)) {
-      System.out.println(((FolderDropdownItem) ((VBox) child).getChildren().get(0)).getText().toLowerCase());
-      System.out.println(newItem.getText().toLowerCase());
-      System.out.println(
-        ((FolderDropdownItem) ((VBox) child).getChildren().get(0)).getText().toLowerCase().compareTo(newItem.getText().toLowerCase()));
       if (((FolderDropdownItem) ((VBox) child).getChildren().get(0)).getText().toLowerCase().compareTo(newItem.getText().toLowerCase()) > 0) {
         if (!foundIndex) {
           newItemIndex = i;
@@ -243,10 +243,7 @@ public class FolderDropdown extends GridPane {
     if (!foundIndex) {
       newItemIndex = childGrid.getRowCount();
     }
-    System.out.println(newItemIndex);
-    System.out.println(newItem.getText());
     childGrid.addRow(newItemIndex, folderContainer);
-    System.out.println(childGrid.getChildren().size());
   }
 
   public void removeFolderDropdownItem(FolderDropdownItem folderDropdownItem) {
@@ -257,7 +254,14 @@ public class FolderDropdown extends GridPane {
     GridPane grid = folderDropdownItem.getParentGrid();
     VBox nodeToRemove = new VBox();
     boolean removed = false;
-    for (Node node : grid.getChildren()) {
+
+    Comparator<Node> comparator = (a, b) -> {
+      String text1 = ((FolderDropdownItem) (((VBox) a).getChildren().get(0))).getText().toLowerCase();
+      String text2 = ((FolderDropdownItem) (((VBox) b).getChildren().get(0))).getText().toLowerCase();
+      return text1.compareTo(text2);
+    };
+
+    for (Node node : grid.getChildren().sorted(comparator)) {
       VBox itemContainer = (VBox) node;
       if (removed) {
         GridPane.setRowIndex(itemContainer, GridPane.getRowIndex(itemContainer) - 1);
@@ -352,7 +356,17 @@ public class FolderDropdown extends GridPane {
       //Only accept the drag, if the dragged item is a FolderDropdownItem
       folderDropdownItem.setOnDragOver(event -> {
         if (event.getGestureSource() != folderDropdownItem && dragBoard.getDraggedItem().getClass().equals(FolderDropdownItem.class)) {
-          event.acceptTransferModes(TransferMode.MOVE);
+          FolderDropdownItem item = (FolderDropdownItem) dragBoard.getDraggedItem();
+          System.out.println("dragged: " + item.getPath());
+          System.out.println("target: " + folderDropdownItem.getPath());
+          if (new File(item.getPath()).isFile()) {
+            event.acceptTransferModes(TransferMode.MOVE);
+          } else if (!fileService.folderContains(new File(item.getPath()).isFile() ? item.getParentPath() : item.getPath(),
+            folderDropdownItem.getPath()))
+          //makes sure a folder can't be dragged "into itself"
+          {
+            event.acceptTransferModes(TransferMode.MOVE);
+          }
         }
         event.consume();
       });
@@ -382,11 +396,20 @@ public class FolderDropdown extends GridPane {
             FolderDropdownItem parentFolder = (FolderDropdownItem) folderDropdownItem.getNode().getParent().getValue();
             FolderDropdownItem draggedItem = (FolderDropdownItem) dragBoard.getDraggedItem();
             File destination = null;
+            Result result = Result.FAIL();
             if (new File(draggedItem.getPath()).isFile()) {
-              destination = fileService.moveFile(new File(draggedItem.getPath()), parentFolder.getPath());
+              result = fileService.moveFile(new File(draggedItem.getPath()), parentFolder.getPath());
+            } else {
+              result = fileService.moveFolder(new File(draggedItem.getPath()), new File(parentFolder.getPath()));
             }
-            addFolderDropdownItem(parentFolder, destination);
-            event.setDropCompleted(true);
+            if (result.getResult() == ResultTypeEnum.OK) {
+              destination = (File) result.getReturnValue();
+              addFolderDropdownItem(parentFolder, destination);
+              event.setDropCompleted(true);
+            } else {
+              warningPopup.showWindow(result);
+              event.setDropCompleted(false);
+            }
           } else {
             event.setDropCompleted(false);
           }
@@ -409,11 +432,21 @@ public class FolderDropdown extends GridPane {
           if (dragBoard.getDraggedItem().getClass().equals(FolderDropdownItem.class)) {
             FolderDropdownItem draggedItem = (FolderDropdownItem) dragBoard.getDraggedItem();
             File destination = null;
+            Result result;
             if (new File(draggedItem.getPath()).isFile()) {
-              destination = fileService.moveFile(new File(draggedItem.getPath()), folderDropdownItem.getPath());
+              result = fileService.moveFile(new File(draggedItem.getPath()), folderDropdownItem.getPath());
+            } else {
+              result = fileService.moveFolder(new File(draggedItem.getPath()), new File(folderDropdownItem.getPath()));
             }
-            addFolderDropdownItem(folderDropdownItem, destination);
-            event.setDropCompleted(true);
+            if (result.getResult() == ResultTypeEnum.OK) {
+              destination = (File) result.getReturnValue();
+              addFolderDropdownItem(folderDropdownItem, destination);
+              event.setDropCompleted(true);
+              System.out.println("here");
+            } else {
+              warningPopup.showWindow(result);
+              event.setDropCompleted(false);
+            }
           } else {
             event.setDropCompleted(false);
           }

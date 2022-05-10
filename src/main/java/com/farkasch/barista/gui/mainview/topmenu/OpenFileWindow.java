@@ -1,6 +1,7 @@
 package com.farkasch.barista.gui.mainview.topmenu;
 
 import com.farkasch.barista.gui.component.FolderDropdown;
+import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import java.io.File;
@@ -29,6 +30,8 @@ public class OpenFileWindow extends Stage {
   private FileService fileService;
   @Autowired
   private PersistenceService persistenceService;
+  @Autowired
+  private WarningPopup warningPopup;
 
   private Label fileName;
   private Label fileNameLabel;
@@ -94,7 +97,7 @@ public class OpenFileWindow extends Stage {
     openButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(openButtonContainer, new Insets(10));
 
-    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, true, false);
+    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, warningPopup,true, false);
     rootFolderSelector.setFileLeftClickAction(target -> {
       fileName.setText(target.getText());
       filePath = target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath();
@@ -104,7 +107,7 @@ public class OpenFileWindow extends Stage {
   private void onLoad(Consumer<File> openFile){
     this.openFile = openFile;
     fileName.setText("");
-    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, true, false);
+    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, warningPopup, true, false);
     rootFolderSelector.setFileLeftClickAction(target -> {
       fileName.setText(target.getText());
       filePath = target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath();

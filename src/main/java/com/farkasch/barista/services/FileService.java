@@ -619,6 +619,8 @@ public class FileService {
   }
 
   private File renameFile(File file, String name) {
+    System.out.println("rename File:");
+    System.out.println(file.getName());
     File renamedFile = new File(file.getAbsolutePath().replace(file.getName(), name));
     try {
       Files.move(file, renamedFile);
@@ -663,12 +665,13 @@ public class FileService {
       persistenceService.getSideMenu().refresh();
     } else {
       folderDropdownItem.setText(renamedFile.getName());
-      if (persistenceService.getActiveFile().equals(file)) {
+      if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().equals(file)) {
         persistenceService.setActiveFile(renamedFile);
       }
       if (Files.getFileExtension(file.getAbsolutePath()).equals("java") && (Files.getFileExtension(name).equals("java") || Files.getFileExtension(
-          name)
-        .equals(""))) {
+        name).equals(""))) {
+        System.out.println("renaming references: ");
+        System.out.println(file.getName());
         renameReferences(new File(persistenceService.getOpenProject().getSourceRoot()),
           file.getName().split("\\.")[0], name.split("\\.")[0]);
         persistenceService.getOpenProject().removeSourceFile(file);
@@ -725,9 +728,12 @@ public class FileService {
     saveProject();
   }
 
-  public File moveFile(File fileToMove, String destinationPath) {
+  public Result moveFile(File fileToMove, String destinationFolder) {
     try {
-      File destinationFile = new File(destinationPath + "\\" + fileToMove.getName());
+      File destinationFile = new File(destinationFolder + "\\" + fileToMove.getName());
+      if (destinationFile.exists()) {
+        return Result.FAIL("A file with the same name already exists here!");
+      }
       BaristaProject baristaProject = persistenceService.getOpenProject();
       repackage(fileToMove, destinationFile);
       redoImports(fileToMove, destinationFile);
@@ -753,7 +759,7 @@ public class FileService {
       //moving the actual file
       saveProject();
       Files.move(fileToMove, destinationFile);
-      return destinationFile;
+      return Result.OK(destinationFile);
     } catch (IOException e) {
       StringWriter stringWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -764,7 +770,61 @@ public class FileService {
       printWriter.close();
       e.printStackTrace();
     }
-    return null;
+    return Result.FAIL();
+  }
+
+  public Result moveFolder(File directoryToMove, File targetDirectory) {
+    if (new File(targetDirectory.getAbsolutePath() + "\\" + directoryToMove.getName()).exists()) {
+      return Result.FAIL("A folder with this name already exists here!");
+    }
+    try {
+      //moving the actual directory
+      recursiveMove(directoryToMove, targetDirectory);
+      FileSystemUtils.deleteRecursively(directoryToMove);
+      saveProject();
+      return Result.OK(new File(targetDirectory.getAbsolutePath() + "\\"  + directoryToMove.getName()));
+    } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while reformatting imports!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
+    }
+    return Result.FAIL();
+  }
+
+  private void recursiveMove(File item, File targetDirectory) throws IOException {
+    BaristaProject baristaProject = persistenceService.getOpenProject();
+    File newItem = new File(targetDirectory.getAbsolutePath() + "\\" + item.getName());
+    if (item.isFile()) {
+      moveFile(item, targetDirectory.getAbsolutePath());
+    } else {
+      //editing folders in the project
+      for (String folderPath : baristaProject.getSourceFiles()) {
+        if (folderPath.equals(item.getAbsolutePath())) {
+          baristaProject.getFolders().remove(folderPath);
+          baristaProject.getFolders().add(newItem.getAbsolutePath());
+          break;
+        }
+      }
+      //if the folder changed is "special" we change that in the project as well
+      if (baristaProject.getTargetFolder().equals(item.getAbsolutePath())) {
+        baristaProject.setTargetFolder(newItem.getAbsolutePath());
+      }
+      if (baristaProject.getProjectRoot().equals(item.getAbsolutePath())) {
+        baristaProject.setProjectRoot(newItem.getAbsolutePath());
+      }
+      if (baristaProject.getSourceRoot().equals(item.getAbsolutePath())) {
+        baristaProject.setSourceRoot(newItem.getAbsolutePath());
+      }
+      newItem.mkdir();
+      for (File file : item.listFiles()) {
+        recursiveMove(file, newItem);
+      }
+    }
   }
 
   private void renameReferences(File file, String oldReference, String newReference) {
@@ -834,8 +894,6 @@ public class FileService {
       fos.write(sb.toString().getBytes());
       fos.close();
 
-      System.out.println(persistenceService.getActiveFile().equals(fileToMove));
-
       if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().equals(fileToMove)) {
         javaScriptService.setContent(persistenceService.getActiveInterface().getContentWebView(), sb.toString(), false);
       }
@@ -852,20 +910,20 @@ public class FileService {
   }
 
   private void redoImports(File fileToMove, File destinationFile) {
-    try{
+    try {
       String oldImportString = fileTemplates.createImport(fileToMove.getAbsolutePath()).trim();
       String newImportString = fileTemplates.createImport(destinationFile.getAbsolutePath()).trim();
       System.out.println(oldImportString);
       System.out.println(newImportString);
 
-      for(String path : persistenceService.getOpenProject().getSourceFiles()){
+      for (String path : persistenceService.getOpenProject().getSourceFiles()) {
         boolean endOfImports = false;
         Scanner scanner = new Scanner(new File(path));
         StringBuilder sb = new StringBuilder();
-        while(scanner.hasNextLine()){
+        while (scanner.hasNextLine()) {
           String line = scanner.nextLine();
-          if(!endOfImports){
-            if(!(line.contains("package") || line.contains("import") || line.equals(""))){
+          if (!endOfImports) {
+            if (!(line.contains("package") || line.contains("import") || line.equals(""))) {
               endOfImports = true;
             }
             line = line.replace(oldImportString, newImportString);
@@ -878,11 +936,11 @@ public class FileService {
         fos.write(sb.toString().getBytes());
         fos.close();
 
-        if(persistenceService.getActiveFile() != null && persistenceService.getActiveFile().getAbsolutePath().equals(path)){
+        if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().getAbsolutePath().equals(path)) {
           javaScriptService.setContent(persistenceService.getActiveInterface().getContentWebView(), sb.toString(), false);
         }
       }
-    } catch (IOException e){
+    } catch (IOException e) {
       StringWriter stringWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(stringWriter);
       e.printStackTrace(printWriter);
@@ -907,5 +965,13 @@ public class FileService {
       e.printStackTrace();
     }
     return logFile;
+  }
+
+  public boolean folderContains(String folderPath, String itemPath) {
+    String pathDiff = itemPath.replace(folderPath + "\\", "");
+    if(!pathDiff.equals(itemPath) && pathDiff.length() > 0){
+      return true;
+    }
+    return false;
   }
 }
