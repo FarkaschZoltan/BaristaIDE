@@ -56,14 +56,18 @@ public class ProcessService {
 
   private File Compile(String sourceDirectory, List<String> files, HashMap<JavacEnum, Object> args) {
 
-    File target = new File(args.get(JavacEnum.D) == null ? System.getProperty("user.home") : (String)args.get(JavacEnum.D));
-    if(args.get(JavacEnum.D) != null && !target.exists()){
-      target.mkdir();
-    } else {
-      for(File file : target.listFiles()){
-        FileSystemUtils.deleteRecursively(file);
+    if(args.get(JavacEnum.D) != null){
+      File target = new File((String) args.get(JavacEnum.D));
+      if(!target.exists()){
+        target.mkdir();
+      } else if(persistenceService.getOpenProject() != null){
+        for(File file : target.listFiles()){
+          FileSystemUtils.deleteRecursively(file);
+        }
       }
     }
+
+    System.out.println("here!");
 
     File argFile = createArgumentFile(sourceDirectory, args);
     File sourceFile = createSourceFile(sourceDirectory, files);
@@ -71,7 +75,8 @@ public class ProcessService {
       String command = "cmd /c \"javac @" + argFile.getName() + " @" + sourceFile.getName() + "\"";
       Process process = Runtime.getRuntime().exec(command, null, new File(sourceDirectory));
       process.waitFor();
-      System.out.println(process.exitValue());
+      BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+      reader.lines().forEach(System.out::println);
     } catch (IOException | InterruptedException e) {
       StringWriter stringWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(stringWriter);

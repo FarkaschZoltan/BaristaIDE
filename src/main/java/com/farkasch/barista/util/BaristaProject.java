@@ -110,7 +110,7 @@ public class BaristaProject {
   }
 
   public void removeSourceFile(File sourceFile) {
-    sourceFiles.remove(sourceFile.getAbsolutePath());
+   sourceFiles.remove(sourceFile.getAbsolutePath());
   }
 
   public File getMainFile() {

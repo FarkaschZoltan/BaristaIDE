@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -465,9 +464,10 @@ public class FileService {
       e.printStackTrace();
     }
   }
+
   //deletes given project
-  public void deleteProject(BaristaProject baristaProject){
-    try{
+  public void deleteProject(BaristaProject baristaProject) {
+    try {
       File globalProjectConfig = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
       Scanner scanner = new Scanner(globalProjectConfig);
       JSONParser parser = new JSONParser();
@@ -492,7 +492,7 @@ public class FileService {
       }
 
       FileSystemUtils.deleteRecursively(new File(baristaProject.getProjectRoot()));
-      if(persistenceService.getOpenProject().getProjectRoot().equals(baristaProject.getProjectRoot())){
+      if (persistenceService.getOpenProject().getProjectRoot().equals(baristaProject.getProjectRoot())) {
         persistenceService.getSideMenu().closeProject();
       }
       array.remove(toDelete);
@@ -704,8 +704,9 @@ public class FileService {
     if (openProject.getProjectRoot().contains(oldFolder.getAbsolutePath())) {
       openProject.setProjectRoot(openProject.getProjectRoot().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
     }
-    if(openProject.getMainFile().getAbsolutePath().contains(oldFolder.getAbsolutePath())){
-      openProject.setMainFile(new File(openProject.getMainFile().getAbsolutePath().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath())));
+    if (openProject.getMainFile().getAbsolutePath().contains(oldFolder.getAbsolutePath())) {
+      openProject.setMainFile(
+        new File(openProject.getMainFile().getAbsolutePath().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath())));
     }
 
     //renaming files inside SwitchMenus
@@ -724,27 +725,33 @@ public class FileService {
     saveProject();
   }
 
-  public File moveFile(File fileToMove, String destinationPath){
-    try{
+  public File moveFile(File fileToMove, String destinationPath) {
+    try {
       File destinationFile = new File(destinationPath + "\\" + fileToMove.getName());
-      //changing file path in project config
       BaristaProject baristaProject = persistenceService.getOpenProject();
-      for(String file : baristaProject.getSourceFiles()){
-        if(file.equals(fileToMove.getAbsolutePath())){
-          file = destinationFile.getAbsolutePath();
-          break;
-        }
+      repackage(fileToMove, destinationFile);
+      redoImports(fileToMove, destinationFile);
+
+      if (fileToMove.getAbsolutePath().equals(baristaProject.getMainFile().getAbsolutePath())) {
+        baristaProject.setMainFile(destinationFile);
       }
+      if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().equals(fileToMove)) {
+        persistenceService.setActiveFile(destinationFile);
+      }
+      //changing file path in project config
+      baristaProject.removeSourceFile(fileToMove);
+      baristaProject.addSourceFile(destinationFile);
       //changing the file in the switch menu(s)
-      if(persistenceService.getActiveInterface() != null){
-        for(Node node : persistenceService.getActiveInterface().getSwitchMenu().getChildren()){
+      if (persistenceService.getActiveInterface() != null) {
+        for (Node node : persistenceService.getActiveInterface().getSwitchMenu().getChildren()) {
           SwitchMenuItem item = (SwitchMenuItem) node;
-          if(item.getFile().getAbsolutePath().equals(fileToMove.getAbsolutePath())){
+          if (item.getFile().getAbsolutePath().equals(fileToMove.getAbsolutePath())) {
             item.setFile(destinationFile);
           }
         }
       }
       //moving the actual file
+      saveProject();
       Files.move(fileToMove, destinationFile);
       return destinationFile;
     } catch (IOException e) {
@@ -773,7 +780,7 @@ public class FileService {
         }
         scanner.close();
         saveFile(file, sb.toString());
-        if (persistenceService.getActiveFile().equals(file)) {
+        if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().equals(file)) {
           javaScriptService.setContent(persistenceService.getActiveInterface().getContentWebView(), sb.toString(), false);
         }
       } catch (FileNotFoundException e) {
@@ -790,6 +797,100 @@ public class FileService {
       for (File f : file.listFiles()) {
         renameReferences(f, oldReference, newReference);
       }
+    }
+  }
+
+  private void repackage(File fileToMove, File destinationFile) {
+    try {
+      String packageString = fileTemplates.createPackage(destinationFile.getParent()).trim();
+      Scanner scanner = new Scanner(fileToMove);
+      StringBuilder sb = new StringBuilder();
+      boolean hasPackage = false;
+      boolean firstLine = true;
+      boolean isLeading = true;
+      while (scanner.hasNextLine()) {
+        String line = scanner.nextLine();
+        if (!(line.equals("") && isLeading)) {
+          isLeading = false;
+          if (firstLine) {
+            String newLine = line.replaceAll("\\s*(package\\s.*;)", packageString);
+            if (!newLine.equals(line)) {
+              line = newLine;
+              hasPackage = true;
+            }
+            firstLine = false;
+          }
+          sb.append(line);
+          sb.append("\n");
+        }
+      }
+      scanner.close();
+
+      if (!hasPackage) {
+        sb.insert(0, packageString + "\n\n");
+      }
+
+      FileOutputStream fos = new FileOutputStream(fileToMove);
+      fos.write(sb.toString().getBytes());
+      fos.close();
+
+      System.out.println(persistenceService.getActiveFile().equals(fileToMove));
+
+      if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().equals(fileToMove)) {
+        javaScriptService.setContent(persistenceService.getActiveInterface().getContentWebView(), sb.toString(), false);
+      }
+    } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while repackaging file!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
+    }
+  }
+
+  private void redoImports(File fileToMove, File destinationFile) {
+    try{
+      String oldImportString = fileTemplates.createImport(fileToMove.getAbsolutePath()).trim();
+      String newImportString = fileTemplates.createImport(destinationFile.getAbsolutePath()).trim();
+      System.out.println(oldImportString);
+      System.out.println(newImportString);
+
+      for(String path : persistenceService.getOpenProject().getSourceFiles()){
+        boolean endOfImports = false;
+        Scanner scanner = new Scanner(new File(path));
+        StringBuilder sb = new StringBuilder();
+        while(scanner.hasNextLine()){
+          String line = scanner.nextLine();
+          if(!endOfImports){
+            if(!(line.contains("package") || line.contains("import") || line.equals(""))){
+              endOfImports = true;
+            }
+            line = line.replace(oldImportString, newImportString);
+          }
+          sb.append(line);
+          sb.append("\n");
+        }
+        scanner.close();
+        FileOutputStream fos = new FileOutputStream(path);
+        fos.write(sb.toString().getBytes());
+        fos.close();
+
+        if(persistenceService.getActiveFile() != null && persistenceService.getActiveFile().getAbsolutePath().equals(path)){
+          javaScriptService.setContent(persistenceService.getActiveInterface().getContentWebView(), sb.toString(), false);
+        }
+      }
+    } catch (IOException e){
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while reformatting imports!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
     }
   }
 

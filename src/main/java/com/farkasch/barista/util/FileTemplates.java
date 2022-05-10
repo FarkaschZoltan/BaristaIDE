@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class FileTemplates {
 
   @Autowired
-  PersistenceService persistenceService;
+  private PersistenceService persistenceService;
 
   public String mainTemplate() {
     String content =
@@ -59,10 +59,18 @@ public class FileTemplates {
     return content;
   }
 
-  private String createPackage(String classPath) {
+  public String createPackage(String classPath) {
     String packageName = classPath.substring(persistenceService.getOpenProject().getSourceRoot().length());
     packageName = packageName.replace("\\", ".");
 
     return packageName.length() == 0 ? "" : "package " + packageName.substring(1) + ";\n\n";
+  }
+
+  public String createImport(String filePath){
+    String importString = filePath.substring(persistenceService.getOpenProject().getSourceRoot().length());
+    importString = importString.replaceAll("(\\.java)", "");
+    importString = importString.replace("\\", ".");
+
+    return importString.length() == 0 ? "" : "import " + importString.substring(1) + ";\n";
   }
 }
