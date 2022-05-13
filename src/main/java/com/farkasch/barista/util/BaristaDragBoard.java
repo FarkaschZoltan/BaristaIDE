@@ -6,9 +6,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class BaristaDragBoard {
   private Object draggedItem;
+  private Object dragTarget;
 
   public BaristaDragBoard(){
+
     draggedItem = null;
+    dragTarget = null;
   }
 
   public BaristaDragBoard(Object draggedItem){
@@ -23,7 +26,16 @@ public class BaristaDragBoard {
     this.draggedItem = draggedItem;
   }
 
+  public Object getDragTarget() {
+    return dragTarget;
+  }
+
+  public void setDragTarget(Object dragTarget) {
+    this.dragTarget = dragTarget;
+  }
+
   public void dragDone(){
     this.draggedItem = null;
+    this.dragTarget = null;
   }
 }

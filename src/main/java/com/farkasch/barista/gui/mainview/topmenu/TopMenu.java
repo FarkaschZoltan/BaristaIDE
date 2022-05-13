@@ -1,6 +1,6 @@
 package com.farkasch.barista.gui.mainview.topmenu;
 
-import com.farkasch.barista.gui.mainview.MainStage;
+import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.gui.mainview.topmenu.settingswindow.CompileSettingsWindow;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
@@ -9,7 +9,6 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -29,10 +28,8 @@ public class TopMenu extends MenuBar {
   private LoadProjectWindow loadProjectWindow;
   @Autowired
   private PersistenceService persistenceService;
-  @Lazy
   @Autowired
-  private MainStage mainStage;
-
+  private CodingInterfaceContainer codingInterfaceContainer;
   private Menu fileMenu;
   private Menu settingsMenu;
   private Menu gitMenu;
@@ -54,7 +51,7 @@ public class TopMenu extends MenuBar {
     MenuItem newFile = new MenuItem("New File");
     newFile.setOnAction(actionEvent -> {
       newFileWindow.showWindow(file -> {
-        mainStage.openNewFile(file);
+        codingInterfaceContainer.openFile(file);
         persistenceService.addOpenFile(file);
       });
     });
@@ -67,7 +64,7 @@ public class TopMenu extends MenuBar {
     MenuItem openFile = new MenuItem("Open File");
     openFile.setOnAction(actionEvent -> {
       openFileWindow.showWindow(file -> {
-        mainStage.openNewFile(file);
+        codingInterfaceContainer.openFile(file);
         persistenceService.addOpenFile(file);
       });
     });
@@ -79,8 +76,8 @@ public class TopMenu extends MenuBar {
 
     MenuItem saveProject = new MenuItem("Save");
     saveProject.setOnAction(actionEvent -> {
-      fileService.saveFile(persistenceService.getActiveInterface().getShownFile(),
-        persistenceService.getActiveInterface().getTextContent());
+      fileService.saveFile(codingInterfaceContainer.getActiveInterface().getShownFile(),
+        codingInterfaceContainer.getActiveInterface().getTextContent());
     });
 
     fileMenu.getItems().addAll(newFile, newProject, openFile, loadProject, saveProject);

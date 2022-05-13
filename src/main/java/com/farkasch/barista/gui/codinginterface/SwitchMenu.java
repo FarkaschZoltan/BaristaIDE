@@ -1,23 +1,36 @@
 package com.farkasch.barista.gui.codinginterface;
 
 import com.farkasch.barista.services.PersistenceService;
+import com.farkasch.barista.util.BaristaDragBoard;
 import java.io.File;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javax.annotation.PostConstruct;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
-@Scope("prototype")
+@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class SwitchMenu extends HBox {
 
   @Autowired
   private PersistenceService persistenceService;
+  @Autowired
+  private BaristaDragBoard dragBoard;
+  @Lazy
+  @Autowired
+  private CodingInterfaceContainer codingInterfaceContainer;
 
   private CodingInterface parent;
   private SwitchMenuItem currentlyActive;
@@ -121,17 +134,43 @@ public class SwitchMenu extends HBox {
       setFillHeight(true);
       initOpenButton();
       initCloseButton();
+
+      addEventFilter(MouseEvent.DRAG_DETECTED, event -> {
+        System.out.println("Drag detected!");
+        Dragboard db = this.startDragAndDrop(TransferMode.MOVE);
+        //This needs to be here, because JavaFX only starts a dragEvent, when there is something in the drag board
+        //-------------------------------------------------------------
+        ClipboardContent cc = new ClipboardContent();
+        cc.putString("dummy");
+        db.setContent(cc);
+        //-------------------------------------------------------------
+        dragBoard.setDraggedItem(this);
+        codingInterfaceContainer.prepareDrag();
+        event.consume();
+      });
+
+      addEventFilter(DragEvent.DRAG_DONE, event -> {
+        if(dragBoard.getDragTarget() != null && dragBoard.getDragTarget().getClass().equals(CodingInterface.class)){
+          if(!dragBoard.getDragTarget().equals(parent)){
+            this.closeButton.getOnAction().handle(new ActionEvent());
+          }
+        }
+        dragBoard.dragDone();
+        codingInterfaceContainer.endDrag();
+        event.consume();
+      });
     }
 
     private void initOpenButton() {
       openButton = new Button(file.getName());
       openButton.setOnAction(actionEvent -> {
-        parent.showFile(file);
+        parent.showFileWithClick(file);
         currentlyActive.setContentId("switch-menu__item");
         currentlyActive = this;
         currentlyActive.setContentId("switch-menu__item--selected");
         persistenceService.setActiveFile(currentlyActive.getFile());
-        persistenceService.setActiveInterface(parent);
+        codingInterfaceContainer.setActiveInterface(parent);
+        persistenceService.updateShownFiles();
       });
       getChildren().add(openButton);
       openButton.setMinHeight(getHeight());
@@ -148,20 +187,21 @@ public class SwitchMenu extends HBox {
           menu.removeFile(index);
           parent.close();
         } else if (index > 0) {
-          parent.showFile(
+          parent.showFileWithClick(
             ((SwitchMenuItem) menu.getChildren().get(index - 1)).getFile());
           currentlyActive = (SwitchMenuItem) menu.getChildren().get(index - 1);
           currentlyActive.setContentId("switch-menu__item--selected");
           persistenceService.setActiveFile(currentlyActive.getFile());
           menu.removeFile(index);
         } else {
-          parent.showFile(
+          parent.showFileWithClick(
             ((SwitchMenuItem) menu.getChildren().get(index + 1)).getFile());
           currentlyActive = (SwitchMenuItem) menu.getChildren().get(index + 1);
           currentlyActive.setContentId("switch-menu__item--selected");
           persistenceService.setActiveFile(currentlyActive.getFile());
           menu.removeFile(index);
         }
+        persistenceService.updateShownFiles();
       });
       closeButton.setGraphic(new FontIcon("mdi-close"));
       closeButton.setMinHeight(getHeight());

@@ -1,11 +1,55 @@
 /* BASICS */
 
-.CodeMirror {
-  /* Set height, width, borders, and global font properties here */
-  font-family: monospace;
-  /*height: 300px;*/
+/* Added by Zoltán Farkasch */
+
+@font-face {
+  font-family: 'Hack';
+  src: url('../../fonts/Hack-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Hack';
+  src: url('../../fonts/Hack-BoldItalic.ttf') format('truetype');
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Hack';
+  src: url('../../fonts/Hack-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Hack';
+  src: url('../../fonts/Hack-Italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+body, html {
   height: 100%;
   width: 100%;
+  padding: 0px;
+  margin: 0px;
+}
+
+/**************************************/
+
+.CodeMirror {
+  /* Set height, width, borders, and global font properties here */
+  font-family: Hack; /*modified by Zoltán Farkasch*/
+  font-weight: bold; /*modified by Zoltán Farkasch*/
+  font-size: 12px; /*modified by Zoltán Farkasch*/
+  height: 100%; /*modified by Zoltán Farkasch*/
+  width: 100%; /*modified by Zoltán Farkasch*/
   color: black;
   direction: ltr;
 }

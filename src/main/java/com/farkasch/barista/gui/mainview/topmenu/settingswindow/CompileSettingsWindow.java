@@ -65,7 +65,7 @@ public class CompileSettingsWindow extends AbstractSettingsWindow {
   protected void save(){
     for(AbstractSetting setting : settingList){
       if(setting.getClass().equals(JarSetting.class)){
-        fileService.updateJarsInJarJson(((JarSetting) setting).getFile(), ((JarSetting) setting).getJars());
+        fileService.updateJarsInJarConfig(((JarSetting) setting).getFile(), ((JarSetting) setting).getJars());
       }
     }
 

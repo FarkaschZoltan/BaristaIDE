@@ -1,6 +1,5 @@
 package com.farkasch.barista.services;
 
-import com.farkasch.barista.gui.codinginterface.CodingInterface;
 import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
@@ -9,6 +8,7 @@ import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.Result;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -32,19 +32,69 @@ public class PersistenceService {
   private CodingInterfaceContainer codingInterfaceContainer;
   @Lazy
   @Autowired
-  private ErrorPopup errorPopup;
+  private ErrorPopup errorPopup; //for showing errors
 
-  private File activeFile;
-  private List<File> openFiles;
-  private List<File> mainFiles;
-  private List<File> recentlyClosed;
-  private CodingInterface activeInterface;
-  private BaristaProject openProject;
+  private File activeFile; //The file currently being edited
+  private File previouslyActiveFile; //The file previously edited
+  private File fileToOpen; //The file, who's data will be sent to be displayed
+  private File fileToSwitch;
+  private List<File> shownFiles; //Files currently shown in the coding interface(s)
+  private List<File> openFiles; //File currently open, when not in a project
+  private List<File> mainFiles; //List of available main files, when not in a project
+  private List<File> recentlyClosed; //List of recently closed files, when not in a project
+  private BaristaProject openProject; //The currently open project
 
   public PersistenceService() {
     openFiles = new ArrayList<>();
     recentlyClosed = new ArrayList<>();
     mainFiles = new ArrayList<>();
+    shownFiles = new ArrayList<>();
+  }
+
+  public File getFileToOpen() {
+    return fileToOpen;
+  }
+
+  public void setFileToOpen(File fileToOpen) {
+    this.fileToOpen = fileToOpen;
+  }
+
+  public File getFileToSwitch() {
+    return fileToSwitch;
+  }
+
+  public void setFileToSwitch(File fileToSwitch) {
+    this.fileToSwitch = fileToSwitch;
+  }
+
+  public File getPreviouslyActiveFile() {
+    return previouslyActiveFile;
+  }
+
+  public void setPreviouslyActiveFile(File previouslyActiveFile) {
+    this.previouslyActiveFile = previouslyActiveFile;
+  }
+
+  public List<File> getShownFiles() {
+    return shownFiles;
+  }
+
+  public void setShownFiles(ArrayList<File> shownFiles) {
+    this.shownFiles = shownFiles;
+  }
+
+  public void addShownFile(File file) {
+    shownFiles.add(file);
+  }
+
+  public void removeShownFile(File file) {
+    shownFiles.remove(file);
+  }
+
+  public void updateShownFiles() {
+    shownFiles = codingInterfaceContainer.getInterfaces().stream()
+      .filter(codingInterface -> codingInterface.getSwitchMenu().getCurrentlyActive() != null)
+      .map(codingInterface -> codingInterface.getSwitchMenu().getCurrentlyActive()).toList();
   }
 
   public File getActiveFile() {
@@ -53,14 +103,6 @@ public class PersistenceService {
 
   public void setActiveFile(File activeFile) {
     this.activeFile = activeFile;
-  }
-
-  public CodingInterface getActiveInterface() {
-    return activeInterface;
-  }
-
-  public void setActiveInterface(CodingInterface activeInterface) {
-    this.activeInterface = activeInterface;
   }
 
   public List<File> getOpenFiles() {
@@ -141,7 +183,7 @@ public class PersistenceService {
         scanner.close();
         if (fileContent.replaceAll("\\s", "").contains(mainString)) {
           newMainFiles.add(f);
-          fileService.createNewInJarJson(f.getAbsolutePath(), null);
+          fileService.addNewJarConfig(f.getAbsolutePath(), null);
         }
       } catch (FileNotFoundException e) {
         StringWriter stringWriter = new StringWriter();
@@ -162,11 +204,43 @@ public class PersistenceService {
     sideMenu.refresh();
   }
 
-  public void addToProjectDropdown(FolderDropdownItem folder, File file){
+  public void addToProjectDropdown(FolderDropdownItem folder, File file) {
     sideMenu.getProjectFolderDropdown().addFolderDropdownItem(folder, file);
   }
 
   public void openNewFile(File file) {
     codingInterfaceContainer.openFile(file);
+  }
+
+  public String getContentToOpen() {
+    try {
+      StringBuilder sb = new StringBuilder();
+      Scanner scanner = new Scanner(fileToOpen);
+      while (scanner.hasNextLine()) {
+        sb.append(scanner.nextLine());
+        sb.append("\n");
+      }
+      scanner.close();
+      return sb.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return "";
+  }
+
+  public String getContentToSwitch() {
+    try {
+      StringBuilder sb = new StringBuilder();
+      Scanner scanner = new Scanner(fileToSwitch);
+      while (scanner.hasNextLine()) {
+        sb.append(scanner.nextLine());
+        sb.append("\n");
+      }
+      scanner.close();
+      return sb.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return "";
   }
 }

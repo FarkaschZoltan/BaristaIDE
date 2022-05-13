@@ -4,25 +4,18 @@ import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.JavaScriptService;
 import com.farkasch.barista.services.PersistenceService;
-import com.farkasch.barista.util.Result;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Scanner;
-import java.util.stream.Collectors;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebView;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
-@Scope("prototype")
+@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class CodingInterface extends BorderPane {
 
   @Autowired
@@ -41,20 +34,21 @@ public class CodingInterface extends BorderPane {
   private boolean interfaceLoaded = false;
   private WebView content;
 
-  public void setParent(CodingInterfaceContainer parent){
+  public void setParent(CodingInterfaceContainer parent) {
     this.parent = parent;
+    prefWidthProperty().bind(parent.widthProperty());
   }
 
-  public SwitchMenu getSwitchMenu(){
+  public SwitchMenu getSwitchMenu() {
     return switchMenu;
   }
 
-  public WebView getContentWebView(){
+  public WebView getContentWebView() {
     return content;
   }
 
   @PostConstruct
-  private void init(){
+  private void init() {
     content = new WebView();
     switchMenu = applicationContext.getBean(SwitchMenu.class);
     switchMenu.setParent(this);
@@ -74,8 +68,20 @@ public class CodingInterface extends BorderPane {
     return switchMenu.getCurrentlyActive();
   }
 
-  public void showFile(File file) {
+  public void showFileWithClick(File file) {
 
+    showFile(file);
+    javaScriptService.setContent(content, file, !interfaceLoaded);
+    interfaceLoaded = true;
+  }
+
+  public void showFileWithDrag(File file){
+    showFile(file);
+    javaScriptService.switchContent(content, file, !interfaceLoaded);
+    interfaceLoaded = true;
+  }
+
+  private void showFile(File file){
     if (switchMenu.getCurrentlyActive() != null) {
       fileService.saveFile(switchMenu.getCurrentlyActive(),
         javaScriptService.getContent(content));
@@ -87,32 +93,11 @@ public class CodingInterface extends BorderPane {
       switchMenu.switchToFile(file);
     }
 
-    try {
-      Scanner contentScanner = new Scanner(file);
-      String textContent = new String();
-      while (contentScanner.hasNextLine()) {
-        String line = contentScanner.nextLine();
-        System.out.println(line);
-        textContent = textContent.concat(line + "\n");
-      }
-      contentScanner.close();
-      javaScriptService.setContent(content, textContent, !interfaceLoaded);
-      persistenceService.setActiveInterface(this);
-      interfaceLoaded = true;
-    } catch (FileNotFoundException e) {
-      StringWriter stringWriter = new StringWriter();
-      PrintWriter printWriter = new PrintWriter(stringWriter);
-      e.printStackTrace(printWriter);
-      File errorFile = fileService.createErrorLog(stringWriter.toString());
-      errorPopup.showWindow(Result.ERROR("Error while opening file!", errorFile));
-
-      printWriter.close();
-      e.printStackTrace();
-    }
+    persistenceService.updateShownFiles();
+    parent.setActiveInterface(this);
   }
 
   public void close() {
     parent.closeInterface(this);
-    persistenceService.setActiveInterface(null);
   }
 }

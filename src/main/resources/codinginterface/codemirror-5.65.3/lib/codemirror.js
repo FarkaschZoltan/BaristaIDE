@@ -7601,7 +7601,7 @@
     }
 
     var move = operation(cm, function (e) {
-      if (e.buttons === 0 || !e_button(e)) { done(e); }
+      if (e.buttons === 0 && !e_button(e)) { done(e); }
       else { extend(e); }
     });
     var up = operation(cm, done);

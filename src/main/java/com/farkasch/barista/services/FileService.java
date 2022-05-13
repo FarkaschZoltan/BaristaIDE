@@ -1,5 +1,7 @@
 package com.farkasch.barista.services;
 
+import com.farkasch.barista.gui.codinginterface.CodingInterface;
+import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.gui.codinginterface.SwitchMenu;
 import com.farkasch.barista.gui.codinginterface.SwitchMenu.SwitchMenuItem;
 import com.farkasch.barista.gui.component.ErrorPopup;
@@ -48,6 +50,9 @@ public class FileService {
   @Lazy
   @Autowired
   private JavaScriptService javaScriptService;
+  @Lazy
+  @Autowired
+  private CodingInterfaceContainer codingInterfaceContainer;
   @Autowired
   private FileTemplates fileTemplates;
 
@@ -119,7 +124,9 @@ public class FileService {
         persistenceService.getOpenProject().removeSourceFile(file);
         saveProject();
       }
-      persistenceService.getActiveInterface().getSwitchMenu().closeFile(file);
+      for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
+        codingInterface.getSwitchMenu().closeFile(file);
+      }
       return file.delete();
     } else {
       return false;
@@ -145,9 +152,9 @@ public class FileService {
     FolderDropdown projectDropdown = persistenceService.getSideMenu().getProjectFolderDropdown();
     projectDropdown.removeFolderDropdownItem(folderDropdownItem);
 
-    //removing all the files from the switch menu
-    if (persistenceService.getActiveInterface() != null) {
-      SwitchMenu switchMenu = persistenceService.getActiveInterface().getSwitchMenu();
+    //removing all the files from the switch menu(s)
+    for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
+      SwitchMenu switchMenu = codingInterface.getSwitchMenu();
       List<Node> menusToClose = switchMenu.getChildren().stream()
         .filter(switchMenuItem -> ((SwitchMenuItem) switchMenuItem).getFile().getAbsolutePath().contains(folderToDelete.getAbsolutePath())).toList();
       menusToClose.forEach(item -> switchMenu.closeFile(((SwitchMenuItem) item).getFile()));
@@ -161,7 +168,7 @@ public class FileService {
     //TODO: implement cleaning up json file after it hasn't been used in a while
   }
 
-  public void createNewInJarJson(String fileName, String... jars) {
+  public void addNewJarConfig(String fileName, String... jars) {
     try {
       File jarJsonFile = new File(
         System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
@@ -208,7 +215,7 @@ public class FileService {
 
   }
 
-  public void updateNameInJarJson(String oldFileName, String newFileName) {
+  public void updateNameInJarConfig(String oldFileName, String newFileName) {
     try {
       File jarJsonFile = new File(
         System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
@@ -246,7 +253,7 @@ public class FileService {
     }
   }
 
-  public void updateJarsInJarJson(String fileName, List<String> jars) {
+  public void updateJarsInJarConfig(String fileName, List<String> jars) {
     try {
       File jarJsonFile = new File(
         System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
@@ -324,7 +331,7 @@ public class FileService {
       printWriter.close();
       e.printStackTrace();
     }
-    return new ArrayList<String>();
+    return new ArrayList<>();
   }
 
   public Result createNewProject(BaristaProject baristaProject) {
@@ -619,8 +626,6 @@ public class FileService {
   }
 
   private File renameFile(File file, String name) {
-    System.out.println("rename File:");
-    System.out.println(file.getName());
     File renamedFile = new File(file.getAbsolutePath().replace(file.getName(), name));
     try {
       Files.move(file, renamedFile);
@@ -634,8 +639,8 @@ public class FileService {
       printWriter.close();
       e.printStackTrace();
     }
-    if (persistenceService.getActiveInterface() != null) {
-      SwitchMenu switchMenu = persistenceService.getActiveInterface().getSwitchMenu();
+    for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
+      SwitchMenu switchMenu = codingInterface.getSwitchMenu();
       for (Node node : switchMenu.getChildren()) {
         SwitchMenuItem switchMenuItem = (SwitchMenuItem) node;
         if (switchMenuItem.getFile().getAbsolutePath().equals(file.getAbsolutePath())) {
@@ -644,23 +649,21 @@ public class FileService {
         }
       }
     }
+    persistenceService.updateShownFiles();
+
     return renamedFile;
   }
 
   public File renameFile(File file, String name, @Nullable FolderDropdownItem folderDropdownItem) {
     File renamedFile = renameFile(file, name);
     if (folderDropdownItem == null) {
-      for (File f : persistenceService.getSideMenu().getOpenFiles().getItems()) {
-        if (f.getAbsolutePath().equals(file.getAbsolutePath())) {
-          f = renamedFile;
-          break;
-        }
+      List<File> openFiles = persistenceService.getSideMenu().getOpenFiles().getItems();
+      List<File> recentlyClosed = persistenceService.getSideMenu().getOpenFiles().getItems();
+      if (openFiles.contains(file)) {
+        openFiles.set(openFiles.indexOf(file), renamedFile);
       }
-      for (File f : persistenceService.getSideMenu().getRecentlyClosed().getItems()) {
-        if (f.getAbsolutePath().equals(file.getAbsolutePath())) {
-          f = renamedFile;
-          break;
-        }
+      if (recentlyClosed.contains(file)) {
+        recentlyClosed.set(recentlyClosed.indexOf(file), renamedFile);
       }
       persistenceService.getSideMenu().refresh();
     } else {
@@ -670,8 +673,6 @@ public class FileService {
       }
       if (Files.getFileExtension(file.getAbsolutePath()).equals("java") && (Files.getFileExtension(name).equals("java") || Files.getFileExtension(
         name).equals(""))) {
-        System.out.println("renaming references: ");
-        System.out.println(file.getName());
         renameReferences(new File(persistenceService.getOpenProject().getSourceRoot()),
           file.getName().split("\\.")[0], name.split("\\.")[0]);
         persistenceService.getOpenProject().removeSourceFile(file);
@@ -713,12 +714,11 @@ public class FileService {
     }
 
     //renaming files inside SwitchMenus
-    //TODO compatible with multiple interfaces
-    if (persistenceService.getActiveInterface() != null) {
-      persistenceService.getActiveInterface().getSwitchMenu().getChildren().stream()
-        .forEach(child -> ((SwitchMenuItem) child).setFile(new File(((SwitchMenuItem) child).getFile().getAbsolutePath().replace(
-          oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()))));
+    for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
+      codingInterface.getSwitchMenu().getChildren().stream().forEach(child -> ((SwitchMenuItem) child).setFile(
+        new File(((SwitchMenuItem) child).getFile().getAbsolutePath().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()))));
     }
+    persistenceService.updateShownFiles();
 
     //renaming the files/folders in the dropdown
     folderDropdownItem.setText(name);
@@ -748,14 +748,15 @@ public class FileService {
       baristaProject.removeSourceFile(fileToMove);
       baristaProject.addSourceFile(destinationFile);
       //changing the file in the switch menu(s)
-      if (persistenceService.getActiveInterface() != null) {
-        for (Node node : persistenceService.getActiveInterface().getSwitchMenu().getChildren()) {
+      for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
+        for (Node node : codingInterface.getSwitchMenu().getChildren()) {
           SwitchMenuItem item = (SwitchMenuItem) node;
           if (item.getFile().getAbsolutePath().equals(fileToMove.getAbsolutePath())) {
             item.setFile(destinationFile);
           }
         }
       }
+      persistenceService.updateShownFiles();
       //moving the actual file
       saveProject();
       Files.move(fileToMove, destinationFile);
@@ -782,7 +783,7 @@ public class FileService {
       recursiveMove(directoryToMove, targetDirectory);
       FileSystemUtils.deleteRecursively(directoryToMove);
       saveProject();
-      return Result.OK(new File(targetDirectory.getAbsolutePath() + "\\"  + directoryToMove.getName()));
+      return Result.OK(new File(targetDirectory.getAbsolutePath() + "\\" + directoryToMove.getName()));
     } catch (IOException e) {
       StringWriter stringWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -840,8 +841,11 @@ public class FileService {
         }
         scanner.close();
         saveFile(file, sb.toString());
-        if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().equals(file)) {
-          javaScriptService.setContent(persistenceService.getActiveInterface().getContentWebView(), sb.toString(), false);
+        for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
+          if (codingInterface.getShownFile().equals(file)) {
+            javaScriptService.setContent(codingInterface.getContentWebView(), file, false);
+            break;
+          }
         }
       } catch (FileNotFoundException e) {
         StringWriter stringWriter = new StringWriter();
@@ -894,9 +898,13 @@ public class FileService {
       fos.write(sb.toString().getBytes());
       fos.close();
 
-      if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().equals(fileToMove)) {
-        javaScriptService.setContent(persistenceService.getActiveInterface().getContentWebView(), sb.toString(), false);
+      for(CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()){
+        if(codingInterface.getShownFile().equals(fileToMove)){
+          javaScriptService.setContent(codingInterface.getContentWebView(), fileToMove, false);
+          break;
+        }
       }
+
     } catch (IOException e) {
       StringWriter stringWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -925,19 +933,25 @@ public class FileService {
           if (!endOfImports) {
             if (!(line.contains("package") || line.contains("import") || line.equals(""))) {
               endOfImports = true;
+            } else {
+              System.out.println(line);
+              line = line.replace(oldImportString, newImportString);
+              System.out.println(line);
             }
-            line = line.replace(oldImportString, newImportString);
           }
           sb.append(line);
           sb.append("\n");
         }
         scanner.close();
         FileOutputStream fos = new FileOutputStream(path);
-        fos.write(sb.toString().getBytes());
+        fos.write(sb.toString().trim().getBytes());
         fos.close();
 
-        if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().getAbsolutePath().equals(path)) {
-          javaScriptService.setContent(persistenceService.getActiveInterface().getContentWebView(), sb.toString(), false);
+        for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
+          if (codingInterface.getShownFile().equals(new File(path))) {
+            javaScriptService.setContent(codingInterface.getContentWebView(), new File(path), false);
+            break;
+          }
         }
       }
     } catch (IOException e) {
@@ -969,7 +983,7 @@ public class FileService {
 
   public boolean folderContains(String folderPath, String itemPath) {
     String pathDiff = itemPath.replace(folderPath + "\\", "");
-    if(!pathDiff.equals(itemPath) && pathDiff.length() > 0){
+    if (!pathDiff.equals(itemPath) && pathDiff.length() > 0) {
       return true;
     }
     return false;

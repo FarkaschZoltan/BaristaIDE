@@ -1,24 +1,23 @@
 package com.farkasch.barista.gui.component;
 
+import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.services.PersistenceService;
 import java.io.File;
 import java.util.List;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import org.kordamp.ikonli.javafx.FontIcon;
-import org.kordamp.ikonli.javafx.Icon;
 
 public class SimpleDropdown extends GridPane {
 
   private Button dropdownButton;
-
   private List<File> items;
   private String dropdownName;
   private PersistenceService persistenceService;
+  private CodingInterfaceContainer codingInterfaceContainer;
   private boolean open;
 
   public List<File> getItems() {
@@ -29,10 +28,11 @@ public class SimpleDropdown extends GridPane {
     this.items = items;
   }
 
-  public SimpleDropdown(String dropdownName, List<File> items, PersistenceService persistenceService) {
+  public SimpleDropdown(String dropdownName, List<File> items, PersistenceService persistenceService, CodingInterfaceContainer codingInterfaceContainer) {
     this.dropdownName = dropdownName;
     this.items = items;
     this.persistenceService = persistenceService;
+    this.codingInterfaceContainer = codingInterfaceContainer;
     open = false;
 
     dropdownButton = new Button(dropdownName);
@@ -48,14 +48,14 @@ public class SimpleDropdown extends GridPane {
         items.stream().forEach(file -> {
           Button openFileButton = new Button(file.getName());
           openFileButton.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent1 -> {
-            if(persistenceService.getActiveInterface() == null){
+            if(codingInterfaceContainer.getActiveInterface() == null){
               persistenceService.addOpenFile(file);
               persistenceService.openNewFile(file);
             } else {
               if(!persistenceService.getOpenFiles().contains(file)){
                 persistenceService.addOpenFile(file);
               }
-              persistenceService.getActiveInterface().showFile(file);
+              codingInterfaceContainer.getActiveInterface().showFileWithClick(file);
             }
           });
           openFileButton.setId("side-menu__simple-dropdown--item");
@@ -86,14 +86,14 @@ public class SimpleDropdown extends GridPane {
       items.stream().forEach(file -> {
         Button openFileButton = new Button(file.getName());
         openFileButton.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent1 -> {
-          if(persistenceService.getActiveInterface() == null){
+          if(codingInterfaceContainer.getActiveInterface() == null){
             persistenceService.addOpenFile(file);
             persistenceService.openNewFile(file);
           } else {
             if(!persistenceService.getOpenFiles().contains(file)){
               persistenceService.addOpenFile(file);
             }
-            persistenceService.getActiveInterface().showFile(file);
+            codingInterfaceContainer.getActiveInterface().showFileWithClick(file);
           }
         });
         openFileButton.setId("side-menu__simple-dropdown--item");

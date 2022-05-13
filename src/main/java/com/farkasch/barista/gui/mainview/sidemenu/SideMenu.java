@@ -1,5 +1,6 @@
 package com.farkasch.barista.gui.mainview.sidemenu;
 
+import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.component.SimpleDropdown;
@@ -10,15 +11,11 @@ import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.BaristaDragBoard;
 import com.farkasch.barista.util.BaristaProject;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
-import java.util.concurrent.RunnableFuture;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.input.Dragboard;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -50,6 +47,8 @@ public class SideMenu extends BorderPane {
   private WarningPopup warningPopup;
   @Autowired
   private BaristaDragBoard dragBoard;
+  @Autowired
+  private CodingInterfaceContainer codingInterfaceContainer;
 
   private HBox topMenu;
   private VBox content;
@@ -72,9 +71,7 @@ public class SideMenu extends BorderPane {
 
   @PostConstruct
   private void init() {
-
     openedProject = null;
-
     setId("side-menu");
     initTopMenu();
     initContent();
@@ -100,10 +97,10 @@ public class SideMenu extends BorderPane {
     contentScrollPane.setFitToWidth(true);
     contentScrollPane.setFitToHeight(true);
 
-    openFiles = new SimpleDropdown("Open Files", persistenceService.getOpenFiles(), persistenceService);
+    openFiles = new SimpleDropdown("Open Files", persistenceService.getOpenFiles(), persistenceService, codingInterfaceContainer);
     openFiles.setMaxWidth(Double.MAX_VALUE);
 
-    recentlyClosed = new SimpleDropdown("Recently Closed", persistenceService.getRecentlyClosed(), persistenceService);
+    recentlyClosed = new SimpleDropdown("Recently Closed", persistenceService.getRecentlyClosed(), persistenceService, codingInterfaceContainer);
     recentlyClosed.setMaxWidth(Double.MAX_VALUE);
 
     content.setId("side-menu__content");
@@ -226,8 +223,8 @@ public class SideMenu extends BorderPane {
   public void closeProject() {
     content.getChildren().remove(projectFolderDropdown);
     openedProject = null;
-    if (persistenceService.getActiveInterface() != null) {
-      persistenceService.getActiveInterface().close();
+    if (codingInterfaceContainer.getActiveInterface() != null) {
+      codingInterfaceContainer.getActiveInterface().close();
     }
     content.getChildren().addAll(recentlyClosed, openFiles);
   }

@@ -357,8 +357,6 @@ public class FolderDropdown extends GridPane {
       folderDropdownItem.setOnDragOver(event -> {
         if (event.getGestureSource() != folderDropdownItem && dragBoard.getDraggedItem().getClass().equals(FolderDropdownItem.class)) {
           FolderDropdownItem item = (FolderDropdownItem) dragBoard.getDraggedItem();
-          System.out.println("dragged: " + item.getPath());
-          System.out.println("target: " + folderDropdownItem.getPath());
           if (new File(item.getPath()).isFile()) {
             event.acceptTransferModes(TransferMode.MOVE);
           } else if (!fileService.folderContains(new File(item.getPath()).isFile() ? item.getParentPath() : item.getPath(),
@@ -395,8 +393,8 @@ public class FolderDropdown extends GridPane {
           if (dragBoard.getDraggedItem().getClass().equals(FolderDropdownItem.class)) {
             FolderDropdownItem parentFolder = (FolderDropdownItem) folderDropdownItem.getNode().getParent().getValue();
             FolderDropdownItem draggedItem = (FolderDropdownItem) dragBoard.getDraggedItem();
-            File destination = null;
-            Result result = Result.FAIL();
+            File destination;
+            Result result;
             if (new File(draggedItem.getPath()).isFile()) {
               result = fileService.moveFile(new File(draggedItem.getPath()), parentFolder.getPath());
             } else {

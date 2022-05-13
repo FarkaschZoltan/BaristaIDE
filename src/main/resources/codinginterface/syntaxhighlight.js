@@ -1,122 +1,53 @@
-const codeQuery = $("#code-area");
-const code = document.querySelector("#code-area")
-const body = document.querySelector("body");
-
-const stringReg = /(".*?")|('.*?')/g;
-const languageReg = /\b(abstract|assert|boolean|break|byte|case|catch|char|class|continue|default|do|double|else|enum|extends|final|finally|float|for|if|implements|import|instanceof|int|interface|long|native|new|null|package|private|public|return|short|strictfp|static|super|switch|synchronized|this|throw|throws|transient|try|void|volatile|while|const|goto|true|false|,)\b/g
-const methodReg = /([a-zA-Z0-9_]*)(?=\((.*)\){)/g;
-
-//(?<!(if|for|while|catch|do|else|new|throw))
-
-function handleKeyPress(event) {
-  switch (event.keyCode) {
-    case 13: //enter
-      break;
-    case 9:
-      event.preventDefault();
-      handleTabPress();
-      break;
-    default:
-      highlight(0, null);
-      break;
+CodeMirror.defineSimpleMode("java", {
+  start: [
+    //capturing strings
+    {regex: /\".*\"/, token: "string"},
+    //capturing java specific keywords
+    {regex: /\b(abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|native|new|package|private|protected|public|return|short|static|super|switch|synchronized|this|throw|throws|transient|try|void|volatile|while|;)\b/,
+      token: "keyword"},
+    //capturing atomic values
+    {regex: /(true|false|null)/, token: "atomic"},
+    //capturing line-comments
+    {regex: /\/\/.*/, token: "comment"},
+    {regex: /\/\*/, token: "comment", next: "comment"},
+    //indenting/dedenting on opening/closing brackets
+    {regex: /[\{\[\(]/, indent: true},
+    {regex: /[\}\]\)]/, dedent: true},
+  ],
+  //handling multi-line comments
+  comment: [
+    {regex: /.*?\*\//, token: "comment", next: "start"},
+    {regex: /.*/, token: "comment"}
+  ],
+  //other misc. information
+  meta: {
+    //disabling indentation in comments
+    dontIndentStates: ["comment"],
+    //commenting an entire line, when typing "//"
+    lineComment: "//"
   }
+})
+
+
+let codeArea = document.querySelector("#codeArea");
+let codeMirror = CodeMirror.fromTextArea(codeArea, {
+  mode: "java",
+  theme: "barista",
+  lineNumbers: true,
+  autofocus: true,
+  tabSize: 2
+});
+
+function loadContent() {
+  codeMirror.setValue(window.persistenceService.getContentToOpen());
+  return window.persistenceService.getContentToOpen();
 }
 
-function handleTabPress(){
-  let string = code.textContent;
-  let caret = getCaretIndex();
-  string = string.slice(0, caret) + "  " + string.slice(caret, string.length);
-  code.textContent = string;
-  highlight(2, caret);
+function switchContent(){
+  codeMirror.setValue(window.persistenceService.getContentToSwitch());
+  return window.persistenceService.getContentToSwitch();
 }
 
-function highlight(offset, caretPos) {
-  let parsed = "";
-  codeQuery.each(function () {
-    let string = this.textContent;
-    parsed = string.replaceAll(languageReg, "<span class=language>$1</span>");
-    parsed = parsed.replaceAll(stringReg, "<span class=string>$1</span>");
-    parsed = parsed.replaceAll(methodReg, "<span class=method>$1</span>");
-  });
-  if(caretPos === null){
-    caretPos = getCaretIndex();
-  }
-  code.innerHTML = parsed;
-  setCaretPosition(caretPos + offset);
+function getContent() {
+  return codeMirror.getValue();
 }
-
-function getCaretIndex() {
-  let position = 0;
-  const isSupported = typeof window.getSelection() !== "undefined";
-  if (isSupported) {
-    const selection = window.getSelection();
-    if (selection.rangeCount !== 0) {
-      const range = window.getSelection().getRangeAt(0);
-      const preCaretRange = range.cloneRange();
-      preCaretRange.selectNodeContents(code);
-      preCaretRange.setEnd(range.endContainer, range.endOffset);
-      position = preCaretRange.toString().length;
-    }
-  }
-  return position;
-}
-
-function setCaretPosition(index) {
-  let range = document.createRange();
-  let selection = document.getSelection();
-
-  let substringLength = 0;
-  let prevSubstringLength = 0;
-  let indexToSet;
-  let childIndex;
-
-  let i = -1;
-  while (substringLength < index) {
-    prevSubstringLength = substringLength;
-    i++;
-
-    if (code.childNodes[i].nodeType != Node.TEXT_NODE) {
-      substringLength += code.childNodes[i].firstChild === null
-          ? code.childNodes[i].textContent.length
-          : code.childNodes[i].firstChild.textContent.length;
-    } else {
-      substringLength += code.childNodes[i].textContent.length;
-    }
-
-  }
-
-  childIndex = i;
-
-  if (childIndex === 0) {
-    indexToSet = index;
-  } else {
-    indexToSet = index - prevSubstringLength;
-  }
-
-  if(index === 0){
-    range.setStart(code, 0)
-  } else {
-    if (code.childNodes[childIndex].nodeType !== Node.TEXT_NODE) {
-      range.setStart(
-          code.childNodes[childIndex].firstChild ?? code.childNodes[childIndex],
-          indexToSet);
-    } else {
-      range.setStart(code.childNodes[childIndex], indexToSet);
-    }
-  }
-
-  range.collapse(true);
-
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
-
-code.addEventListener("keyup", handleKeyPress);
-
-function preventTab(event){
-  if(event.keyCode === 9){
-    event.preventDefault();
-  }
-}
-
-body.addEventListener("keydown", preventTab);
