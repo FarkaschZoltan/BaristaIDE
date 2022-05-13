@@ -26,19 +26,12 @@ public class PersistenceService {
   private FileService fileService;
   @Lazy
   @Autowired
-  private SideMenu sideMenu;
-  @Lazy
-  @Autowired
-  private CodingInterfaceContainer codingInterfaceContainer;
-  @Lazy
-  @Autowired
   private ErrorPopup errorPopup; //for showing errors
 
   private File activeFile; //The file currently being edited
   private File previouslyActiveFile; //The file previously edited
-  private File fileToOpen; //The file, who's data will be sent to be displayed
-  private File fileToSwitch;
-  private List<File> shownFiles; //Files currently shown in the coding interface(s)
+  private File fileToOpen; //The file, who's data will be sent to be displayed, when it is opened via a click
+  private File fileToSwitch; //The file, who's data will be sent to be displayed, when it is opened via a drag
   private List<File> openFiles; //File currently open, when not in a project
   private List<File> mainFiles; //List of available main files, when not in a project
   private List<File> recentlyClosed; //List of recently closed files, when not in a project
@@ -48,7 +41,6 @@ public class PersistenceService {
     openFiles = new ArrayList<>();
     recentlyClosed = new ArrayList<>();
     mainFiles = new ArrayList<>();
-    shownFiles = new ArrayList<>();
   }
 
   public File getFileToOpen() {
@@ -73,28 +65,6 @@ public class PersistenceService {
 
   public void setPreviouslyActiveFile(File previouslyActiveFile) {
     this.previouslyActiveFile = previouslyActiveFile;
-  }
-
-  public List<File> getShownFiles() {
-    return shownFiles;
-  }
-
-  public void setShownFiles(ArrayList<File> shownFiles) {
-    this.shownFiles = shownFiles;
-  }
-
-  public void addShownFile(File file) {
-    shownFiles.add(file);
-  }
-
-  public void removeShownFile(File file) {
-    shownFiles.remove(file);
-  }
-
-  public void updateShownFiles() {
-    shownFiles = codingInterfaceContainer.getInterfaces().stream()
-      .filter(codingInterface -> codingInterface.getSwitchMenu().getCurrentlyActive() != null)
-      .map(codingInterface -> codingInterface.getSwitchMenu().getCurrentlyActive()).toList();
   }
 
   public File getActiveFile() {
@@ -151,14 +121,6 @@ public class PersistenceService {
     return openProject;
   }
 
-  public SideMenu getSideMenu() {
-    return sideMenu;
-  }
-
-  public void setSideMenu(SideMenu sideMenu) {
-    this.sideMenu = sideMenu;
-  }
-
   public void setOpenProject(BaristaProject openProject) {
     this.openProject = openProject;
   }
@@ -200,18 +162,7 @@ public class PersistenceService {
     return newMainFiles;
   }
 
-  public void refreshSideMenu() {
-    sideMenu.refresh();
-  }
-
-  public void addToProjectDropdown(FolderDropdownItem folder, File file) {
-    sideMenu.getProjectFolderDropdown().addFolderDropdownItem(folder, file);
-  }
-
-  public void openNewFile(File file) {
-    codingInterfaceContainer.openFile(file);
-  }
-
+  //This method is called from highlight.js. It sets the content of the coding interface.
   public String getContentToOpen() {
     try {
       StringBuilder sb = new StringBuilder();
@@ -228,6 +179,8 @@ public class PersistenceService {
     return "";
   }
 
+  //This method is called from highlight.js. It sets the content of the coding interface. The only difference to the method above is,
+  // that it is used, when a file is opened via drag and drop
   public String getContentToSwitch() {
     try {
       StringBuilder sb = new StringBuilder();

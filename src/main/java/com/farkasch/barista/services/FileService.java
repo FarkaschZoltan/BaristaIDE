@@ -7,6 +7,7 @@ import com.farkasch.barista.gui.codinginterface.SwitchMenu.SwitchMenuItem;
 import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
+import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.FileTemplates;
 import com.farkasch.barista.util.Result;
@@ -53,6 +54,9 @@ public class FileService {
   @Lazy
   @Autowired
   private CodingInterfaceContainer codingInterfaceContainer;
+  @Lazy
+  @Autowired
+  private SideMenu sideMenu;
   @Autowired
   private FileTemplates fileTemplates;
 
@@ -93,7 +97,7 @@ public class FileService {
 
   public File createFile(String path, FolderDropdownItem creationFolder) throws FileAlreadyExistsException {
     File newFile = createFile(path);
-    persistenceService.addToProjectDropdown(creationFolder, newFile);
+    sideMenu.getProjectFolderDropdown().addFolderDropdownItem(creationFolder, newFile);
     if (Files.getFileExtension(newFile.getAbsolutePath()).equals("java")) {
       persistenceService.getOpenProject().addSourceFile(newFile);
       saveProject();
@@ -110,7 +114,7 @@ public class FileService {
 
   public File createFolder(String path, FolderDropdownItem creationFolder) {
     File newFolder = createFolder(path);
-    persistenceService.addToProjectDropdown(creationFolder, newFolder);
+    sideMenu.getProjectFolderDropdown().addFolderDropdownItem(creationFolder, newFolder);
     persistenceService.getOpenProject().addFolder(newFolder);
     saveProject();
     return newFolder;
@@ -119,7 +123,7 @@ public class FileService {
   public boolean deleteFile(File file, boolean partOfProject) {
     if (file.isFile()) {
       if (!partOfProject) {
-        persistenceService.getSideMenu().refresh();
+        sideMenu.refresh();
       } else {
         persistenceService.getOpenProject().removeSourceFile(file);
         saveProject();
@@ -149,7 +153,7 @@ public class FileService {
     }
 
     //removing the folder and its contents from project dropdown
-    FolderDropdown projectDropdown = persistenceService.getSideMenu().getProjectFolderDropdown();
+    FolderDropdown projectDropdown = sideMenu.getProjectFolderDropdown();
     projectDropdown.removeFolderDropdownItem(folderDropdownItem);
 
     //removing all the files from the switch menu(s)
@@ -440,7 +444,7 @@ public class FileService {
       scanner.close();
       baristaProject.fromJsonString(jsonString);
 
-      persistenceService.getSideMenu().openProject(baristaProject);
+      sideMenu.openProject(baristaProject);
       persistenceService.setOpenProject(baristaProject);
     } catch (FileNotFoundException | ParseException e) {
       StringWriter stringWriter = new StringWriter();
@@ -500,7 +504,7 @@ public class FileService {
 
       FileSystemUtils.deleteRecursively(new File(baristaProject.getProjectRoot()));
       if (persistenceService.getOpenProject().getProjectRoot().equals(baristaProject.getProjectRoot())) {
-        persistenceService.getSideMenu().closeProject();
+        sideMenu.closeProject();
       }
       array.remove(toDelete);
 
@@ -649,7 +653,6 @@ public class FileService {
         }
       }
     }
-    persistenceService.updateShownFiles();
 
     return renamedFile;
   }
@@ -657,15 +660,15 @@ public class FileService {
   public File renameFile(File file, String name, @Nullable FolderDropdownItem folderDropdownItem) {
     File renamedFile = renameFile(file, name);
     if (folderDropdownItem == null) {
-      List<File> openFiles = persistenceService.getSideMenu().getOpenFiles().getItems();
-      List<File> recentlyClosed = persistenceService.getSideMenu().getOpenFiles().getItems();
+      List<File> openFiles = sideMenu.getOpenFiles().getItems();
+      List<File> recentlyClosed = sideMenu.getRecentlyClosed().getItems();
       if (openFiles.contains(file)) {
         openFiles.set(openFiles.indexOf(file), renamedFile);
       }
       if (recentlyClosed.contains(file)) {
         recentlyClosed.set(recentlyClosed.indexOf(file), renamedFile);
       }
-      persistenceService.getSideMenu().refresh();
+      sideMenu.refresh();
     } else {
       folderDropdownItem.setText(renamedFile.getName());
       if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().equals(file)) {
@@ -718,11 +721,10 @@ public class FileService {
       codingInterface.getSwitchMenu().getChildren().stream().forEach(child -> ((SwitchMenuItem) child).setFile(
         new File(((SwitchMenuItem) child).getFile().getAbsolutePath().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()))));
     }
-    persistenceService.updateShownFiles();
 
     //renaming the files/folders in the dropdown
     folderDropdownItem.setText(name);
-    persistenceService.getSideMenu().getProjectFolderDropdown().getRootNode().doActionTopToBottom(item -> {
+    sideMenu.getProjectFolderDropdown().getRootNode().doActionTopToBottom(item -> {
       item.setParentPath(item.getParentPath().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
     });
     saveProject();
@@ -756,7 +758,6 @@ public class FileService {
           }
         }
       }
-      persistenceService.updateShownFiles();
       //moving the actual file
       saveProject();
       Files.move(fileToMove, destinationFile);

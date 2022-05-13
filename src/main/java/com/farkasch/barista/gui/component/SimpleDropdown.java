@@ -50,7 +50,7 @@ public class SimpleDropdown extends GridPane {
           openFileButton.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent1 -> {
             if(codingInterfaceContainer.getActiveInterface() == null){
               persistenceService.addOpenFile(file);
-              persistenceService.openNewFile(file);
+              codingInterfaceContainer.openFile(file);
             } else {
               if(!persistenceService.getOpenFiles().contains(file)){
                 persistenceService.addOpenFile(file);
@@ -88,7 +88,7 @@ public class SimpleDropdown extends GridPane {
         openFileButton.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent1 -> {
           if(codingInterfaceContainer.getActiveInterface() == null){
             persistenceService.addOpenFile(file);
-            persistenceService.openNewFile(file);
+            codingInterfaceContainer.openFile(file);
           } else {
             if(!persistenceService.getOpenFiles().contains(file)){
               persistenceService.addOpenFile(file);

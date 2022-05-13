@@ -2,6 +2,7 @@ package com.farkasch.barista.gui.mainview.topmenu;
 
 import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.WarningPopup;
+import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import java.io.File;
@@ -31,6 +32,8 @@ public class OpenFileWindow extends Stage {
   private FileService fileService;
   @Autowired
   private PersistenceService persistenceService;
+  @Autowired
+  private SideMenu sideMenu;
   @Autowired
   private WarningPopup warningPopup;
 
@@ -90,7 +93,7 @@ public class OpenFileWindow extends Stage {
       File file = new File(filePath);
       openFile.accept(file);
       if(persistenceService.getOpenProject() != null){
-        persistenceService.getSideMenu().closeProject();
+        sideMenu.closeProject();
       }
       close();
     });

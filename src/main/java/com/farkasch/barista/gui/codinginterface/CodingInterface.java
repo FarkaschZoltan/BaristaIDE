@@ -93,7 +93,6 @@ public class CodingInterface extends BorderPane {
       switchMenu.switchToFile(file);
     }
 
-    persistenceService.updateShownFiles();
     parent.setActiveInterface(this);
   }
 

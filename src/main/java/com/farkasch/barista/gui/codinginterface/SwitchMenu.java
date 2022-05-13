@@ -1,5 +1,6 @@
 package com.farkasch.barista.gui.codinginterface;
 
+import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.util.BaristaDragBoard;
 import java.io.File;
@@ -31,6 +32,9 @@ public class SwitchMenu extends HBox {
   @Lazy
   @Autowired
   private CodingInterfaceContainer codingInterfaceContainer;
+  @Lazy
+  @Autowired
+  private SideMenu sideMenu;
 
   private CodingInterface parent;
   private SwitchMenuItem currentlyActive;
@@ -57,7 +61,7 @@ public class SwitchMenu extends HBox {
     currentlyActive = widget;
     persistenceService.setActiveFile(currentlyActive.getFile());
     if(persistenceService.getOpenProject() == null){
-      persistenceService.refreshSideMenu();
+      sideMenu.refresh();
     }
   }
 
@@ -78,7 +82,7 @@ public class SwitchMenu extends HBox {
     if(persistenceService.getOpenProject() == null){
       persistenceService.removeOpenFile(((SwitchMenuItem)(getChildren().get(index))).getFile());
       persistenceService.addRecentlyClosed(((SwitchMenuItem)(getChildren().get(index))).getFile());
-      persistenceService.refreshSideMenu();
+      sideMenu.refresh();
     }
     getChildren().remove(index);
   }
@@ -170,7 +174,6 @@ public class SwitchMenu extends HBox {
         currentlyActive.setContentId("switch-menu__item--selected");
         persistenceService.setActiveFile(currentlyActive.getFile());
         codingInterfaceContainer.setActiveInterface(parent);
-        persistenceService.updateShownFiles();
       });
       getChildren().add(openButton);
       openButton.setMinHeight(getHeight());
@@ -201,7 +204,6 @@ public class SwitchMenu extends HBox {
           persistenceService.setActiveFile(currentlyActive.getFile());
           menu.removeFile(index);
         }
-        persistenceService.updateShownFiles();
       });
       closeButton.setGraphic(new FontIcon("mdi-close"));
       closeButton.setMinHeight(getHeight());

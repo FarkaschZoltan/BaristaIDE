@@ -1,5 +1,6 @@
 package com.farkasch.barista.gui.mainview.sidemenu;
 
+import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.component.WarningPopup;
@@ -29,6 +30,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -44,6 +46,9 @@ public class NewFilePopup extends Stage {
   private ErrorPopup errorPopup;
   @Autowired
   private WarningPopup warningPopup;
+  @Lazy
+  @Autowired
+  private CodingInterfaceContainer codingInterfaceContainer;
 
   //Design
   private TextField fileNameField;
@@ -140,7 +145,7 @@ public class NewFilePopup extends Stage {
             writer.close();
           }
 
-          persistenceService.openNewFile(newFile);
+          codingInterfaceContainer.openFile(newFile);
           persistenceService.setActiveFile(newFile);
           close();
         } else {

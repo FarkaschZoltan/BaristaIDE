@@ -167,7 +167,7 @@ public class SideMenu extends BorderPane {
     openedProject = baristaProject;
     projectFolderDropdown = new FolderDropdown(getWidth(), fileService, warningPopup, true, true);
     projectFolderDropdown.setFileLeftClickAction(
-      target -> persistenceService.openNewFile(new File(target.getParentPath() + "\\" + target.getText())));
+      target -> codingInterfaceContainer.openFile(new File(target.getParentPath() + "\\" + target.getText())));
 
     MenuItem newFile = new MenuItem("Create New File");
     newFile.setOnAction(click -> newFilePopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
