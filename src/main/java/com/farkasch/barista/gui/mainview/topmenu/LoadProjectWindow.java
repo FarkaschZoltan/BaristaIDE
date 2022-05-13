@@ -15,6 +15,7 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javax.annotation.PostConstruct;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -91,6 +92,9 @@ public class LoadProjectWindow extends Stage {
     scene.getStylesheets().add(
       Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
         .toString());
+
+    initModality(Modality.APPLICATION_MODAL);
+    setResizable(false);
   }
 
   private void onLoad(){

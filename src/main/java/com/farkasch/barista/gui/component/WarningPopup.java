@@ -13,6 +13,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
@@ -76,6 +77,9 @@ public class WarningPopup extends Stage {
       }
       close();
     });
+
+    initModality(Modality.APPLICATION_MODAL);
+    setResizable(false);
   }
 
   public void showWindow(String title, String message, EventHandler acceptButtonClick, EventHandler cancelButtonClick){

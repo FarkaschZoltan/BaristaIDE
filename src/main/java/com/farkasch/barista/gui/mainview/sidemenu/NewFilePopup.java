@@ -24,7 +24,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -155,6 +157,8 @@ public class NewFilePopup extends Stage {
         e.printStackTrace();
       }
     });
+    initModality(Modality.APPLICATION_MODAL);
+    setResizable(false);
   }
 
   private void onLoad(FolderDropdownItem creationFolder){

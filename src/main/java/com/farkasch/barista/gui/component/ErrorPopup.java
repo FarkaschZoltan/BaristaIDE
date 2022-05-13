@@ -14,6 +14,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
@@ -69,6 +70,9 @@ public class ErrorPopup extends Stage {
         e.printStackTrace();
       }
     });
+
+    initModality(Modality.APPLICATION_MODAL);
+    setResizable(false);
   }
 
   public void showWindow(Result result){

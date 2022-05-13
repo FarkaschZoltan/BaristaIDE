@@ -25,6 +25,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,6 +127,9 @@ public class NewFileWindow extends Stage {
 
     createButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(createButtonContainer, new Insets(10));
+
+    initModality(Modality.APPLICATION_MODAL);
+    setResizable(false);
   }
 
   private void onLoad(){

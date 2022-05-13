@@ -11,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,8 @@ public class NewFolderPopup extends Stage {
         warningPopup.showWindow("Error", "A folder with this name already exists!", null);
       }
     });
+    initModality(Modality.APPLICATION_MODAL);
+    setResizable(false);
   }
 
   private void onLoad(FolderDropdownItem creationFolder){

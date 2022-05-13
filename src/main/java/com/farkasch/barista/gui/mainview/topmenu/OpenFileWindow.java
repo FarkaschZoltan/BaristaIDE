@@ -18,6 +18,7 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,6 +103,9 @@ public class OpenFileWindow extends Stage {
       fileName.setText(target.getText());
       filePath = target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath();
     });
+
+    initModality(Modality.APPLICATION_MODAL);
+    setResizable(false);
   }
 
   private void onLoad(Consumer<File> openFile){

@@ -3,6 +3,7 @@ package com.farkasch.barista.gui.mainview.sidemenu;
 import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.component.WarningPopup;
+import com.farkasch.barista.gui.mainview.MainStage;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import java.awt.event.ActionEvent;
@@ -15,9 +16,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -29,6 +32,9 @@ public abstract class AbstractRenamePopup extends Stage {
   protected PersistenceService persistenceService;
   @Autowired
   protected WarningPopup warningPopup;
+  @Lazy
+  @Autowired
+  protected MainStage mainStage;
 
   protected TextField newNameField;
   protected Label newNameLabel;
@@ -54,8 +60,10 @@ public abstract class AbstractRenamePopup extends Stage {
       Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
 
     newNameLabel.setLabelFor(newNameLabel);
-
     applyButton.setOnAction(click -> save());
+
+    initModality(Modality.APPLICATION_MODAL);
+    setResizable(false);
   }
 
   protected abstract void save();
