@@ -7,15 +7,7 @@ import java.util.HashMap;
 public class RunSetting extends AbstractSetting {
 
   private String name;
-  private File mainFile;
-  private HashMap<JavacEnum, Object> args;
-
-  public RunSetting(String name, File mainFile, HashMap<JavacEnum, Object> args) {
-
-    this.name = name;
-    this.mainFile = mainFile;
-    this.args = args;
-  }
+  private String command;
 
   public String getName() {
     return name;
@@ -25,19 +17,11 @@ public class RunSetting extends AbstractSetting {
     this.name = name;
   }
 
-  public File getMainFile() {
-    return mainFile;
+  public String getCommand() {
+    return command;
   }
 
-  public void setMainFile(File mainFile) {
-    this.mainFile = mainFile;
-  }
-
-  public HashMap<JavacEnum, Object> getArgs() {
-    return args;
-  }
-
-  public void setArgs(HashMap<JavacEnum, Object> args) {
-    this.args = args;
+  public void setCommand(String command) {
+    this.command = command;
   }
 }

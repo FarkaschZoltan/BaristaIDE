@@ -55,6 +55,8 @@ public class SideMenu extends BorderPane {
   @Autowired
   private RenameProjectPopup renameProjectPopup;
   @Autowired
+  private RunConfigWindow runConfigWindow;
+  @Autowired
   private WarningPopup warningPopup;
   @Autowired
   private BaristaDragBoard dragBoard;
@@ -107,12 +109,12 @@ public class SideMenu extends BorderPane {
     topMenu.add(compileButton, 0, 0);
     topMenu.add(runButton, 1, 0);
     topMenu.add(openCommandPromptButton, 2, 0);
+    topMenu.add(editRunSettingsButton, 2, 1);
 
     if (openedProject == null) {
-      topMenu.add(mainFileComboBox, 0, 1, 3, 1);
+      topMenu.add(mainFileComboBox, 0, 1, 2, 1);
     } else {
       topMenu.add(runSettingsComboBox, 0, 1, 2, 1);
-      topMenu.add(editRunSettingsButton, 2, 1);
     }
   }
 
@@ -208,10 +210,29 @@ public class SideMenu extends BorderPane {
     editRunSettingsButton.setGraphic(new FontIcon("mdi-settings"));
     editRunSettingsButton.setGraphicTextGap(0);
     editRunSettingsButton.setTextAlignment(TextAlignment.CENTER);
+    editRunSettingsButton.setOnAction(event -> {
+      runConfigWindow.showWindow();
+    });
   }
 
   private void initRunConfigCombobox() {
     runSettingsComboBox = new ComboBox<>();
+    runSettingsComboBox.setConverter(new StringConverter<RunSetting>() {
+      @Override
+      public String toString(RunSetting runSetting) {
+        return runSetting == null ? "" : runSetting.getName();
+      }
+
+      @Override
+      public RunSetting fromString(String s) {
+        for(RunSetting setting : runSettingsComboBox.getItems()){
+          if(setting.getName().equals(s)){
+            return setting;
+          }
+        }
+        return null;
+      }
+    });
   }
 
   private void initMainFileCombobox() {
