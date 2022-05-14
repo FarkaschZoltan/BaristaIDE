@@ -143,6 +143,8 @@ public class SideMenu extends BorderPane {
     compileButton = new Button("Compile");
     compileButton.setGraphic(new FontIcon("mdi-wrench"));
     Runnable compileRunnable = () -> {
+      codingInterfaceContainer.getInterfaces().stream()
+        .forEach(codingInterface -> fileService.saveFile(codingInterface.getShownFile(), codingInterface.getTextContent()));
       if (persistenceService.getOpenProject() == null) {
         File f = persistenceService.getMainFiles().get(0);
         String filePath = f.getParentFile().getPath();
@@ -167,6 +169,8 @@ public class SideMenu extends BorderPane {
     runButton = new Button("Run");
     runButton.setGraphic(new FontIcon("mdi-play"));
     Runnable runRunnable = () -> {
+      codingInterfaceContainer.getInterfaces().stream()
+        .forEach(codingInterface -> fileService.saveFile(codingInterface.getShownFile(), codingInterface.getTextContent()));
       if (persistenceService.getOpenProject() == null) {
         File f = persistenceService.getMainFiles().get(0);
         String filePath = f.getParentFile().getPath();
@@ -191,7 +195,7 @@ public class SideMenu extends BorderPane {
     openCommandPromptButton.setGraphicTextGap(0);
     openCommandPromptButton.setTextAlignment(TextAlignment.CENTER);
     openCommandPromptButton.setOnAction(event -> {
-      if(openedProject == null){
+      if (openedProject == null) {
         processService.openCommandPrompt(mainFileComboBox.getValue().getParentFile());
       } else {
         processService.openCommandPrompt(new File(openedProject.getSourceRoot()));
