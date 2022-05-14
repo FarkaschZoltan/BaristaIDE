@@ -66,7 +66,7 @@ public class FileService {
       fos.write(content.getBytes());
       fos.close();
 
-      if(persistenceService.getOpenProject() != null){
+      if(persistenceService.getOpenProject() == null){
         sideMenu.refresh();
       }
 

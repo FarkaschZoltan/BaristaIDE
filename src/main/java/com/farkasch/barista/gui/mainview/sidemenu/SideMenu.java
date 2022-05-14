@@ -15,15 +15,14 @@ import com.farkasch.barista.util.settings.RunSetting;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import javafx.beans.property.ListProperty;
-import javafx.beans.value.ObservableListValue;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -144,11 +143,10 @@ public class SideMenu extends BorderPane {
   private void initCompileButton() {
     compileButton = new Button("Compile");
     compileButton.setGraphic(new FontIcon("mdi-wrench"));
+    compileButton.setDisable(true);
     Runnable compileRunnable = () -> {
-      codingInterfaceContainer.getInterfaces().stream()
-        .forEach(codingInterface -> fileService.saveFile(codingInterface.getShownFile(), codingInterface.getTextContent()));
       if (persistenceService.getOpenProject() == null) {
-        File f = persistenceService.getMainFiles().get(0);
+        File f = mainFileComboBox.getValue();
         String filePath = f.getParentFile().getPath();
         String fileName = f.getName();
         File runArgs = processService.CompileFile(filePath, fileName);
@@ -159,6 +157,8 @@ public class SideMenu extends BorderPane {
       }
     };
     compileButton.setOnAction(click -> {
+      codingInterfaceContainer.getInterfaces().stream()
+        .forEach(codingInterface -> fileService.saveFile(codingInterface.getShownFile(), codingInterface.getTextContent()));
       Thread compileThread = new Thread(compileRunnable);
       compileThread.start();
     });
@@ -170,11 +170,10 @@ public class SideMenu extends BorderPane {
   private void initRunButton() {
     runButton = new Button("Run");
     runButton.setGraphic(new FontIcon("mdi-play"));
+    runButton.setDisable(true);
     Runnable runRunnable = () -> {
-      codingInterfaceContainer.getInterfaces().stream()
-        .forEach(codingInterface -> fileService.saveFile(codingInterface.getShownFile(), codingInterface.getTextContent()));
       if (persistenceService.getOpenProject() == null) {
-        File f = persistenceService.getMainFiles().get(0);
+        File f = mainFileComboBox.getValue();
         String filePath = f.getParentFile().getPath();
         String fileName = f.getName();
         processService.RunFile(filePath, fileName);
@@ -183,6 +182,8 @@ public class SideMenu extends BorderPane {
       }
     };
     runButton.setOnAction(click -> {
+      codingInterfaceContainer.getInterfaces().stream()
+        .forEach(codingInterface -> fileService.saveFile(codingInterface.getShownFile(), codingInterface.getTextContent()));
       Thread runThread = new Thread(runRunnable);
       runThread.start();
     });
@@ -198,7 +199,7 @@ public class SideMenu extends BorderPane {
     openCommandPromptButton.setTextAlignment(TextAlignment.CENTER);
     openCommandPromptButton.setOnAction(event -> {
       if (openedProject == null) {
-        processService.openCommandPrompt(mainFileComboBox.getValue().getParentFile());
+        processService.openCommandPrompt(mainFileComboBox.getValue() == null ? null : mainFileComboBox.getValue().getParentFile());
       } else {
         processService.openCommandPrompt(new File(openedProject.getSourceRoot()));
       }
@@ -210,8 +211,14 @@ public class SideMenu extends BorderPane {
     editRunSettingsButton.setGraphic(new FontIcon("mdi-settings"));
     editRunSettingsButton.setGraphicTextGap(0);
     editRunSettingsButton.setTextAlignment(TextAlignment.CENTER);
+    editRunSettingsButton.setDisable(true);
     editRunSettingsButton.setOnAction(event -> {
-      runConfigWindow.showWindow();
+      if(openedProject == null){
+        runConfigWindow.showWindow(mainFileComboBox.getValue());
+      } else {
+        runConfigWindow.showWindow(null);
+      }
+
     });
   }
 
@@ -250,6 +257,17 @@ public class SideMenu extends BorderPane {
       @Override
       public File fromString(String s) {
         return s.equals("") ? null : new File(s);
+      }
+    });
+    mainFileComboBox.setOnAction(event -> {
+      if(mainFileComboBox.getValue() == null){
+        runButton.setDisable(true);
+        compileButton.setDisable(true);
+        editRunSettingsButton.setDisable(true);
+      } else {
+        runButton.setDisable(false);
+        compileButton.setDisable(false);
+        editRunSettingsButton.setDisable(false);
       }
     });
   }
