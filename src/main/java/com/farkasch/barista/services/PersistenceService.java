@@ -84,8 +84,11 @@ public class PersistenceService {
   }
 
   public void addOpenFile(File file) {
+    System.out.println("addOpenFile");
     openFiles.add(file);
     updateAndGetCurrentMainFiles();
+    openFiles.stream().map(File::getAbsolutePath).forEach(System.out::println);
+    mainFiles.stream().map(File::getAbsolutePath).forEach(System.out::println);
   }
 
   public void removeOpenFile(File file) {

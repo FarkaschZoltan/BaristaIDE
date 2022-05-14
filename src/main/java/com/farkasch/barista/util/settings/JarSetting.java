@@ -1,6 +1,5 @@
 package com.farkasch.barista.util.settings;
 
-import java.io.File;
 import java.util.List;
 
 public class JarSetting extends AbstractSetting {

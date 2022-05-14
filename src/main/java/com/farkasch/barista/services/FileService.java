@@ -66,6 +66,10 @@ public class FileService {
       fos.write(content.getBytes());
       fos.close();
 
+      if(persistenceService.getOpenProject() != null){
+        sideMenu.refresh();
+      }
+
     } catch (IOException e) {
       StringWriter stringWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(stringWriter);

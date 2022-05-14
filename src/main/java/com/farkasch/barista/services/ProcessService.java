@@ -137,6 +137,25 @@ public class ProcessService {
     }
   }
 
+  public void openCommandPrompt(File path){
+    try {
+      if(path == null){
+        path = new File(System.getProperty("user.home"));
+      }
+      String command = "cmd /k start";
+      Process process = Runtime.getRuntime().exec(command, null, path);
+    } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = fileService.createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while tyring to open command prompt!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
+    }
+  }
+
   //Creating arguments for compilation/running
   private File createArgumentFile(String path, HashMap<JavacEnum, Object> args) {
     File file = new File(path + "\\arguments.txt");

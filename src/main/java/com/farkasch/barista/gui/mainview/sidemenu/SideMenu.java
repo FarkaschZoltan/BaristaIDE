@@ -1,5 +1,6 @@
 package com.farkasch.barista.gui.mainview.sidemenu;
 
+import com.farkasch.barista.gui.codinginterface.CodingInterface;
 import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
@@ -10,15 +11,25 @@ import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.BaristaDragBoard;
 import com.farkasch.barista.util.BaristaProject;
+import com.farkasch.barista.util.settings.RunSetting;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import javafx.beans.property.ListProperty;
+import javafx.beans.value.ObservableListValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
+import javafx.util.StringConverter;
 import javax.annotation.PostConstruct;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,12 +61,16 @@ public class SideMenu extends BorderPane {
   @Autowired
   private CodingInterfaceContainer codingInterfaceContainer;
 
-  private HBox topMenu;
+  private GridPane topMenu;
   private VBox content;
 
   private ScrollPane contentScrollPane;
   private Button compileButton;
   private Button runButton;
+  private Button openCommandPromptButton;
+  private Button editRunSettingsButton;
+  private ComboBox<File> mainFileComboBox;
+  private ComboBox<RunSetting> runSettingsComboBox;
   private SimpleDropdown openFiles;
   private SimpleDropdown recentlyClosed;
   private FolderDropdown projectFolderDropdown;
@@ -81,11 +96,24 @@ public class SideMenu extends BorderPane {
   }
 
   private void initTopMenu() {
-    topMenu = new HBox();
+    topMenu = new GridPane();
     initCompileButton();
     initRunButton();
+    initCommandPromptButton();
+    initConfigEditButton();
+    initRunConfigCombobox();
+    initMainFileCombobox();
 
-    topMenu.getChildren().addAll(compileButton, runButton);
+    topMenu.add(compileButton, 0, 0);
+    topMenu.add(runButton, 1, 0);
+    topMenu.add(openCommandPromptButton, 2, 0);
+
+    if (openedProject == null) {
+      topMenu.add(mainFileComboBox, 0, 1, 3, 1);
+    } else {
+      topMenu.add(runSettingsComboBox, 0, 1, 2, 1);
+      topMenu.add(editRunSettingsButton, 2, 1);
+    }
   }
 
   private void initContent() {
@@ -130,6 +158,9 @@ public class SideMenu extends BorderPane {
       Thread compileThread = new Thread(compileRunnable);
       compileThread.start();
     });
+    compileButton.setMaxWidth(Double.MAX_VALUE);
+    GridPane.setHgrow(compileButton, Priority.ALWAYS);
+    GridPane.setFillWidth(compileButton, true);
   }
 
   private void initRunButton() {
@@ -149,16 +180,74 @@ public class SideMenu extends BorderPane {
       Thread runThread = new Thread(runRunnable);
       runThread.start();
     });
+    runButton.setMaxWidth(Double.MAX_VALUE);
+    GridPane.setHgrow(runButton, Priority.ALWAYS);
+    GridPane.setFillWidth(runButton, true);
+  }
+
+  private void initCommandPromptButton() {
+    openCommandPromptButton = new Button("");
+    openCommandPromptButton.setGraphic(new FontIcon("mdi-window-maximize"));
+    openCommandPromptButton.setGraphicTextGap(0);
+    openCommandPromptButton.setTextAlignment(TextAlignment.CENTER);
+    openCommandPromptButton.setOnAction(event -> {
+      if(openedProject == null){
+        processService.openCommandPrompt(mainFileComboBox.getValue().getParentFile());
+      } else {
+        processService.openCommandPrompt(new File(openedProject.getSourceRoot()));
+      }
+    });
+  }
+
+  private void initConfigEditButton() {
+    editRunSettingsButton = new Button("");
+    editRunSettingsButton.setGraphic(new FontIcon("mdi-settings"));
+    editRunSettingsButton.setGraphicTextGap(0);
+    editRunSettingsButton.setTextAlignment(TextAlignment.CENTER);
+  }
+
+  private void initRunConfigCombobox() {
+    runSettingsComboBox = new ComboBox<>();
+  }
+
+  private void initMainFileCombobox() {
+    mainFileComboBox = new ComboBox<>();
+    mainFileComboBox.setMaxWidth(Double.MAX_VALUE);
+    mainFileComboBox.setItems(FXCollections.observableList(persistenceService.getMainFiles()));
+    GridPane.setHgrow(mainFileComboBox, Priority.ALWAYS);
+    GridPane.setFillWidth(mainFileComboBox, true);
+    mainFileComboBox.setConverter(new StringConverter<>() {
+      @Override
+      public String toString(File file) {
+        return file == null ? "" : file.getAbsolutePath();
+      }
+
+      @Override
+      public File fromString(String s) {
+        return s.equals("") ? null : new File(s);
+      }
+    });
   }
 
   public void refresh() {
+    System.out.println("refresh!");
     openFiles.refresh(persistenceService.getOpenFiles());
     recentlyClosed.refresh(persistenceService.getRecentlyClosed());
+    mainFileComboBox.setItems(FXCollections.observableList(persistenceService.updateAndGetCurrentMainFiles()));
+    persistenceService.getOpenFiles().stream().map(File::getAbsolutePath).forEach(System.out::println);
+    persistenceService.updateAndGetCurrentMainFiles().stream().map(File::getAbsolutePath).forEach(System.out::println);
   }
 
   public void openProject(BaristaProject baristaProject) {
     if (content.getChildren().contains(projectFolderDropdown)) {
       closeProject();
+    } else {
+      ArrayList<CodingInterface> toClose = new ArrayList<>();
+      codingInterfaceContainer.getInterfaces().forEach(codingInterface -> {
+        fileService.saveFile(codingInterface.getShownFile(), codingInterface.getTextContent());
+        toClose.add(codingInterface);
+      });
+      toClose.forEach(CodingInterface::close);
     }
 
     content.getChildren().remove(openFiles);
@@ -211,10 +300,10 @@ public class SideMenu extends BorderPane {
     deleteProject.setOnAction(click -> warningPopup.showWindow("Delete Project", "Are you sure you want to delete this project?",
       acceptClick -> fileService.deleteProject(persistenceService.getOpenProject())));
 
+    //giving the absolute parent its own context menu
     projectFolderDropdown.setAbsoluteParentContextMenuItems(Arrays.asList(renameProject, newFile, newFolder, closeProject, deleteProject));
     //enabling file/folder dragging
     projectFolderDropdown.setDragBoard(dragBoard);
-
     projectFolderDropdown.prepare(openedProject.getProjectRoot(), null);
 
     content.getChildren().add(projectFolderDropdown);
@@ -222,10 +311,15 @@ public class SideMenu extends BorderPane {
 
   public void closeProject() {
     content.getChildren().remove(projectFolderDropdown);
+    fileService.saveProject();
+    ArrayList<CodingInterface> toClose = new ArrayList<>();
+    codingInterfaceContainer.getInterfaces().forEach(codingInterface -> {
+      fileService.saveFile(codingInterface.getShownFile(), codingInterface.getTextContent());
+      toClose.add(codingInterface);
+    });
+    toClose.forEach(CodingInterface::close);
     openedProject = null;
-    if (codingInterfaceContainer.getActiveInterface() != null) {
-      codingInterfaceContainer.getActiveInterface().close();
-    }
+    persistenceService.setOpenProject(null);
     content.getChildren().addAll(recentlyClosed, openFiles);
   }
 

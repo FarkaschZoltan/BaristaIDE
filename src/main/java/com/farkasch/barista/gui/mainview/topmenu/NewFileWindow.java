@@ -111,10 +111,10 @@ public class NewFileWindow extends Stage {
       try {
         File newFile = fileService.createFile(
           folderPathField.getText() + "\\" + fileNameField.getText());
-        openFile.accept(newFile);
         if(persistenceService.getOpenProject() != null){
           sideMenu.closeProject();
         }
+        openFile.accept(newFile);
         close();
       } catch (FileAlreadyExistsException e) {
         StringWriter stringWriter = new StringWriter();
