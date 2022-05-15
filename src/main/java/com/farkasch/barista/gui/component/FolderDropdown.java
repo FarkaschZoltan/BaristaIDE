@@ -309,7 +309,7 @@ public class FolderDropdown extends GridPane {
           if (itemContainer.getChildren().size() > 1) {
             folderClose(itemContainer, node);
           } else {
-            folderExpand((folderDropdownItem.getParentPath() == null ? System.getProperty("user.home") : folderDropdownItem.getPath()),
+            folderExpand((folderDropdownItem.getParentPath() == null ? System.getProperty("user.home") + "\\" + folderDropdownItem.getText() : folderDropdownItem.getPath()),
               folderDropdownItem.getItemContainer(), node);
           }
         } else {
