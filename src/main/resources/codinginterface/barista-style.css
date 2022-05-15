@@ -15,19 +15,19 @@
 .cm-s-barista .CodeMirror-gutters { color: #b9b9ba; }
 .cm-s-barista .CodeMirror-cursor { border-left: solid thin black; }
 .cm-s-barista .CodeMirror-linenumber { color: #6c6c6d; }
-.cm-s-barista .CodeMirror-selected { background: #6c6c6d; opacity: 0.5 }
+.cm-s-barista .CodeMirror-selected { background: #6c6c6d; opacity: 0.3}
 .cm-s-barista .CodeMirror-line::selection, .cm-s-barista .CodeMirror-line > span::selection, .cm-s-barista .CodeMirror-line > span > span::selection { background: deepskyblue; }
 .cm-s-barista .CodeMirror-line::-moz-selection, .cm-s-barista .CodeMirror-line > span::-moz-selection, .cm-s-barista .CodeMirror-line > span > span::-moz-selection { background: deepskyblue; }
 .cm-s-barista span.cm-comment { color: #7f7f7f; }
-.cm-s-barista span.cm-string, .cm-s-barista span.cm-string-2 { color: #42c602; }
-.cm-s-barista span.cm-number { color: #ffb868; }
-.cm-s-barista span.cm-variable { color: #d124fb; }
+.cm-s-barista span.cm-string, .cm-s-barista span.cm-string-2 { color:#00ad53; }
+.cm-s-barista span.cm-number { color: #000000; }
+.cm-s-barista span.cm-variable { color: #000000; }
 .cm-s-barista span.cm-variable-2 { color: #621076; }
 .cm-s-barista span.cm-def { color: black; } /*not used yet*/
 .cm-s-barista span.cm-operator { color: black; } /*not used yet*/
 .cm-s-barista span.cm-keyword { color: blue; }
-.cm-s-barista span.cm-atom { color: blue; }
-.cm-s-barista span.cm-meta { color: black; } /*not used yet*/
+.cm-s-barista span.cm-atom { color: #008a8a; }
+.cm-s-barista span.cm-meta { color: #a45f00; } /*not used yet*/
 .cm-s-barista span.cm-tag { color: black; } /*not used yet*/
 .cm-s-barista span.cm-attribute { color: black; } /*not used yet*/
 .cm-s-barista span.cm-qualifier { color: black; } /*not used yet*/

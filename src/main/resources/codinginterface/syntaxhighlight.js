@@ -1,4 +1,4 @@
-CodeMirror.defineSimpleMode("java", {
+/*CodeMirror.defineSimpleMode("java", {
   start: [
     //capturing strings
     {regex: /\".*\"/, token: "string"},
@@ -8,16 +8,13 @@ CodeMirror.defineSimpleMode("java", {
     //capturing atomic values
     {regex: /(true|false|null)/, token: "atomic"},
     //capturing line-comments
-    {regex: /\/\/.*/, token: "comment"},
-    {regex: /\/\*/, token: "comment", next: "comment"},
     //indenting/dedenting on opening/closing brackets
     {regex: /[\{\[\(]/, indent: true},
     {regex: /[\}\]\)]/, dedent: true},
   ],
   //handling multi-line comments
   comment: [
-    {regex: /.*?\*\//, token: "comment", next: "start"},
-    {regex: /.*/, token: "comment"}
+
   ],
   //other misc. information
   meta: {
@@ -26,12 +23,12 @@ CodeMirror.defineSimpleMode("java", {
     //commenting an entire line, when typing "//"
     lineComment: "//"
   }
-})
+})*/
 
 
 let codeArea = document.querySelector("#codeArea");
 let codeMirror = CodeMirror.fromTextArea(codeArea, {
-  mode: "java",
+  mode: "text/x-java",
   theme: "barista",
   lineNumbers: true,
   autofocus: true,
