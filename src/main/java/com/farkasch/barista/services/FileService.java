@@ -11,6 +11,7 @@ import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.FileTemplates;
 import com.farkasch.barista.util.Result;
+import com.farkasch.barista.util.settings.RunSetting;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,7 +67,7 @@ public class FileService {
       fos.write(content.getBytes());
       fos.close();
 
-      if(persistenceService.getOpenProject() == null){
+      if (persistenceService.getOpenProject() == null) {
         sideMenu.refresh();
       }
 
@@ -390,6 +391,10 @@ public class FileService {
       writer.write(baristaProject.toJsonString());
       writer.close();
 
+      //creating RunConfig.json inside .barista
+      File runConfig = new File(baristaFolder.getAbsolutePath() + "\\RunConfig.json");
+      runConfig.createNewFile();
+
       File globalProjectConfig = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
       Scanner scanner = new Scanner(globalProjectConfig);
       JSONParser parser = new JSONParser();
@@ -494,7 +499,7 @@ public class FileService {
       }
       scanner.close();
 
-      if (jsonString != "") {
+      if (!jsonString.equals("")) {
         array = ((JSONArray) parser.parse(jsonString));
       }
 
@@ -508,7 +513,7 @@ public class FileService {
 
       FileSystemUtils.deleteRecursively(new File(baristaProject.getProjectRoot()));
       if (persistenceService.getOpenProject().getProjectRoot().equals(baristaProject.getProjectRoot())) {
-        sideMenu.closeProject();
+        sideMenu.closeProject(true);
       }
       array.remove(toDelete);
 
@@ -547,7 +552,7 @@ public class FileService {
       }
       scanner.close();
 
-      if (jsonString != "") {
+      if (!jsonString.equals("")) {
         array = ((JSONArray) parser.parse(jsonString));
       }
 
@@ -591,12 +596,11 @@ public class FileService {
       }
       scanner.close();
 
-      if (jsonString != "") {
+      if (!jsonString.equals("")) {
         array = ((JSONArray) parser.parse(jsonString));
       }
 
       for (Object o : array) {
-        System.out.println("project found!");
         JSONObject jso = (JSONObject) o;
         projects.add(new BaristaProject((String) jso.get("projectName"), (String) jso.get("projectRoot")));
       }
@@ -615,6 +619,76 @@ public class FileService {
     }
 
     return new ArrayList<>();
+  }
+
+  public List<RunSetting> getRunConfig() {
+    File runConfig = new File(persistenceService.getOpenProject().getProjectRoot() + "\\" + ".barista\\RunConfig.json");
+    try {
+      Scanner scanner = new Scanner(runConfig);
+      JSONParser parser = new JSONParser();
+      JSONArray array = new JSONArray();
+      List<RunSetting> runSettings = new ArrayList<>();
+      String jsonString = "";
+
+      while (scanner.hasNextLine()) {
+        jsonString = jsonString.concat(scanner.nextLine());
+      }
+      scanner.close();
+
+      if (!jsonString.equals("")) {
+        array = ((JSONArray) parser.parse(jsonString));
+      }
+
+      //adding the basic run config
+      runSettings.add(new RunSetting(persistenceService.getOpenProject().getProjectName(), null));
+      //adding the custom run configs
+      for (Object o : array) {
+        JSONObject jsonObject = (JSONObject) o;
+        runSettings.add(new RunSetting((String)(jsonObject.get("name")), (String)(jsonObject.get("command"))));
+      }
+
+      return runSettings;
+    } catch (ParseException | FileNotFoundException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while accessing run configurations!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
+    }
+
+    return new ArrayList<>();
+  }
+
+  public void setRunConfig(List<RunSetting> runSettings){
+    File runConfig = new File(persistenceService.getOpenProject().getProjectRoot() + "\\" + ".barista\\RunConfig.json");
+    try {
+      FileWriter fileWriter = new FileWriter(runConfig);
+      JSONArray array = new JSONArray();
+
+      for(RunSetting runSetting : runSettings){
+        if(runSetting.getCommand() != null){
+          JSONObject jsonObject = new JSONObject();
+          jsonObject.put("name", runSetting.getName());
+          jsonObject.put("command", runSetting.getCommand());
+          array.add(jsonObject);
+        }
+      }
+
+      fileWriter.write(array.toJSONString());
+      fileWriter.close();
+    } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while saving run configurations!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
+    }
   }
 
   public List<File> getDirs(@Nullable String folderPath) {
@@ -903,8 +977,8 @@ public class FileService {
       fos.write(sb.toString().getBytes());
       fos.close();
 
-      for(CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()){
-        if(codingInterface.getShownFile().equals(fileToMove)){
+      for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
+        if (codingInterface.getShownFile().equals(fileToMove)) {
           javaScriptService.setContent(codingInterface.getContentWebView(), fileToMove, false);
           break;
         }

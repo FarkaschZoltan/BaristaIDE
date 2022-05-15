@@ -85,6 +85,10 @@ public class SideMenu extends BorderPane {
     return recentlyClosed;
   }
 
+  public ComboBox<RunSetting> getRunSettingsComboBox(){
+    return runSettingsComboBox;
+  }
+
   @PostConstruct
   private void init() {
     openedProject = null;
@@ -178,7 +182,7 @@ public class SideMenu extends BorderPane {
         String fileName = f.getName();
         processService.RunFile(filePath, fileName);
       } else {
-        processService.RunProject(persistenceService.getOpenProject());
+        processService.RunProject(runSettingsComboBox.getValue());
       }
     };
     runButton.setOnAction(click -> {
@@ -224,6 +228,9 @@ public class SideMenu extends BorderPane {
 
   private void initRunConfigCombobox() {
     runSettingsComboBox = new ComboBox<>();
+    runSettingsComboBox.setMaxWidth(Double.MAX_VALUE);
+    GridPane.setHgrow(runSettingsComboBox, Priority.ALWAYS);
+    GridPane.setFillWidth(runSettingsComboBox, true);
     runSettingsComboBox.setConverter(new StringConverter<RunSetting>() {
       @Override
       public String toString(RunSetting runSetting) {
@@ -283,7 +290,7 @@ public class SideMenu extends BorderPane {
 
   public void openProject(BaristaProject baristaProject) {
     if (content.getChildren().contains(projectFolderDropdown)) {
-      closeProject();
+      closeProject(false);
     } else {
       ArrayList<CodingInterface> toClose = new ArrayList<>();
       codingInterfaceContainer.getInterfaces().forEach(codingInterface -> {
@@ -297,6 +304,7 @@ public class SideMenu extends BorderPane {
     content.getChildren().remove(recentlyClosed);
 
     openedProject = baristaProject;
+    persistenceService.setOpenProject(baristaProject);
     projectFolderDropdown = new FolderDropdown(getWidth(), fileService, warningPopup, true, true);
     projectFolderDropdown.setFileLeftClickAction(
       target -> codingInterfaceContainer.openFile(new File(target.getParentPath() + "\\" + target.getText())));
@@ -337,7 +345,7 @@ public class SideMenu extends BorderPane {
       click -> renameProjectPopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
 
     MenuItem closeProject = new MenuItem("Close Project");
-    closeProject.setOnAction(click -> closeProject());
+    closeProject.setOnAction(click -> closeProject(false));
 
     MenuItem deleteProject = new MenuItem("Delete Project");
     deleteProject.setOnAction(click -> warningPopup.showWindow("Delete Project", "Are you sure you want to delete this project?",
@@ -350,11 +358,20 @@ public class SideMenu extends BorderPane {
     projectFolderDropdown.prepare(openedProject.getProjectRoot(), null);
 
     content.getChildren().add(projectFolderDropdown);
+    topMenu.getChildren().remove(mainFileComboBox);
+    topMenu.add(runSettingsComboBox, 0, 1, 2, 1);
+    runSettingsComboBox.setItems(FXCollections.observableList(fileService.getRunConfig()));
+    runSettingsComboBox.setValue(runSettingsComboBox.getItems().get(0));
+    runButton.setDisable(false);
+    compileButton.setDisable(false);
+    editRunSettingsButton.setDisable(false);
   }
 
-  public void closeProject() {
+  public void closeProject(boolean delete) {
     content.getChildren().remove(projectFolderDropdown);
-    fileService.saveProject();
+    if(!delete){
+      fileService.saveProject();
+    }
     ArrayList<CodingInterface> toClose = new ArrayList<>();
     codingInterfaceContainer.getInterfaces().forEach(codingInterface -> {
       fileService.saveFile(codingInterface.getShownFile(), codingInterface.getTextContent());
@@ -364,6 +381,8 @@ public class SideMenu extends BorderPane {
     openedProject = null;
     persistenceService.setOpenProject(null);
     content.getChildren().addAll(recentlyClosed, openFiles);
+    topMenu.getChildren().remove(runSettingsComboBox);
+    topMenu.add(mainFileComboBox, 0, 1, 2, 1);
   }
 
   public FolderDropdown getProjectFolderDropdown() {

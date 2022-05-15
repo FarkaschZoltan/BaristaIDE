@@ -92,7 +92,7 @@ public class OpenFileWindow extends Stage {
     openFileButton.setOnAction(actionEvent -> {
       File file = new File(filePath);
       if(persistenceService.getOpenProject() != null){
-        sideMenu.closeProject();
+        sideMenu.closeProject(false);
       }
       openFile.accept(file);
       close();

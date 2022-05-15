@@ -1,13 +1,14 @@
 package com.farkasch.barista.util.settings;
 
-import com.farkasch.barista.util.enums.JavacEnum;
-import java.io.File;
-import java.util.HashMap;
-
 public class RunSetting extends AbstractSetting {
 
   private String name;
   private String command;
+
+  public RunSetting(String name, String command) {
+    this.name = name;
+    this.command = command;
+  }
 
   public String getName() {
     return name;
@@ -23,5 +24,17 @@ public class RunSetting extends AbstractSetting {
 
   public void setCommand(String command) {
     this.command = command;
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (other != null && other.getClass().equals(this.getClass())) {
+      if(((RunSetting) other).getName().equals(this.getName())){
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return false;
   }
 }

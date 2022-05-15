@@ -112,7 +112,7 @@ public class NewFileWindow extends Stage {
         File newFile = fileService.createFile(
           folderPathField.getText() + "\\" + fileNameField.getText());
         if(persistenceService.getOpenProject() != null){
-          sideMenu.closeProject();
+          sideMenu.closeProject(false);
         }
         openFile.accept(newFile);
         close();

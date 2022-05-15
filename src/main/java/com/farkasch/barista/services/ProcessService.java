@@ -4,6 +4,7 @@ import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.Result;
 import com.farkasch.barista.util.enums.JavacEnum;
+import com.farkasch.barista.util.settings.RunSetting;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -99,16 +100,17 @@ public class ProcessService {
 
   public void RunFile(String filePath, String fileName) {
     File runArgs = CompileFile(filePath, fileName);
-    Run(runArgs, fileName, filePath);
+    Run(runArgs, fileName, filePath, null);
   }
 
-  public void RunProject(BaristaProject baristaProject) {
+  public void RunProject(RunSetting runSetting) {
+    BaristaProject baristaProject = persistenceService.getOpenProject();
     File runArgs = CompileProject(baristaProject);
     String mainClassPath = baristaProject.getMainFile().getAbsolutePath().replace(baristaProject.getSourceRoot(), baristaProject.getTargetFolder());
-    Run(runArgs, mainClassPath, baristaProject.getTargetFolder());
+    Run(runArgs, mainClassPath, baristaProject.getTargetFolder(), runSetting);
   }
 
-  private void Run(File argFile, String mainFile, String sourcePath) {
+  private void Run(File argFile, String mainFile, String sourcePath, RunSetting runSetting) {
     try {
       mainFile = mainFile.replace(sourcePath + "\\", "");
       mainFile = mainFile.replace(".java", "");
@@ -116,7 +118,11 @@ public class ProcessService {
 
       File batch = new File(sourcePath + "\\run.bat");
       FileWriter writer = new FileWriter(batch, false);
-      writer.write("@Echo off\n" + "java @" + argFile.getName() + " " + mainFile + "\n" + "pause");
+      if(runSetting.getCommand() == null){
+        writer.write("@Echo off\n" + "java @" + argFile.getName() + " " + mainFile + "\n" + "pause");
+      } else {
+        writer.write("@Echo off\n" + runSetting.getCommand() + "\n" + "pause");
+      }
       writer.close();
 
       String command = "cmd /c start /wait cmd /c " + batch.getName();
