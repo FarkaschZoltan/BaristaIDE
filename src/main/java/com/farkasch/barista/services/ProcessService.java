@@ -118,7 +118,7 @@ public class ProcessService {
 
       File batch = new File(sourcePath + "\\run.bat");
       FileWriter writer = new FileWriter(batch, false);
-      if(runSetting.getCommand() == null){
+      if(runSetting == null || runSetting.getCommand() == null){
         writer.write("@Echo off\n" + "java @" + argFile.getName() + " " + mainFile + "\n" + "pause");
       } else {
         writer.write("@Echo off\n" + runSetting.getCommand() + "\n" + "pause");
@@ -195,6 +195,7 @@ public class ProcessService {
       }
       writer.close();
     } catch (IOException e) {
+      e.printStackTrace();
       StringWriter stringWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(stringWriter);
       e.printStackTrace(printWriter);
@@ -202,7 +203,6 @@ public class ProcessService {
       errorPopup.showWindow(Result.ERROR("Error while creating argument file!", errorFile));
 
       printWriter.close();
-      e.printStackTrace();
     }
     return file;
   }
