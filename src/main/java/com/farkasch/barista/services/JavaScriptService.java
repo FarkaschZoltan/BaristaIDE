@@ -15,6 +15,9 @@ public class JavaScriptService {
   @Lazy
   @Autowired
   private PersistenceService persistenceService;
+  @Lazy
+  @Autowired
+  private FileService fileService;
 
   public String getContent(WebView view) {
     String script = "getContent()";
@@ -24,7 +27,6 @@ public class JavaScriptService {
 
   public void setContent(WebView view, File fileToSet, boolean firstOpen) {
     persistenceService.setFileToOpen(fileToSet);
-    System.out.println("file to set: " + persistenceService.getFileToOpen());
     String script = "loadContent()";
     if(firstOpen){
       open(view, script);
@@ -35,7 +37,6 @@ public class JavaScriptService {
 
   public void switchContent(WebView view, File fileToSet, boolean firstOpen) {
     persistenceService.setFileToSwitch(fileToSet);
-    System.out.println("file to set: " + persistenceService.getFileToSwitch());
     String script = "switchContent()";
     if(firstOpen){
       open(view, script);
@@ -44,12 +45,23 @@ public class JavaScriptService {
     }
   }
 
+  public int getCursorLine(WebView view){
+    String script = "getCursorLine()";
+    return (int) view.getEngine().executeScript(script);
+  }
+
+  public void insertGeneratedContent(WebView view){
+    String script = "insertGeneratedContent()";
+    view.getEngine().executeScript(script);
+  }
+
   private void open(WebView view, String... scripts) throws JSException{
     view.getEngine().getLoadWorker().stateProperty().addListener(
       (observableValue, oldState, newState) -> {
         if (newState == State.SUCCEEDED) {
           JSObject win = (JSObject) view.getEngine().executeScript("window");
           win.setMember("persistenceService", persistenceService);
+          win.setMember("fileService", fileService);
           for (String script : scripts) {
             System.out.println((String) view.getEngine().executeScript(script));
           }

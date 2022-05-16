@@ -644,7 +644,7 @@ public class FileService {
       //adding the custom run configs
       for (Object o : array) {
         JSONObject jsonObject = (JSONObject) o;
-        runSettings.add(new RunSetting((String)(jsonObject.get("name")), (String)(jsonObject.get("command"))));
+        runSettings.add(new RunSetting((String) (jsonObject.get("name")), (String) (jsonObject.get("command"))));
       }
 
       return runSettings;
@@ -662,14 +662,14 @@ public class FileService {
     return new ArrayList<>();
   }
 
-  public void setRunConfig(List<RunSetting> runSettings){
+  public void setRunConfig(List<RunSetting> runSettings) {
     File runConfig = new File(persistenceService.getOpenProject().getProjectRoot() + "\\" + ".barista\\RunConfig.json");
     try {
       FileWriter fileWriter = new FileWriter(runConfig);
       JSONArray array = new JSONArray();
 
-      for(RunSetting runSetting : runSettings){
-        if(runSetting.getCommand() != null){
+      for (RunSetting runSetting : runSettings) {
+        if (runSetting.getCommand() != null) {
           JSONObject jsonObject = new JSONObject();
           jsonObject.put("name", runSetting.getName());
           jsonObject.put("command", runSetting.getCommand());
@@ -874,6 +874,44 @@ public class FileService {
       e.printStackTrace();
     }
     return Result.FAIL();
+  }
+
+  public List<String> getClassLevelVariables(String content) {
+    StringBuilder sb = new StringBuilder();
+    int bracketCount = 0;
+    for (char character : content.toCharArray()) {
+      if (character == '{') {
+        bracketCount++;
+      } else if (character == '}') {
+        bracketCount--;
+      }
+      if (bracketCount == 1 && character != '{' && character != '}') {
+        sb.append(character);
+      }
+    }
+
+    return Arrays.stream(sb.toString().split("\n")).filter(string -> string.matches("(.* +.*;+)")).toList();
+  }
+
+  //generated elements are always inserted before the first method. If no methods are found, at the current cursor position
+  public int getGenerateInsertPosition(String content, CodingInterface codingInterface) {
+    Scanner scanner = new Scanner(content);
+    int lineNum = 0;
+    boolean foundLine = false;
+    while (scanner.hasNextLine() && !foundLine) {
+      String line = scanner.nextLine();
+      System.out.println(line);
+      if (line.matches(".*\\) *\\{")) {
+        foundLine = true;
+        break;
+      }
+      lineNum++;
+    }
+    System.out.println(lineNum);
+    if (!foundLine) {
+      return javaScriptService.getCursorLine(codingInterface.getContentWebView()) - 1;
+    }
+    return lineNum;
   }
 
   private void recursiveMove(File item, File targetDirectory) throws IOException {

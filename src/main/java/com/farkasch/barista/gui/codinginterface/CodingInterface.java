@@ -1,10 +1,13 @@
 package com.farkasch.barista.gui.codinginterface;
 
-import com.farkasch.barista.gui.component.ErrorPopup;
+import com.farkasch.barista.gui.mainview.topmenu.LoadProjectWindow;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.JavaScriptService;
-import com.farkasch.barista.services.PersistenceService;
 import java.io.File;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebView;
 import javax.annotation.PostConstruct;
@@ -21,18 +24,18 @@ public class CodingInterface extends BorderPane {
   @Autowired
   private JavaScriptService javaScriptService;
   @Autowired
-  private PersistenceService persistenceService;
-  @Autowired
   private FileService fileService;
   @Autowired
   private ApplicationContext applicationContext;
   @Autowired
-  private ErrorPopup errorPopup;
+  private GenerateWindow generateWindow;
 
   private CodingInterfaceContainer parent;
   private SwitchMenu switchMenu;
   private boolean interfaceLoaded = false;
+  private int generateInsertPosition = 0;
   private WebView content;
+  private ContextMenu contextMenu;
 
   public void setParent(CodingInterfaceContainer parent) {
     this.parent = parent;
@@ -50,11 +53,26 @@ public class CodingInterface extends BorderPane {
   @PostConstruct
   private void init() {
     content = new WebView();
+    contextMenu = new ContextMenu();
     switchMenu = applicationContext.getBean(SwitchMenu.class);
     switchMenu.setParent(this);
+
     content.getEngine()
       .load(this.getClass().getResource("/codinginterface/codearea.html")
         .toExternalForm());
+    content.setContextMenuEnabled(false);
+    content.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+      contextMenu.hide();
+      if(event.getButton() == MouseButton.SECONDARY){
+        generateInsertPosition = fileService.getGenerateInsertPosition(getTextContent(), this);
+        contextMenu.show(content, event.getScreenX(), event.getScreenY());
+      }
+    });
+
+    MenuItem generate = new MenuItem("Generate...");
+    generate.setOnAction(event -> generateWindow.showWindow(this, generateInsertPosition));
+
+    contextMenu.getItems().add(generate);
 
     setTop(switchMenu);
     setCenter(content);

@@ -152,7 +152,7 @@ public class NewFileWindow extends Stage {
     this.openFile = openFile;
     rootFolderSelector.prepare(null, null);
     setScene(scene);
-
+    
     show();
   }
 }

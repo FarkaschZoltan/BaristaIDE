@@ -30,8 +30,9 @@
   -fx-text-fill: #F4F4F4;
 }
 
-#folder--on-drag-entered{
-  -fx-background-color: #91f69b;
+
+#folder--on-drag-entered, #folder--selected{
+  -fx-background-color: grey;
   -fx-alignment: center-left;
 }
 

@@ -195,7 +195,6 @@ public class RunConfigWindow extends Stage {
     GridPane.setHgrow(browseButton, Priority.ALWAYS);
     GridPane.setHalignment(browseButton, HPos.RIGHT);
 
-    jarSelector.setGridLinesVisible(true);
     jarSelector.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
     jarSelector.minWidthProperty().bind(jarScrollPane.widthProperty());
 

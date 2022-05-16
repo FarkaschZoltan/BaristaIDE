@@ -36,11 +36,29 @@ public class PersistenceService {
   private List<File> mainFiles; //List of available main files, when not in a project
   private List<File> recentlyClosed; //List of recently closed files, when not in a project
   private BaristaProject openProject; //The currently open project
+  private String generatedContent; //generated content for the javascript to access
+  private int generateInsertPosition; //the row in which the generated content has to be inserted
 
   public PersistenceService() {
     openFiles = new ArrayList<>();
     recentlyClosed = new ArrayList<>();
     mainFiles = new ArrayList<>();
+  }
+
+  public int getGenerateInsertPosition() {
+    return generateInsertPosition;
+  }
+
+  public void setGenerateInsertPosition(int generateInsertPosition) {
+    this.generateInsertPosition = generateInsertPosition;
+  }
+
+  public String getGeneratedContent() {
+    return generatedContent;
+  }
+
+  public void setGeneratedContent(String generatedContent) {
+    this.generatedContent = generatedContent;
   }
 
   public File getFileToOpen() {
