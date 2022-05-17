@@ -35,11 +35,18 @@
   -fx-alignment: center-left;
 }
 
+#folder-dropdown__graphic{
+  -fx-fill: black;
+}
+
+#folder-dropdown__graphic:hover{
+  -fx-fill: white;
+}
+
 #folder-dropdown__item:hover, #folder-dropdown__item--selected:hover {
   -fx-background-color: grey;
   -fx-text-fill: #F4F4F4;
 }
-
 
 #folder-dropdown__item--on-drag-entered, #folder-dropdown__item--selected{
   -fx-background-color: grey;
@@ -66,11 +73,11 @@
   -fx-text-fill: #F4F4F4;
 }
 
-.folder-dropdown__graphic{
+#side-menu__simple-dropdown--graphic{
   -fx-fill: white;
 }
 
-.folder-dropdown__graphic:hover{
+#side-menu__simple-dropdown--graphic:hover{
   -fx-fill: black;
 }
 

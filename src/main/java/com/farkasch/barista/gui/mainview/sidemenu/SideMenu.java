@@ -309,7 +309,7 @@ public class SideMenu extends BorderPane {
     HashMap<String, String> styleIds = new HashMap<>();
     styleIds.put("item", "side-menu__simple-dropdown--item");
     styleIds.put("dragEntered", "side-menu__simple-dropdown--item--on-drag-entered");
-    styleIds.put("graphic", "folder-dropdown__graphic");
+    styleIds.put("graphic", "side-menu__simple-dropdown--graphic");
     projectFolderDropdown = new FolderDropdown(getWidth(), fileService, warningPopup, styleIds, true, true);
     projectFolderDropdown.setFileLeftClickAction(
       target -> codingInterfaceContainer.openFile(new File(target.getParentPath() + "\\" + target.getText())));

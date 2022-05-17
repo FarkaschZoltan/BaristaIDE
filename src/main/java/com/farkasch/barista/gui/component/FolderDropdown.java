@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
+import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -132,9 +133,13 @@ public class FolderDropdown extends GridPane {
       absoluteParent.setGraphic(graphic);
       absoluteParent.setId(styleIds.get("item"));
       absoluteParent.setMaxWidth(Double.MAX_VALUE);
-
-      absoluteParent.addEventHandler(MouseEvent.MOUSE_ENTERED, event -> absoluteParent.getGraphic().setId(styleIds.get("graphic") + ":hover"));
-      absoluteParent.addEventHandler(MouseEvent.MOUSE_EXITED, event -> absoluteParent.getGraphic().setId(styleIds.get("graphic")));
+      absoluteParent.hoverProperty().addListener((observable, oldValue, newValue) -> {
+        if (newValue) {
+          absoluteParent.getGraphic().setId(styleIds.get("graphic") + ":hover");
+        } else {
+          absoluteParent.getGraphic().setId(styleIds.get("graphic"));
+        }
+      });
 
       absoluteParent.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
         if (event.getButton() == MouseButton.PRIMARY) {
@@ -180,17 +185,21 @@ public class FolderDropdown extends GridPane {
       node.setParent(parentNode);
       node.setValue(folderDropdownItem);
       Boolean isFile = dirs.get(i).isFile();
-      folderDropdownItem.addEventHandler(MouseEvent.MOUSE_ENTERED, event -> folderDropdownItem.getGraphic().setId(styleIds.get("graphic") + ":hover"));
-      folderDropdownItem.addEventHandler(MouseEvent.MOUSE_EXITED, event -> folderDropdownItem.getGraphic().setId(styleIds.get("graphic")));
+      FontIcon graphic;
       if (isFile) {
-        FontIcon graphic = new FontIcon("mdi-file");
-        graphic.setId(styleIds.get("graphic"));
-        folderDropdownItem.setGraphic(graphic);
+        graphic = new FontIcon("mdi-file");
       } else {
-        FontIcon graphic = new FontIcon("mdi-folder");
-        graphic.setId(styleIds.get("graphic"));
-        folderDropdownItem.setGraphic(graphic);
+        graphic = new FontIcon("mdi-folder");
       }
+      graphic.setId(styleIds.get("graphic"));
+      folderDropdownItem.setGraphic(graphic);
+      folderDropdownItem.hoverProperty().addListener((observable, oldValue, newValue) -> {
+        if (newValue) {
+          folderDropdownItem.getGraphic().setId(styleIds.get("graphic") + ":hover");
+        } else {
+          folderDropdownItem.getGraphic().setId(styleIds.get("graphic"));
+        }
+      });
 
       enableDragAndDrop(folderDropdownItem);
       folderDropdownItem.setOnMouseClicked(getFolderDropdownItemMouseClick(folderDropdownItem, isFile, node));
@@ -235,15 +244,21 @@ public class FolderDropdown extends GridPane {
     newItem.setMaxHeight(Double.MAX_VALUE);
     newItem.addEventHandler(MouseEvent.MOUSE_ENTERED, event -> newItem.getGraphic().setId(styleIds.get("graphic") + ":hover"));
     newItem.addEventHandler(MouseEvent.MOUSE_EXITED, event -> newItem.getGraphic().setId(styleIds.get("graphic")));
+    FontIcon graphic;
     if (file.isFile()) {
-      FontIcon graphic = new FontIcon("mdi-file");
-      graphic.setId(styleIds.get("graphic"));
-      newItem.setGraphic(graphic);
+      graphic = new FontIcon("mdi-file");
     } else {
-      FontIcon graphic = new FontIcon("mdi-folder");
-      graphic.setId(styleIds.get("graphic"));
-      newItem.setGraphic(graphic);
+      graphic = new FontIcon("mdi-folder");
     }
+    graphic.setId(styleIds.get("graphic"));
+    newItem.setGraphic(graphic);
+    newItem.hoverProperty().addListener((observable, oldValue, newValue) -> {
+      if (newValue) {
+        newItem.getGraphic().setId(styleIds.get("graphic") + ":hover");
+      } else {
+        newItem.getGraphic().setId(styleIds.get("graphic"));
+      }
+    });
 
     Comparator<Node> comparator = (a, b) -> {
       String text1 = ((FolderDropdownItem) (((VBox) a).getChildren().get(0))).getText().toLowerCase();
