@@ -14,6 +14,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -73,12 +74,15 @@ public class LoadProjectWindow extends Stage {
     projectsLabel.setLabelFor(projectsContainer);
 
     fieldLayout.add(chosenProjectLabel, 0, 0);
-    GridPane.setMargin(chosenProjectLabel, new Insets(10, 20, 10, 10));
+    GridPane.setMargin(chosenProjectLabel, new Insets(10, 10, 10, 0));
     GridPane.setValignment(chosenProjectLabel, VPos.CENTER);
     fieldLayout.add(chosenProject, 1, 0);
+    GridPane.setHgrow(chosenProject, Priority.ALWAYS);
+    GridPane.setFillWidth(chosenProject, true);
     fieldLayout.add(projectsLabel, 0, 1);
-    GridPane.setMargin(projectsLabel, new Insets(10, 20, 10, 10));
+    GridPane.setMargin(projectsLabel, new Insets(10, 0, 0, 0));
     GridPane.setValignment(projectsLabel, VPos.CENTER);
+    VBox.setMargin(fieldLayout, new Insets(10));
 
     openButton.setOnAction(click -> {
       fileService.loadProject(selectedProject);
@@ -103,7 +107,7 @@ public class LoadProjectWindow extends Stage {
     projectsContainer.getChildren().clear();
     for(BaristaProject project : projects){
       Button openProject = new Button(project.getProjectName());
-      openProject.setId("folder");
+      openProject.setId("folder-dropdown__item");
       openProject.setGraphic(new FontIcon("mdi-folder"));
       openProject.setOnAction(click -> {
         chosenProject.setText(project.getProjectName());

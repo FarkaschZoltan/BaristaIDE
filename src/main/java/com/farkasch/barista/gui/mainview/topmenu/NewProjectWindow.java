@@ -6,6 +6,7 @@ import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.enums.ProjectTypeEnum;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -19,6 +20,7 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -75,7 +77,7 @@ public class NewProjectWindow extends Stage {
 
     windowLayout = new VBox(fieldLayout, scrollPane, createButtonContainer);
 
-    scene = new Scene(windowLayout, 300, 400);
+    scene = new Scene(windowLayout, 350, 400);
     scene.getStylesheets().add(
       Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
         .toString());
@@ -90,21 +92,27 @@ public class NewProjectWindow extends Stage {
     projectNameLabel.setLabelFor(projectType);
 
     fieldLayout.add(projectNameLabel, 0, 0);
-    GridPane.setMargin(projectNameLabel, new Insets(10, 20, 10, 10));
+    GridPane.setMargin(projectNameLabel, new Insets(10, 10, 10, 0));
     GridPane.setValignment(projectNameLabel, VPos.CENTER);
     fieldLayout.add(projectNameField, 1, 0);
+    GridPane.setHgrow(projectNameField, Priority.ALWAYS);
+    GridPane.setFillWidth(projectNameField, true);
     fieldLayout.add(folderPathLabel, 0, 1);
-    GridPane.setMargin(folderPathLabel, new Insets(10, 20, 10, 10));
+    GridPane.setMargin(folderPathLabel, new Insets(10, 10, 10, 0));
     GridPane.setValignment(folderPathLabel, VPos.CENTER);
     fieldLayout.add(folderPathField, 1, 1);
+    GridPane.setHgrow(projectNameField, Priority.ALWAYS);
+    GridPane.setFillWidth(projectNameField, true);
     fieldLayout.add(projectTypeLabel, 0, 2);
-    GridPane.setMargin(projectTypeLabel, new Insets(10, 20, 10, 10));
+    GridPane.setMargin(projectTypeLabel, new Insets(10, 10, 10, 0));
     GridPane.setValignment(projectTypeLabel, VPos.CENTER);
     fieldLayout.add(projectType, 1, 2);
     fieldLayout.add(rootFolderLabel, 0, 3);
-    GridPane.setMargin(rootFolderLabel, new Insets(10, 0, 0, 10));
+    GridPane.setMargin(rootFolderLabel, new Insets(10, 0, 0, 0));
+    VBox.setMargin(fieldLayout, new Insets(10, 10, 0, 10));
 
     projectType.setItems(FXCollections.observableArrayList(ProjectTypeEnum.BASIC, ProjectTypeEnum.MAVEN, ProjectTypeEnum.GRADLE));
+    projectType.setMaxWidth(Double.MAX_VALUE);
     projectType.setConverter(new StringConverter<>() {
       @Override
       public String toString(ProjectTypeEnum projectTypeEnum) {
@@ -116,6 +124,8 @@ public class NewProjectWindow extends Stage {
         return ProjectTypeEnum.valueOf(s.toUpperCase());
       }
     });
+    GridPane.setHgrow(projectType, Priority.ALWAYS);
+    GridPane.setFillWidth(projectType, true);
 
     createButton.setOnAction(actionEvent -> {
       boolean maven;
@@ -146,14 +156,25 @@ public class NewProjectWindow extends Stage {
     setResizable(false);
   }
 
-  private void onLoad(){
+  private void onLoad() {
     projectNameField.setText("");
     folderPathField.setText(System.getProperty("user.home"));
     projectType.setValue(ProjectTypeEnum.BASIC);
+    HashMap<String, String> styleIds = new HashMap<>();
+    styleIds.put("item", "folder-dropdown__item");
+    styleIds.put("dragEntered", "folder-dropdown__item--on-drag-entered");
+    styleIds.put("graphic", "folder-dropdown__graphic");
 
-    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, warningPopup, false, false);
-    rootFolderSelector.setFolderLeftClickAction(target -> folderPathField.setText(
-      target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath()));
+    rootFolderSelector = new FolderDropdown(scene.getWidth() - 60, fileService, warningPopup, styleIds, false, false);
+    rootFolderSelector.setFolderLeftClickAction(target -> {
+      folderPathField.setText(
+        target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath());
+
+      if (rootFolderSelector.getLastClicked() != null) {
+        rootFolderSelector.getLastClicked().setId(styleIds.get("item"));
+      }
+      target.setId("folder-dropdown__item--selected");
+    });
 
     rootFolderSelector.prepare(null, null);
     scrollPane.setContent(rootFolderSelector);

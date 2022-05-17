@@ -8,7 +8,7 @@
   -fx-background-radius: 0;
 }
 
-#switch-menu__item:hover{
+#switch-menu__item:hover, #switch-menu__item--selected:hover{
   -fx-background-color: #7A7A7A;
   -fx-color-label-visible: white;
   -fx-background-radius: 0;
@@ -20,18 +20,18 @@
   -fx-background-radius: 0;
 }
 
-#folder{
+#folder-dropdown__item{
   -fx-background-color: #F4F4F4;
   -fx-alignment: center-left;
 }
 
-#folder:hover {
+#folder-dropdown__item:hover, #folder-dropdown__item--selected:hover {
   -fx-background-color: grey;
   -fx-text-fill: #F4F4F4;
 }
 
 
-#folder--on-drag-entered, #folder--selected{
+#folder-dropdown__item--on-drag-entered, #folder-dropdown__item--selected{
   -fx-background-color: grey;
   -fx-alignment: center-left;
 }
@@ -56,9 +56,19 @@
   -fx-text-fill: #F4F4F4;
 }
 
-#side-menu__simple-dropdown--title:hover, #side-menu__simple-dropdown--item:hover{
+.folder-dropdown__graphic{
+  -fx-fill: white;
+}
+
+.folder-dropdown__graphic:hover{
+  -fx-fill: black;
+}
+
+
+#side-menu__simple-dropdown--title:hover, #side-menu__simple-dropdown--item:hover, #side-menu__simple-dropdown--item--on-drag-entered{
   -fx-background-color: #F4F4F4;
-  -fx-text-fill: grey;
+  -fx-text-fill: black;
+  -fx-alignment: center-left;
 }
 
 #test {

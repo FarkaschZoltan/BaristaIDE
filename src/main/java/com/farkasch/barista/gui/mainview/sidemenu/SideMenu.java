@@ -15,6 +15,7 @@ import com.farkasch.barista.util.settings.RunSetting;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Button;
@@ -305,7 +306,11 @@ public class SideMenu extends BorderPane {
 
     openedProject = baristaProject;
     persistenceService.setOpenProject(baristaProject);
-    projectFolderDropdown = new FolderDropdown(getWidth(), fileService, warningPopup, true, true);
+    HashMap<String, String> styleIds = new HashMap<>();
+    styleIds.put("item", "side-menu__simple-dropdown--item");
+    styleIds.put("dragEntered", "side-menu__simple-dropdown--item--on-drag-entered");
+    styleIds.put("graphic", "folder-dropdown__graphic");
+    projectFolderDropdown = new FolderDropdown(getWidth(), fileService, warningPopup, styleIds, true, true);
     projectFolderDropdown.setFileLeftClickAction(
       target -> codingInterfaceContainer.openFile(new File(target.getParentPath() + "\\" + target.getText())));
 

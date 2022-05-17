@@ -6,13 +6,13 @@ import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
-import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.Result;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.function.Consumer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -25,6 +25,7 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -82,7 +83,7 @@ public class NewFileWindow extends Stage {
 
     windowLayout = new VBox(fieldLayout, scrollPane, createButtonContainer);
 
-    scene = new Scene(windowLayout, 300, 400);
+    scene = new Scene(windowLayout, 350, 400);
 
     scene.getStylesheets().add(
       Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
@@ -97,15 +98,20 @@ public class NewFileWindow extends Stage {
     folderPathLabel.setLabelFor(folderPathField);
 
     fieldLayout.add(fileNameLabel, 0, 0);
-    GridPane.setMargin(fileNameLabel, new Insets(10, 20, 10, 10));
+    GridPane.setMargin(fileNameLabel, new Insets(10, 10, 10, 0));
     GridPane.setValignment(fileNameLabel, VPos.CENTER);
     fieldLayout.add(fileNameField, 1, 0);
+    GridPane.setFillWidth(fileNameField, true);
+    GridPane.setHgrow(fileNameField, Priority.ALWAYS);
     fieldLayout.add(folderPathLabel, 0, 1);
-    GridPane.setMargin(folderPathLabel, new Insets(10, 20, 10, 10));
+    GridPane.setMargin(folderPathLabel, new Insets(10, 10, 10, 0));
     GridPane.setValignment(folderPathLabel, VPos.CENTER);
     fieldLayout.add(folderPathField, 1, 1);
+    GridPane.setFillWidth(folderPathField, true);
+    GridPane.setHgrow(folderPathField, Priority.ALWAYS);
     fieldLayout.add(folderSelectorLabel, 0, 2);
-    GridPane.setMargin(folderSelectorLabel, new Insets(10, 0, 0, 10));
+    GridPane.setMargin(folderSelectorLabel, new Insets(10, 0, 0, 0));
+    VBox.setMargin(fieldLayout, new Insets(10, 10, 0, 10));
 
     createButton.setOnAction(actionEvent -> {
       try {
@@ -137,11 +143,19 @@ public class NewFileWindow extends Stage {
 
   private void onLoad(){
     fileNameField.setText("");
-    folderPathLabel.setText(System.getProperty("user.home"));
+    folderPathField.setText(System.getProperty("user.home"));
+    HashMap<String, String> styleIds = new HashMap<>();
+    styleIds.put("item", "folder-dropdown__item");
+    styleIds.put("dragEntered", "folder-dropdown__item--on-drag-entered");
+    styleIds.put("graphic", "folder-dropdown__graphic");
 
-    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, warningPopup, false, false);
+    rootFolderSelector = new FolderDropdown(scene.getWidth() - 60, fileService, warningPopup, styleIds, false, false);
     rootFolderSelector.setFolderLeftClickAction(target -> {
       folderPathField.setText(target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath());
+      if(rootFolderSelector.getLastClicked() != null){
+        rootFolderSelector.getLastClicked().setId(styleIds.get("item"));
+      }
+      target.setId("folder-dropdown__item--selected");
     });
 
     scrollPane.setContent(rootFolderSelector);

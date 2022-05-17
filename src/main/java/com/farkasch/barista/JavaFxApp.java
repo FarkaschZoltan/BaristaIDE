@@ -12,13 +12,17 @@ import org.springframework.context.ConfigurableApplicationContext;
 @SpringBootApplication
 public class JavaFxApp extends Application {
 
-    private ConfigurableApplicationContext applicationContext;
-    private MainStage mainStage;
+  private ConfigurableApplicationContext applicationContext;
+  private MainStage mainStage;
 
-    @Override
-    public void start(Stage stage) throws Exception{
-        applicationContext = SpringApplication.run(JavaFxApp.class);
-        mainStage = applicationContext.getBean(MainStage.class);
-        mainStage.show();
-    }
+  @Override
+  public void start(Stage stage) throws Exception {
+    applicationContext = SpringApplication.run(JavaFxApp.class);
+    mainStage = applicationContext.getBean(MainStage.class);
+    mainStage.show();
+  }
+
+  public static void main(String[] args) {
+    launch();
+  }
 }

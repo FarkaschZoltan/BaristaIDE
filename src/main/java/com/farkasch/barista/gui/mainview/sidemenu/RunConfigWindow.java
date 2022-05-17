@@ -236,7 +236,6 @@ public class RunConfigWindow extends Stage {
     addNewRunConfigButton.setOnAction(event -> {
       if (!runSettingList.stream().map(RunSetting::getName).toList().contains(newRunConfigNameTextField.getText())
         && !newRunConfigNameTextField.getText().equals(persistenceService.getOpenProject().getProjectName())) {
-        System.out.println("added!");
         runSettingList.add(new RunSetting(newRunConfigNameTextField.getText(), newRunConfigTextField.getText()));
         runSettingList.stream().forEach(System.out::println);
         runSettingsComboBox.setItems(runSettingList);

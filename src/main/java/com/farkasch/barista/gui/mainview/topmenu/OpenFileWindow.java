@@ -7,6 +7,7 @@ import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.function.Consumer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,8 +17,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -37,7 +40,7 @@ public class OpenFileWindow extends Stage {
   @Autowired
   private WarningPopup warningPopup;
 
-  private Label fileName;
+  private TextField fileName;
   private Label fileNameLabel;
   private Label chooseFileLabel;
   private Button openFileButton;
@@ -55,7 +58,7 @@ public class OpenFileWindow extends Stage {
   private void init() {
     setTitle("Open File");
 
-    fileName = new Label("");
+    fileName = new TextField("");
     fileNameLabel = new Label("Chosen File: ");
     chooseFileLabel = new Label("Choose a file: ");
 
@@ -68,12 +71,11 @@ public class OpenFileWindow extends Stage {
     windowLayout = new VBox(fileNameLayout, scrollPane, openButtonContainer);
 
     scene = new Scene(windowLayout, 300, 400);
-
-    filePath = "";
-
     scene.getStylesheets().add(
       Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
         .toString());
+
+    filePath = "";
 
     scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
     scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
@@ -82,16 +84,21 @@ public class OpenFileWindow extends Stage {
 
     fileNameLabel.setLabelFor(fileName);
 
+    fileName.setEditable(false);
+    GridPane.setFillWidth(fileName, true);
+    GridPane.setHgrow(fileName, Priority.ALWAYS);
+
     fileNameLayout.add(fileNameLabel, 0, 0);
-    GridPane.setMargin(fileNameLabel, new Insets(10, 20, 10, 10));
+    GridPane.setMargin(fileNameLabel, new Insets(10, 10, 10, 0));
     GridPane.setValignment(fileNameLabel, VPos.CENTER);
     fileNameLayout.add(fileName, 1, 0);
     fileNameLayout.add(chooseFileLabel, 0, 1);
-    GridPane.setMargin(chooseFileLabel, new Insets(10, 0, 0, 10));
+    GridPane.setMargin(chooseFileLabel, new Insets(10, 0, 0, 0));
+    VBox.setMargin(fileNameLayout, new Insets(10, 10, 0, 10));
 
     openFileButton.setOnAction(actionEvent -> {
       File file = new File(filePath);
-      if(persistenceService.getOpenProject() != null){
+      if (persistenceService.getOpenProject() != null) {
         sideMenu.closeProject(false);
       }
       openFile.accept(file);
@@ -100,24 +107,27 @@ public class OpenFileWindow extends Stage {
 
     openButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(openButtonContainer, new Insets(10));
-
-    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, warningPopup,true, false);
-    rootFolderSelector.setFileLeftClickAction(target -> {
-      fileName.setText(target.getText());
-      filePath = target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath();
-    });
-
     initModality(Modality.APPLICATION_MODAL);
     setResizable(false);
   }
 
-  private void onLoad(Consumer<File> openFile){
+  private void onLoad(Consumer<File> openFile) {
     this.openFile = openFile;
     fileName.setText("");
-    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, warningPopup, true, false);
+    HashMap<String, String> styleIds = new HashMap<>();
+    styleIds.put("item", "folder-dropdown__item");
+    styleIds.put("dragEntered", "folder-dropdown__item--on-drag-entered");
+    styleIds.put("graphic", "folder-dropdown__graphic");
+
+    rootFolderSelector = new FolderDropdown(scene.getWidth(), fileService, warningPopup, styleIds, true, false);
     rootFolderSelector.setFileLeftClickAction(target -> {
       fileName.setText(target.getText());
       filePath = target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath();
+
+      if (rootFolderSelector.getLastClicked() != null) {
+        rootFolderSelector.getLastClicked().setId(styleIds.get("item"));
+      }
+      target.setId("folder-dropdown__item--selected");
     });
     rootFolderSelector.prepare(null, null);
     scrollPane.setContent(rootFolderSelector);

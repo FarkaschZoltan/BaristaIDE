@@ -5,9 +5,9 @@ import com.farkasch.barista.util.BaristaDragBoard;
 import com.farkasch.barista.util.Result;
 import com.farkasch.barista.util.TreeNode;
 import com.farkasch.barista.util.enums.ResultTypeEnum;
-import com.google.common.io.Files;
 import java.io.File;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import javafx.event.EventHandler;
@@ -24,6 +24,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Paint;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.lang.Nullable;
 
@@ -39,6 +40,7 @@ public class FolderDropdown extends GridPane {
   private List<MenuItem> folderContextMenuItems;
   private List<MenuItem> fileContextMenuItems;
   private List<MenuItem> absoluteParentContextMenuItems;
+  private FolderDropdownItem lastClicked;
   private boolean showFiles;
   private boolean withAbsoluteParent;
   private boolean defaultFolderLeftClickAction = true;
@@ -50,14 +52,16 @@ public class FolderDropdown extends GridPane {
   private boolean dragAndDropEnabled = false;
   private TreeNode<FolderDropdownItem> rootNode; //for tracking the depth of the dropdown. Used for width calculations
   private ColumnConstraints columnConstraints;
+  private HashMap<String, String> styleIds;
   private ContextMenu activeContextMenu; //for handling multiple left-clicks on the same item
 
-  public FolderDropdown(double width, FileService fileService, WarningPopup warningPopup, boolean showFiles, boolean withAbsoluteParent) {
+  public FolderDropdown(double width, FileService fileService, WarningPopup warningPopup, HashMap<String, String> styleIds, boolean showFiles, boolean withAbsoluteParent) {
     this.width = width;
     this.fileService = fileService;
     this.warningPopup = warningPopup;
     this.showFiles = showFiles;
     this.withAbsoluteParent = withAbsoluteParent;
+    this.styleIds = styleIds;
 
     rootNode = new TreeNode<>();
 
@@ -106,6 +110,10 @@ public class FolderDropdown extends GridPane {
     return rootNode;
   }
 
+  public FolderDropdownItem getLastClicked(){
+    return lastClicked;
+  }
+
   public void prepare(@Nullable String parentPath, @Nullable VBox parentContainer) {
     if (withAbsoluteParent && parentPath != null) {
       VBox absoluteParentContainer = new VBox();
@@ -119,10 +127,15 @@ public class FolderDropdown extends GridPane {
       absoluteParentContainer.setMinWidth(width);
       absoluteParentContainer.setMaxWidth(Double.MAX_VALUE);
 
-      absoluteParent.setGraphic(new FontIcon("mdi-folder"));
-      absoluteParent.setId("folder");
+      FontIcon graphic = new FontIcon("mdi-folder");
+      graphic.setId(styleIds.get("graphic"));
+      absoluteParent.setGraphic(graphic);
+      absoluteParent.setId(styleIds.get("item"));
       absoluteParent.setMaxWidth(Double.MAX_VALUE);
-      absoluteParent.setMaxHeight(Double.MAX_VALUE);
+
+      absoluteParent.addEventHandler(MouseEvent.MOUSE_ENTERED, event -> absoluteParent.getGraphic().setId(styleIds.get("graphic") + ":hover"));
+      absoluteParent.addEventHandler(MouseEvent.MOUSE_EXITED, event -> absoluteParent.getGraphic().setId(styleIds.get("graphic")));
+
       absoluteParent.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
         if (event.getButton() == MouseButton.PRIMARY) {
           if (!defaultAbsoluteParentLeftClickAction) {
@@ -167,15 +180,21 @@ public class FolderDropdown extends GridPane {
       node.setParent(parentNode);
       node.setValue(folderDropdownItem);
       Boolean isFile = dirs.get(i).isFile();
+      folderDropdownItem.addEventHandler(MouseEvent.MOUSE_ENTERED, event -> folderDropdownItem.getGraphic().setId(styleIds.get("graphic") + ":hover"));
+      folderDropdownItem.addEventHandler(MouseEvent.MOUSE_EXITED, event -> folderDropdownItem.getGraphic().setId(styleIds.get("graphic")));
       if (isFile) {
-        folderDropdownItem.setGraphic(new FontIcon("mdi-file"));
+        FontIcon graphic = new FontIcon("mdi-file");
+        graphic.setId(styleIds.get("graphic"));
+        folderDropdownItem.setGraphic(graphic);
       } else {
-        folderDropdownItem.setGraphic(new FontIcon("mdi-folder"));
+        FontIcon graphic = new FontIcon("mdi-folder");
+        graphic.setId(styleIds.get("graphic"));
+        folderDropdownItem.setGraphic(graphic);
       }
 
       enableDragAndDrop(folderDropdownItem);
       folderDropdownItem.setOnMouseClicked(getFolderDropdownItemMouseClick(folderDropdownItem, isFile, node));
-      folderDropdownItem.setId("folder");
+      folderDropdownItem.setId(styleIds.get("item"));
       folderDropdownItem.setMaxWidth(Double.MAX_VALUE);
       folderDropdownItem.setMaxHeight(Double.MAX_VALUE);
       if (!isFile || showFiles) {
@@ -211,13 +230,19 @@ public class FolderDropdown extends GridPane {
     folderContainer.getChildren().add(newItem);
     enableDragAndDrop(newItem);
     newItem.setOnMouseClicked(getFolderDropdownItemMouseClick(newItem, file.isFile(), parentFolder.getNode()));
-    newItem.setId("folder");
+    newItem.setId(styleIds.get("item"));
     newItem.setMaxWidth(Double.MAX_VALUE);
     newItem.setMaxHeight(Double.MAX_VALUE);
+    newItem.addEventHandler(MouseEvent.MOUSE_ENTERED, event -> newItem.getGraphic().setId(styleIds.get("graphic") + ":hover"));
+    newItem.addEventHandler(MouseEvent.MOUSE_EXITED, event -> newItem.getGraphic().setId(styleIds.get("graphic")));
     if (file.isFile()) {
-      newItem.setGraphic(new FontIcon("mdi-file"));
+      FontIcon graphic = new FontIcon("mdi-file");
+      graphic.setId(styleIds.get("graphic"));
+      newItem.setGraphic(graphic);
     } else {
-      newItem.setGraphic(new FontIcon("mdi-folder"));
+      FontIcon graphic = new FontIcon("mdi-folder");
+      graphic.setId(styleIds.get("graphic"));
+      newItem.setGraphic(graphic);
     }
 
     Comparator<Node> comparator = (a, b) -> {
@@ -335,6 +360,7 @@ public class FolderDropdown extends GridPane {
           activeContextMenu.show(folderDropdownItem, click.getScreenX(), click.getScreenY());
         }
       }
+      lastClicked = folderDropdownItem;
     };
     return event;
   }
@@ -380,13 +406,13 @@ public class FolderDropdown extends GridPane {
         //We change the style of the parent folder
         folderDropdownItem.setOnDragEntered(event -> {
           FolderDropdownItem parentFolder = (FolderDropdownItem) folderDropdownItem.getNode().getParent().getValue();
-          parentFolder.setId("folder--on-drag-entered");
+          parentFolder.setId(styleIds.get("dragEntered"));
           event.consume();
         });
         //We change back the style of the parent folder
         folderDropdownItem.setOnDragExited(event -> {
           FolderDropdownItem parentFolder = (FolderDropdownItem) folderDropdownItem.getNode().getParent().getValue();
-          parentFolder.setId("folder");
+          parentFolder.setId(styleIds.get("item"));
         });
         //We add the dragged item to the grid
         folderDropdownItem.setOnDragDropped(event -> {
@@ -417,13 +443,13 @@ public class FolderDropdown extends GridPane {
         //We change the style of this folder
         folderDropdownItem.setOnDragEntered(event -> {
           if (event.getGestureSource() != folderDropdownItem && dragBoard.getDraggedItem().getClass().equals(FolderDropdownItem.class)) {
-            folderDropdownItem.setId("folder--on-drag-entered");
+            folderDropdownItem.setId(styleIds.get("dragEntered"));
           }
           event.consume();
         });
         //We change the style back to normal
         folderDropdownItem.setOnDragExited(event -> {
-          folderDropdownItem.setId("folder");
+          folderDropdownItem.setId(styleIds.get("item"));
         });
         //We add the dragged item to the grid
         folderDropdownItem.setOnDragDropped(event -> {

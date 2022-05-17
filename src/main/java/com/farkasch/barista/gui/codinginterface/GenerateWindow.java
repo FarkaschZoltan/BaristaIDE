@@ -235,14 +235,14 @@ public class GenerateWindow extends Stage {
 
     private void init() {
       setText(variableName + " : " + variableClass);
-      setId("folder");
+      setId("folder-dropdown__item");
       setOnAction(event -> {
         if (clickedItems.contains(this)) {
           clickedItems.remove(this);
-          setId("folder");
+          setId("folder-dropdown__item");
         } else {
           clickedItems.add(this);
-          setId("folder--selected");
+          setId("#folder-dropdown__item--selected");
         }
       });
       GridPane.setHgrow(this, Priority.ALWAYS);
