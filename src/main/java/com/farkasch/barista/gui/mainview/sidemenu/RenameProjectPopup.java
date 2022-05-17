@@ -4,13 +4,13 @@ import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RenameProjectPopup extends AbstractRenamePopup {
+public class RenameProjectPopup extends AbstractProjectPopup {
 
   @Override
   protected void save() {
-    String newProjectName = newNameField.getText();
+    String newProjectName = itemTextField.getText();
     if(fileService.getProjects().stream().filter(baristaProject -> baristaProject.getProjectName().equals(newProjectName)).toList().size() == 0){
-      fileService.renameProject(newProjectName, itemToRename);
+      fileService.renameProject(newProjectName, item);
       close();
     } else {
       warningPopup.showWindow("Error", "A project with this name already exists!", null);
@@ -20,8 +20,8 @@ public class RenameProjectPopup extends AbstractRenamePopup {
   @Override
   protected void onLoad(FolderDropdownItem folderDropdownItem) {
     setTitle("Rename Project");
-    newNameField.setText("");
-    newNameLabel.setText("Project Name: ");
-    this.itemToRename = folderDropdownItem;
+    itemTextField.setText("");
+    itemTextFieldLabel.setText("Project Name: ");
+    this.item = folderDropdownItem;
   }
 }

@@ -18,16 +18,21 @@ import java.io.StringWriter;
 import java.nio.file.Paths;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.StringConverter;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -57,9 +62,9 @@ public class NewFilePopup extends Stage {
   private Label fileNameLabel;
   private Label classTypeLabel;
   private Button createButton;
+  private Region buttonAlignmentRegion;
   private VBox windowLayout;
-  private HBox fieldLayout;
-  private HBox classTypeLayout;
+  private GridPane fieldLayout;
   private HBox buttonLayout;
   private Scene scene;
 
@@ -80,30 +85,72 @@ public class NewFilePopup extends Stage {
     fileNameLabel = new Label("File Name: ");
     classTypeLabel = new Label("Class Preset: ");
     createButton = new Button("Create");
-    fieldLayout = new HBox(fileNameLabel, fileNameField, fileExtensionComboBox);
-    classTypeLayout = new HBox(classTypeLabel, classTypeComboBox);
-    buttonLayout = new HBox(createButton);
-    windowLayout = new VBox(fieldLayout, classTypeLayout, buttonLayout);
+    buttonAlignmentRegion = new Region();
+    fieldLayout = new GridPane();
+    buttonLayout = new HBox(buttonAlignmentRegion, createButton);
+    windowLayout = new VBox(fieldLayout, buttonLayout);
 
-    scene = new Scene(windowLayout, 400, 200);
+    scene = new Scene(windowLayout, 500, 110);
     scene.getStylesheets().add(Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
 
+    fileExtensionComboBox.setValue(FileExtensionEnum.JAVA);
     fileExtensionComboBox.setItems(fileExtensions);
     fileExtensionComboBox.setOnAction(actionEvent -> {
       if (fileExtensionComboBox.getValue() == FileExtensionEnum.JAVA) {
-        classTypeLayout.setVisible(true);
+        classTypeLabel.setVisible(true);
+        classTypeComboBox.setVisible(true);
       } else {
-        classTypeLayout.setVisible(false);
+        classTypeLabel.setVisible(false);
+        classTypeComboBox.setVisible(false);
       }
     });
+    fileExtensionComboBox.setConverter(new StringConverter<>() {
+      @Override
+      public String toString(FileExtensionEnum fileExtensionEnum) {
+        return fileExtensionEnum.getName();
+      }
+
+      @Override
+      public FileExtensionEnum fromString(String s) {
+        for (FileExtensionEnum item : fileExtensionComboBox.getItems()) {
+          if (item.getName().equals(s)) {
+            return item;
+          }
+        }
+        return null;
+      }
+    });
+    fileExtensionComboBox.setMaxWidth(Double.MAX_VALUE);
+    GridPane.setHgrow(fileExtensionComboBox, Priority.ALWAYS);
+    GridPane.setFillWidth(fileExtensionComboBox, true);
 
     fileNameLabel.setLabelFor(fileNameField);
-    fileExtensionComboBox.setValue(FileExtensionEnum.JAVA);
-
     classTypeLabel.setLabelFor(classTypeComboBox);
+
+    GridPane.setHgrow(fileNameField, Priority.ALWAYS);
+    GridPane.setFillWidth(fileNameField, true);
+
     classTypeComboBox.setItems(classTypes);
     classTypeComboBox.setValue(JavaClassTypesEnum.CLASS);
-    classTypeLayout.setVisible(true);
+    classTypeComboBox.setConverter(new StringConverter<>() {
+      @Override
+      public String toString(JavaClassTypesEnum javaClassTypesEnum) {
+        return javaClassTypesEnum.getName();
+      }
+
+      @Override
+      public JavaClassTypesEnum fromString(String s) {
+        for(JavaClassTypesEnum item : classTypeComboBox.getItems()){
+          if(item.getName().equals(s)){
+            return item;
+          }
+        }
+        return null;
+      }
+    });
+    classTypeComboBox.setMaxWidth(Double.MAX_VALUE);
+    GridPane.setHgrow(classTypeComboBox, Priority.ALWAYS);
+    GridPane.setFillWidth(classTypeComboBox, true);
 
     createButton.setOnAction(click -> {
       try {
@@ -118,7 +165,7 @@ public class NewFilePopup extends Stage {
           extension = fileExtensionComboBox.getValue().getName();
         }
 
-        if(!persistenceService.getOpenProject().getSourceFiles().contains(creationFolder.getPath() + "\\" + fileNameField.getText() + extension)) {
+        if (!persistenceService.getOpenProject().getSourceFiles().contains(creationFolder.getPath() + "\\" + fileNameField.getText() + extension)) {
           File newFile = fileService.createFile(creationFolder.getPath() + "\\" + fileNameField.getText() + extension, creationFolder);
 
           if (fileExtensionComboBox.getValue().equals(FileExtensionEnum.JAVA)) {
@@ -162,13 +209,28 @@ public class NewFilePopup extends Stage {
         e.printStackTrace();
       }
     });
+    HBox.setHgrow(buttonAlignmentRegion, Priority.ALWAYS);
+    buttonLayout.setPadding(new Insets(10, 0, 10, 0));
+
+    fieldLayout.add(fileNameLabel, 0, 0);
+    fieldLayout.add(fileNameField, 1, 0);
+    fieldLayout.add(fileExtensionComboBox, 2, 0);
+    fieldLayout.add(classTypeLabel, 0, 1);
+    fieldLayout.add(classTypeComboBox, 1, 1);
+    fieldLayout.setHgap(10);
+    fieldLayout.setVgap(10);
+
+    windowLayout.setPadding(new Insets(10));
+
     initModality(Modality.APPLICATION_MODAL);
     setResizable(false);
   }
 
-  private void onLoad(FolderDropdownItem creationFolder){
+  private void onLoad(FolderDropdownItem creationFolder) {
     this.creationFolder = creationFolder;
     fileNameField.setText("");
+    classTypeComboBox.setVisible(true);
+    classTypeLabel.setVisible(true);
     fileExtensionComboBox.setValue(FileExtensionEnum.JAVA);
     classTypeComboBox.setValue(JavaClassTypesEnum.CLASS);
   }

@@ -1,20 +1,22 @@
 package com.farkasch.barista.gui.mainview.sidemenu;
 
-import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.gui.mainview.MainStage;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
-import java.awt.event.ActionEvent;
-import java.beans.EventHandler;
-import java.io.File;
 import java.nio.file.Paths;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -24,7 +26,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
-public abstract class AbstractRenamePopup extends Stage {
+public abstract class AbstractProjectPopup extends Stage {
 
   @Autowired
   protected FileService fileService;
@@ -36,31 +38,48 @@ public abstract class AbstractRenamePopup extends Stage {
   @Autowired
   protected MainStage mainStage;
 
-  protected TextField newNameField;
-  protected Label newNameLabel;
+  protected TextField itemTextField;
+  protected Label itemTextFieldLabel;
   protected Button applyButton;
+  protected Region buttonAlignmentRegion;
   protected VBox windowLayout;
-  protected HBox fieldLayout;
+  protected GridPane fieldLayout;
   protected HBox buttonLayout;
   protected Scene scene;
 
-  protected FolderDropdownItem itemToRename;
+  protected FolderDropdownItem item;
 
   @PostConstruct
   private void init(){
-    newNameField = new TextField();
-    newNameLabel = new Label("New name: ");
+    itemTextField = new TextField();
+    itemTextFieldLabel = new Label("New name: ");
     applyButton = new Button("Apply");
-    buttonLayout = new HBox(applyButton);
-    fieldLayout = new HBox(newNameLabel, newNameField);
+    buttonAlignmentRegion = new Region();
+    buttonLayout = new HBox(buttonAlignmentRegion, applyButton);
+    fieldLayout = new GridPane();
     windowLayout = new VBox(fieldLayout, buttonLayout);
 
-    scene = new Scene(windowLayout, 400, 200);
+    windowLayout.setPadding(new Insets(10));
+
+    scene = new Scene(windowLayout, 300, 80);
     scene.getStylesheets().add(
       Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
 
-    newNameLabel.setLabelFor(newNameLabel);
+    itemTextFieldLabel.setLabelFor(itemTextField);
+    GridPane.setMargin(itemTextFieldLabel, new Insets(0, 10, 0, 0));
+    GridPane.setHalignment(itemTextFieldLabel, HPos.LEFT);
+    GridPane.setValignment(itemTextFieldLabel, VPos.CENTER);
+
+    GridPane.setHgrow(itemTextField, Priority.ALWAYS);
+    GridPane.setFillWidth(itemTextField, true);
+
     applyButton.setOnAction(click -> save());
+    HBox.setHgrow(buttonAlignmentRegion, Priority.ALWAYS);
+
+    buttonLayout.setPadding(new Insets(10, 0, 0, 0));
+
+    fieldLayout.add(itemTextFieldLabel, 0, 0);
+    fieldLayout.add(itemTextField, 1, 0);
 
     initModality(Modality.APPLICATION_MODAL);
     setResizable(false);

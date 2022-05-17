@@ -6,16 +6,16 @@ import java.io.File;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RenameFilePopup extends AbstractRenamePopup {
+public class RenameFilePopup extends AbstractProjectPopup {
 
   @Override
   protected void save() {
-    String newFileName = newNameField.getText();
+    String newFileName = itemTextField.getText();
     if (newFileName.split("\\.").length < 2) {
-      newFileName = newFileName.concat("." + Files.getFileExtension(itemToRename.getPath()));
+      newFileName = newFileName.concat("." + Files.getFileExtension(item.getPath()));
     }
-    if (!persistenceService.getOpenProject().getSourceFiles().contains(itemToRename.getParentPath() + "\\" + newFileName)){
-      fileService.renameFile(new File(itemToRename.getPath()), newFileName, itemToRename);
+    if (!persistenceService.getOpenProject().getSourceFiles().contains(item.getParentPath() + "\\" + newFileName)){
+      fileService.renameFile(new File(item.getPath()), newFileName, item);
       close();
     } else {
       warningPopup.showWindow("Error", "A file with this name already exists!", null);
@@ -25,8 +25,8 @@ public class RenameFilePopup extends AbstractRenamePopup {
   @Override
   protected void onLoad(FolderDropdownItem folderDropdownItem) {
     setTitle("Rename File");
-    newNameField.setText("");
-    newNameLabel.setText("File Name: ");
-    this.itemToRename = folderDropdownItem;
+    itemTextField.setText("");
+    itemTextFieldLabel.setText("File Name: ");
+    this.item = folderDropdownItem;
   }
 }
