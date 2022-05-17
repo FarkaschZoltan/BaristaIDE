@@ -125,18 +125,30 @@ public class RunConfigWindow extends Stage {
       Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
 
     addDependencies.setOnAction(event -> {
+      addDependencies.setId("switch-menu__item--selected");
+      addRunConfig.setId("switch-menu__item");
+      editRunConfig.setId("switch-menu__item");
       windowLayout.setCenter(dependencyLayout);
     });
+    addDependencies.setId("switch-menu__item");
     addDependencies.setMaxWidth(Double.MAX_VALUE);
     HBox.setHgrow(addDependencies, Priority.ALWAYS);
     addRunConfig.setOnAction(event -> {
+      addRunConfig.setId("switch-menu__item--selected");
+      addDependencies.setId("switch-menu__item");
+      editRunConfig.setId("switch-menu__item");
       windowLayout.setCenter(addRunConfigLayout);
     });
     addRunConfig.setMaxWidth(Double.MAX_VALUE);
+    addRunConfig.setId("switch-menu__item");
     HBox.setHgrow(addRunConfig, Priority.ALWAYS);
     editRunConfig.setOnAction(event -> {
+      editRunConfig.setId("switch-menu__item--selected");
+      addRunConfig.setId("switch-menu__item");
+      addDependencies.setId("switch-menu__item");
       windowLayout.setCenter(editRunConfigLayout);
     });
+    editRunConfig.setId("switch-menu__item");
     editRunConfig.setMaxWidth(Double.MAX_VALUE);
     HBox.setHgrow(editRunConfig, Priority.ALWAYS);
 
