@@ -1,7 +1,6 @@
 package com.farkasch.barista.gui.mainview.topmenu;
 
 import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
-import com.farkasch.barista.gui.mainview.topmenu.settingswindow.CompileSettingsWindow;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import javafx.scene.control.Menu;
@@ -17,8 +16,6 @@ public class TopMenu extends MenuBar {
   @Autowired
   private FileService fileService;
   @Autowired
-  private CompileSettingsWindow compileSettingsWindow;
-  @Autowired
   private NewFileWindow newFileWindow;
   @Autowired
   private OpenFileWindow openFileWindow;
@@ -31,18 +28,16 @@ public class TopMenu extends MenuBar {
   @Autowired
   private CodingInterfaceContainer codingInterfaceContainer;
   private Menu fileMenu;
-  private Menu settingsMenu;
   private Menu gitMenu;
   private Menu helpMenu;
 
   @PostConstruct
   private void init() {
     initFileMenu();
-    initSettingsMenu();
     initGitMenu();
     initHelpMenu();
 
-    getMenus().addAll(fileMenu, settingsMenu, gitMenu, helpMenu);
+    getMenus().addAll(fileMenu, gitMenu, helpMenu);
   }
 
   private void initFileMenu() {
@@ -85,17 +80,6 @@ public class TopMenu extends MenuBar {
 
   private void initGitMenu() {
     gitMenu = new Menu("Git");
-  }
-
-  private void initSettingsMenu() {
-
-    settingsMenu = new Menu("Settings");
-    MenuItem compileSettings = new MenuItem("Compile");
-    compileSettings.setOnAction(actionEvent -> {
-      compileSettingsWindow.showWindow();
-    });
-
-    settingsMenu.getItems().addAll(compileSettings);
   }
 
   private void initHelpMenu() {

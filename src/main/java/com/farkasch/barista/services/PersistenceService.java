@@ -1,9 +1,6 @@
 package com.farkasch.barista.services;
 
-import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
-import com.farkasch.barista.gui.component.ErrorPopup;
-import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
-import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
+import com.farkasch.barista.gui.component.ErrorPopup;;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.Result;
 import java.io.File;
