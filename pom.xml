@@ -82,6 +82,16 @@
       <artifactId>guava</artifactId>
       <version>31.1-jre</version>
     </dependency>
+    <dependency>
+      <groupId>org.eclipse.jgit</groupId>
+      <artifactId>org.eclipse.jgit</artifactId>
+      <version>6.1.0.202203080745-r</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>github-api</artifactId>
+      <version>1.306</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -90,7 +100,7 @@
         <artifactId>javafx-maven-plugin</artifactId>
         <version>0.0.8</version>
         <configuration>
-          <mainClass>com.farkasch.barista.JavaFxApp</mainClass>
+          <mainClass>com.farkasch.barista.GitTest</mainClass>
         </configuration>
       </plugin>
       <plugin>
