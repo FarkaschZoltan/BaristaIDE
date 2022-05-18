@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -97,6 +96,9 @@ public class RunConfigWindow extends Stage {
   private TextField editRunConfigTextField;
   private TextField editRunConfigNameTextField;
   private Button editRunConfigButton;
+  private Button deleteRunConfigButton;
+  private Region editButtonLayoutRegion;
+  private HBox editButtonLayout;
   private String oldName;
   private ObservableList<RunSetting> runSettingList;
 
@@ -276,6 +278,9 @@ public class RunConfigWindow extends Stage {
     editRunConfigTextField = new TextField();
     editRunConfigNameTextField = new TextField();
     editRunConfigButton = new Button("Save");
+    deleteRunConfigButton = new Button("Delete");
+    editButtonLayoutRegion = new Region();
+    editButtonLayout = new HBox(editButtonLayoutRegion, deleteRunConfigButton, editRunConfigButton);
     runSettingList = FXCollections.observableArrayList();
 
     editRunConfigLabel.setLabelFor(editRunConfigTextField);
@@ -289,6 +294,10 @@ public class RunConfigWindow extends Stage {
         editRunConfigNameTextField.setText(runSettingsComboBox.getValue().getName());
         oldName = runSettingsComboBox.getValue().getName();
         editRunConfigTextField.setText(runSettingsComboBox.getValue().getCommand());
+      } else {
+        editRunConfigNameTextField.setText("");
+        oldName = "";
+        editRunConfigTextField.setText("");
       }
     });
     runSettingsComboBox.setConverter(new StringConverter<>() {
@@ -342,8 +351,15 @@ public class RunConfigWindow extends Stage {
       }
 
     });
-    GridPane.setHgrow(editRunConfigButton, Priority.ALWAYS);
-    GridPane.setHalignment(editRunConfigButton, HPos.RIGHT);
+    HBox.setMargin(editRunConfigButton, new Insets(0, 0, 0, 10));
+
+    deleteRunConfigButton.setOnAction(event -> {
+      if(runSettingsComboBox.getValue() != null){
+        runSettingList.remove(runSettingsComboBox.getValue());
+      }
+    });
+
+    HBox.setHgrow(editButtonLayoutRegion, Priority.ALWAYS);
 
     editRunConfigLayout.setPadding(new Insets(10));
     editRunConfigLayout.setAlignment(Pos.TOP_CENTER);
@@ -353,7 +369,7 @@ public class RunConfigWindow extends Stage {
     editRunConfigLayout.add(editRunConfigNameTextField, 0, 3);
     editRunConfigLayout.add(editRunConfigLabel, 0, 4);
     editRunConfigLayout.add(editRunConfigTextField, 0, 5);
-    editRunConfigLayout.add(editRunConfigButton, 0, 6);
+    editRunConfigLayout.add(editButtonLayout, 0, 6);
   }
 
   private void save() {
