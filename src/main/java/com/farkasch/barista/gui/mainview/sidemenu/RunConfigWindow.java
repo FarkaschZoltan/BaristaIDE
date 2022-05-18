@@ -3,7 +3,6 @@ package com.farkasch.barista.gui.mainview.sidemenu;
 import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
-import com.farkasch.barista.util.settings.JarSetting;
 import com.farkasch.barista.util.settings.RunSetting;
 import java.io.File;
 import java.nio.file.Paths;
@@ -77,7 +76,6 @@ public class RunConfigWindow extends Stage {
   private Label jarSelectorLabel;
   private Button browseButton;
 
-  private List<JarSetting> jarSettings;
 
   //new Run-config design
   private GridPane addRunConfigLayout;
@@ -184,7 +182,6 @@ public class RunConfigWindow extends Stage {
     dependencyLayout = new GridPane();
     jarSelector = new GridPane();
     jarScrollPane = new ScrollPane();
-    jarSettings = new ArrayList<>();
 
     jarSelectorLabel.setLabelFor(jarSelector);
     GridPane.setHgrow(jarSelectorLabel, Priority.ALWAYS);
