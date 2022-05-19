@@ -112,8 +112,6 @@ public class FileService {
 
   public File createFolder(String path) {
     File newFolder = new File(path);
-    System.out.println(path);
-    System.out.println(newFolder.mkdir());
     return newFolder;
   }
 
@@ -283,8 +281,6 @@ public class FileService {
 
       for (int i = 0; i < array.size(); i++) {
         JSONObject jar = (JSONObject) array.get(i);
-        System.out.println(jar.get("fileName"));
-        System.out.println(fileName);
         if (jar.get("fileName").equals(fileName)) {
           System.out.println("jars: ");
           jars.stream().forEach(System.out::println);
@@ -691,48 +687,12 @@ public class FileService {
     }
   }
 
-  public List<File> getDirs(@Nullable String folderPath) {
-    File f = new File(folderPath == null ? System.getProperty("user.home") : folderPath);
-    if (f.listFiles(file -> !file.isHidden() && file.isDirectory()) != null) {
-      return Arrays.stream(f.listFiles(file -> !file.isHidden() && file.isDirectory())).toList();
-    }
-    return new ArrayList<>();
-  }
-
   public List<File> getDirsAndFiles(@Nullable String folderPath) {
     File f = new File(folderPath == null ? System.getProperty("user.home") : folderPath);
     if (f.listFiles(file -> !file.isHidden()) != null) {
       return Arrays.stream(f.listFiles(file -> !file.isHidden())).toList();
     }
     return new ArrayList<>();
-  }
-
-  private File renameFile(File file, String name) {
-    File renamedFile = new File(file.getAbsolutePath().replace(file.getName(), name));
-    try {
-      Files.move(file, renamedFile);
-    } catch (IOException e) {
-      StringWriter stringWriter = new StringWriter();
-      PrintWriter printWriter = new PrintWriter(stringWriter);
-      e.printStackTrace(printWriter);
-      File errorFile = createErrorLog(stringWriter.toString());
-      errorPopup.showWindow(Result.ERROR("Error while renaming file!", errorFile));
-
-      printWriter.close();
-      e.printStackTrace();
-    }
-    for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
-      SwitchMenu switchMenu = codingInterface.getSwitchMenu();
-      for (Node node : switchMenu.getChildren()) {
-        SwitchMenuItem switchMenuItem = (SwitchMenuItem) node;
-        if (switchMenuItem.getFile().getAbsolutePath().equals(file.getAbsolutePath())) {
-          switchMenuItem.setFile(renamedFile);
-          switchMenuItem.setText(renamedFile.getName());
-        }
-      }
-    }
-
-    return renamedFile;
   }
 
   public File renameFile(File file, String name, @Nullable FolderDropdownItem folderDropdownItem) {
@@ -763,6 +723,34 @@ public class FileService {
       }
       saveProject();
     }
+    return renamedFile;
+  }
+
+  private File renameFile(File file, String name) {
+    File renamedFile = new File(file.getAbsolutePath().replace(file.getName(), name));
+    try {
+      Files.move(file, renamedFile);
+    } catch (IOException e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while renaming file!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
+    }
+    for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
+      SwitchMenu switchMenu = codingInterface.getSwitchMenu();
+      for (Node node : switchMenu.getChildren()) {
+        SwitchMenuItem switchMenuItem = (SwitchMenuItem) node;
+        if (switchMenuItem.getFile().getAbsolutePath().equals(file.getAbsolutePath())) {
+          switchMenuItem.setFile(renamedFile);
+          switchMenuItem.setText(renamedFile.getName());
+        }
+      }
+    }
+
     return renamedFile;
   }
 
