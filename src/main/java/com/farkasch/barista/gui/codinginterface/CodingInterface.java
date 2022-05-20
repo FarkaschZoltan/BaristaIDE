@@ -6,6 +6,8 @@ import com.farkasch.barista.services.JavaScriptService;
 import java.io.File;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -56,6 +58,13 @@ public class CodingInterface extends BorderPane {
     contextMenu = new ContextMenu();
     switchMenu = applicationContext.getBean(SwitchMenu.class);
     switchMenu.setParent(this);
+
+    //this is needed to block CodeMirrors ctrl + Z functionality, as it causes many weird bugs
+    content.addEventFilter(KeyEvent.KEY_PRESSED, keyEvent -> {
+      if(keyEvent.isControlDown() && keyEvent.getCode().equals(KeyCode.Z)){
+        keyEvent.consume();
+      }
+    });
 
     content.getEngine()
       .load(this.getClass().getResource("/codinginterface/codearea.html")

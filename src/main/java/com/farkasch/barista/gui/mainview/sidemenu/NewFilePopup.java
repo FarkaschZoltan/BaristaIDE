@@ -10,6 +10,7 @@ import com.farkasch.barista.util.FileTemplates;
 import com.farkasch.barista.util.Result;
 import com.farkasch.barista.util.enums.FileExtensionEnum;
 import com.farkasch.barista.util.enums.JavaClassTypesEnum;
+import com.farkasch.barista.util.enums.ResultTypeEnum;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -140,8 +141,8 @@ public class NewFilePopup extends Stage {
 
       @Override
       public JavaClassTypesEnum fromString(String s) {
-        for(JavaClassTypesEnum item : classTypeComboBox.getItems()){
-          if(item.getName().equals(s)){
+        for (JavaClassTypesEnum item : classTypeComboBox.getItems()) {
+          if (item.getName().equals(s)) {
             return item;
           }
         }
@@ -165,9 +166,9 @@ public class NewFilePopup extends Stage {
           extension = fileExtensionComboBox.getValue().getName();
         }
 
-        if (!persistenceService.getOpenProject().getSourceFiles().contains(creationFolder.getPath() + "\\" + fileNameField.getText() + extension)) {
-          File newFile = fileService.createFile(creationFolder.getPath() + "\\" + fileNameField.getText() + extension, creationFolder);
-
+        Result fileCreated = fileService.createFile(creationFolder.getPath() + "\\" + fileNameField.getText() + extension, creationFolder);
+        if (fileCreated.getResult().equals(ResultTypeEnum.OK)) {
+          File newFile = (File) fileCreated.getReturnValue();
           if (fileExtensionComboBox.getValue().equals(FileExtensionEnum.JAVA)) {
             FileWriter writer = new FileWriter(newFile);
             switch (classTypeComboBox.getValue()) {
@@ -196,7 +197,7 @@ public class NewFilePopup extends Stage {
           persistenceService.setActiveFile(newFile);
           close();
         } else {
-          warningPopup.showWindow("Error", "A file with this name already exists!", null);
+          warningPopup.showWindow(fileCreated);
         }
       } catch (IOException e) {
         StringWriter stringWriter = new StringWriter();

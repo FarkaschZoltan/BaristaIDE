@@ -2,6 +2,8 @@ package com.farkasch.barista.gui.mainview.sidemenu;
 
 
 import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
+import com.farkasch.barista.util.Result;
+import com.farkasch.barista.util.enums.ResultTypeEnum;
 import java.io.File;
 import org.springframework.stereotype.Component;
 
@@ -11,11 +13,11 @@ public class RenameFolderPopup extends AbstractProjectPopup {
   @Override
   protected void save() {
     String newFolderName = itemTextField.getText();
-    if (!persistenceService.getOpenProject().getFolders().contains(item.getParentPath() + "\\" + newFolderName)){
-      fileService.renameFolder(new File(item.getPath()), newFolderName, item);
+    Result folderRenamed = fileService.renameFolder(new File(item.getPath()), newFolderName, item);
+    if(folderRenamed.getResult().equals(ResultTypeEnum.OK)){
       close();
     } else {
-      warningPopup.showWindow("Error", "A folder with this name already exists!", null);
+      warningPopup.showWindow(folderRenamed);
     }
   }
 

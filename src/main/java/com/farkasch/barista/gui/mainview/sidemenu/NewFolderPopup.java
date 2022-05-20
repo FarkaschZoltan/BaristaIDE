@@ -4,6 +4,8 @@ import com.farkasch.barista.gui.component.FolderDropdown.FolderDropdownItem;
 import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
+import com.farkasch.barista.util.Result;
+import com.farkasch.barista.util.enums.ResultTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,11 +21,11 @@ public class NewFolderPopup extends AbstractProjectPopup {
 
   @Override
   protected void save(){
-    if (!persistenceService.getOpenProject().getFolders().contains(item.getPath() + "\\" + itemTextField.getText())) {
-      fileService.createFolder(item.getPath() + "\\" + itemTextField.getText(), item);
+    Result folderCreated = fileService.createFolder(item.getPath() + "\\" + itemTextField.getText(), item);
+    if(folderCreated.getResult().equals(ResultTypeEnum.OK)){
       close();
     } else {
-      warningPopup.showWindow("Error", "A folder with this name already exists!", null);
+      warningPopup.showWindow(folderCreated);
     }
   }
 

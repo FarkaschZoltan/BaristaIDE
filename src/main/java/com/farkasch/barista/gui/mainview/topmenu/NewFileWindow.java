@@ -7,6 +7,7 @@ import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.util.Result;
+import com.farkasch.barista.util.enums.ResultTypeEnum;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -114,23 +115,16 @@ public class NewFileWindow extends Stage {
     VBox.setMargin(fieldLayout, new Insets(10, 10, 0, 10));
 
     createButton.setOnAction(actionEvent -> {
-      try {
-        File newFile = fileService.createFile(
-          folderPathField.getText() + "\\" + fileNameField.getText());
-        if(persistenceService.getOpenProject() != null){
+      Result fileCreated = fileService.createFile(folderPathField.getText() + "\\" + fileNameField.getText());
+      if (fileCreated.getResult().equals(ResultTypeEnum.OK)) {
+        File newFile = (File) fileCreated.getReturnValue();
+        if (persistenceService.getOpenProject() != null) {
           sideMenu.closeProject(false);
         }
         openFile.accept(newFile);
         close();
-      } catch (FileAlreadyExistsException e) {
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter printWriter = new PrintWriter(stringWriter);
-        e.printStackTrace(printWriter);
-        File errorFile = fileService.createErrorLog(stringWriter.toString());
-        errorPopup.showWindow(Result.ERROR("Error while creating file!", errorFile));
-
-        printWriter.close();
-        e.printStackTrace();
+      } else {
+        warningPopup.showWindow(fileCreated);
       }
     });
 
@@ -141,7 +135,7 @@ public class NewFileWindow extends Stage {
     setResizable(false);
   }
 
-  private void onLoad(){
+  private void onLoad() {
     fileNameField.setText("");
     folderPathField.setText(System.getProperty("user.home"));
     HashMap<String, String> styleIds = new HashMap<>();
@@ -152,7 +146,7 @@ public class NewFileWindow extends Stage {
     rootFolderSelector = new FolderDropdown(scene.getWidth() - 60, fileService, warningPopup, styleIds, false, false);
     rootFolderSelector.setFolderLeftClickAction(target -> {
       folderPathField.setText(target.getParentPath() == null ? System.getProperty("user.home") + "\\" + target.getText() : target.getPath());
-      if(rootFolderSelector.getLastClicked() != null){
+      if (rootFolderSelector.getLastClicked() != null) {
         rootFolderSelector.getLastClicked().setId(styleIds.get("item"));
       }
       target.setId("folder-dropdown__item--selected");
@@ -166,7 +160,7 @@ public class NewFileWindow extends Stage {
     this.openFile = openFile;
     rootFolderSelector.prepare(null, null);
     setScene(scene);
-    
+
     show();
   }
 }

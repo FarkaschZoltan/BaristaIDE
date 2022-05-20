@@ -56,7 +56,8 @@ public class FolderDropdown extends GridPane {
   private HashMap<String, String> styleIds;
   private ContextMenu activeContextMenu; //for handling multiple left-clicks on the same item
 
-  public FolderDropdown(double width, FileService fileService, WarningPopup warningPopup, HashMap<String, String> styleIds, boolean showFiles, boolean withAbsoluteParent) {
+  public FolderDropdown(double width, FileService fileService, WarningPopup warningPopup, HashMap<String, String> styleIds, boolean showFiles,
+    boolean withAbsoluteParent) {
     this.width = width;
     this.fileService = fileService;
     this.warningPopup = warningPopup;
@@ -111,7 +112,7 @@ public class FolderDropdown extends GridPane {
     return rootNode;
   }
 
-  public FolderDropdownItem getLastClicked(){
+  public FolderDropdownItem getLastClicked() {
     return lastClicked;
   }
 
@@ -349,7 +350,8 @@ public class FolderDropdown extends GridPane {
           if (itemContainer.getChildren().size() > 1) {
             folderClose(itemContainer, node);
           } else {
-            folderExpand((folderDropdownItem.getParentPath() == null ? System.getProperty("user.home") + "\\" + folderDropdownItem.getText() : folderDropdownItem.getPath()),
+            folderExpand((folderDropdownItem.getParentPath() == null ? System.getProperty("user.home") + "\\" + folderDropdownItem.getText()
+                : folderDropdownItem.getPath()),
               folderDropdownItem.getItemContainer(), node);
           }
         } else {
@@ -401,9 +403,7 @@ public class FolderDropdown extends GridPane {
           if (new File(item.getPath()).isFile()) {
             event.acceptTransferModes(TransferMode.MOVE);
           } else if (!fileService.folderContains(new File(item.getPath()).isFile() ? item.getParentPath() : item.getPath(),
-            folderDropdownItem.getPath()))
-          //makes sure a folder can't be dragged "into itself"
-          {
+            folderDropdownItem.getPath())) { //makes sure a folder can't be dragged "into itself"
             event.acceptTransferModes(TransferMode.MOVE);
           }
         }
