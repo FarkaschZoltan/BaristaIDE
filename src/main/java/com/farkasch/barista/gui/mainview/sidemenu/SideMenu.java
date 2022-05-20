@@ -11,6 +11,8 @@ import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.services.ProcessService;
 import com.farkasch.barista.util.BaristaDragBoard;
 import com.farkasch.barista.util.BaristaProject;
+import com.farkasch.barista.util.Result;
+import com.farkasch.barista.util.enums.ResultTypeEnum;
 import com.farkasch.barista.util.settings.RunSetting;
 import java.io.File;
 import java.util.ArrayList;
@@ -154,11 +156,15 @@ public class SideMenu extends BorderPane {
         File f = mainFileComboBox.getValue();
         String filePath = f.getParentFile().getPath();
         String fileName = f.getName();
-        File runArgs = processService.CompileFile(filePath, fileName);
-        runArgs.delete();
+        Result compileResult = processService.CompileFile(filePath, fileName);
+        if(compileResult.getResult().equals(ResultTypeEnum.OK)){
+          ((File) compileResult.getReturnValue()).delete();
+        }
       } else {
-        File runArgs = processService.CompileProject(persistenceService.getOpenProject());
-        runArgs.delete();
+        Result compileResult = processService.CompileProject(persistenceService.getOpenProject());
+        if(compileResult.getResult().equals(ResultTypeEnum.OK)){
+          ((File) compileResult.getReturnValue()).delete();
+        }
       }
     };
     compileButton.setOnAction(click -> {

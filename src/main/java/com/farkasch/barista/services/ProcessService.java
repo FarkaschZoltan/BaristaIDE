@@ -4,6 +4,7 @@ import com.farkasch.barista.gui.component.ErrorPopup;
 import com.farkasch.barista.util.BaristaProject;
 import com.farkasch.barista.util.Result;
 import com.farkasch.barista.util.enums.JavacEnum;
+import com.farkasch.barista.util.enums.ResultTypeEnum;
 import com.farkasch.barista.util.settings.RunSetting;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -36,7 +37,7 @@ public class ProcessService {
   @Autowired
   private ErrorPopup errorPopup;
 
-  public File CompileFile(String filePath, String fileName) {
+  public Result CompileFile(String filePath, String fileName) {
     HashMap<JavacEnum, Object> args = new HashMap<>();
     List<String> jarsForFile = fileService.getJarsForFile(filePath + "\\" + fileName);
 
@@ -47,7 +48,7 @@ public class ProcessService {
     return Compile(filePath, Arrays.asList(fileName), args);
   }
 
-  public File CompileProject(BaristaProject baristaProject) {
+  public Result CompileProject(BaristaProject baristaProject) {
     HashMap<JavacEnum, Object> args = new HashMap<>();
     args.put(JavacEnum.CLASSPATH, baristaProject.getJars());
     args.put(JavacEnum.D, baristaProject.getTargetFolder());
@@ -55,7 +56,9 @@ public class ProcessService {
     return Compile(baristaProject.getSourceRoot(), baristaProject.getSourceFiles(), args);
   }
 
-  private File Compile(String sourceDirectory, List<String> files, HashMap<JavacEnum, Object> args) {
+  private Result Compile(String sourceDirectory, List<String> files, HashMap<JavacEnum, Object> args) {
+
+    Result compileResult = Result.FAIL();
 
     if(args.get(JavacEnum.D) != null){
       File target = new File((String) args.get(JavacEnum.D));
@@ -68,16 +71,41 @@ public class ProcessService {
       }
     }
 
-    System.out.println("here!");
-
     File argFile = createArgumentFile(sourceDirectory, args);
     File sourceFile = createSourceFile(sourceDirectory, files);
     try {
       String command = "cmd /c \"javac @" + argFile.getName() + " @" + sourceFile.getName() + "\"";
       Process process = Runtime.getRuntime().exec(command, null, new File(sourceDirectory));
       process.waitFor();
+
+      sourceFile.delete(); //we have no need for the source and argument files anymore, so we delete them.
+      argFile.delete();
+
       BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-      reader.lines().forEach(System.out::println);
+      StringBuilder errorMessage = new StringBuilder();
+      reader.lines().forEach(line -> {
+        errorMessage.append("echo " + line);
+        System.out.println(line);
+        errorMessage.append("\n");
+      });
+      if(errorMessage.length() > 0){
+        compileResult = Result.FAIL();
+        File batch = new File(sourceDirectory + "\\showerror.bat");
+        FileWriter writer = new FileWriter(batch, false);
+        writer.write("@Echo off\n" + errorMessage + "pause");
+        writer.close();
+
+        String errorCommand = "cmd /c start /wait cmd /c " + batch.getName();
+
+        Process errorProcess = Runtime.getRuntime().exec(errorCommand, null, new File(sourceDirectory));
+        errorProcess.waitFor();
+
+        batch.delete();
+      } else {
+        HashMap<JavacEnum, Object> runArgs = new HashMap<>();
+        runArgs.put(JavacEnum.CLASSPATH, args.get(JavacEnum.CLASSPATH));
+        compileResult = Result.OK("", createArgumentFile(args.get(JavacEnum.D) == null ? sourceDirectory : (String) args.get(JavacEnum.D), runArgs));
+      }
     } catch (IOException | InterruptedException e) {
       StringWriter stringWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -90,24 +118,23 @@ public class ProcessService {
       e.printStackTrace();
     }
 
-    sourceFile.delete(); //we have no need for the source/argument file anymore, so we delete it
-    argFile.delete();
-
-    HashMap<JavacEnum, Object> runArgs = new HashMap<>();
-    runArgs.put(JavacEnum.CLASSPATH, args.get(JavacEnum.CLASSPATH));
-    return createArgumentFile(args.get(JavacEnum.D) == null ? sourceDirectory : (String) args.get(JavacEnum.D), runArgs);
+    return compileResult;
   }
 
   public void RunFile(String filePath, String fileName) {
-    File runArgs = CompileFile(filePath, fileName);
-    Run(runArgs, fileName, filePath, null);
+    Result compileResult = CompileFile(filePath, fileName);
+    if(compileResult.getResult().equals(ResultTypeEnum.OK)){
+      Run((File) compileResult.getReturnValue(), fileName, filePath, null);
+    }
   }
 
   public void RunProject(RunSetting runSetting) {
     BaristaProject baristaProject = persistenceService.getOpenProject();
-    File runArgs = CompileProject(baristaProject);
-    String mainClassPath = baristaProject.getMainFile().getAbsolutePath().replace(baristaProject.getSourceRoot(), baristaProject.getTargetFolder());
-    Run(runArgs, mainClassPath, baristaProject.getTargetFolder(), runSetting);
+    Result compileResult = CompileProject(baristaProject);
+    if(compileResult.getResult().equals(ResultTypeEnum.OK)){
+      String mainClassPath = baristaProject.getMainFile().getAbsolutePath().replace(baristaProject.getSourceRoot(), baristaProject.getTargetFolder());
+      Run((File) compileResult.getReturnValue(), mainClassPath, baristaProject.getTargetFolder(), runSetting);
+    }
   }
 
   private void Run(File argFile, String mainFile, String sourcePath, RunSetting runSetting) {
