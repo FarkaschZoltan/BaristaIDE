@@ -296,8 +296,6 @@ public class FileService {
       for (int i = 0; i < array.size(); i++) {
         JSONObject jar = (JSONObject) array.get(i);
         if (jar.get("fileName").equals(fileName)) {
-          System.out.println("jars: ");
-          jars.stream().forEach(System.out::println);
           jar.put("jars", jars);
           jar.put("lastUpdated", "\"" + LocalDateTime.now() + "\"");
           break;

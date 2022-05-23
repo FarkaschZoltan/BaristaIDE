@@ -48,8 +48,4 @@ public class MainStage extends Stage {
     setScene(scene);
   }
 
-  public void openNewFile(File file){
-    codingInterfaceContainer.openFile(file);
-  }
-
 }

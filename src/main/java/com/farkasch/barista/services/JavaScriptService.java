@@ -63,11 +63,10 @@ public class JavaScriptService {
           win.setMember("persistenceService", persistenceService);
           win.setMember("fileService", fileService);
           for (String script : scripts) {
-            System.out.println((String) view.getEngine().executeScript(script));
+            view.getEngine().executeScript(script);
           }
         }
       }
     );
   }
-
 }

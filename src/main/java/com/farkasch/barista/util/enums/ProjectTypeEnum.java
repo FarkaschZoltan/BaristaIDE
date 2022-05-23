@@ -6,7 +6,7 @@ public enum ProjectTypeEnum {
   GRADLE("Gradle"); //gradle project
 
   private String name;
-  private ProjectTypeEnum(String name){
+  ProjectTypeEnum(String name){
     this.name = name;
   }
   public String getName(){

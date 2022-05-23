@@ -8,7 +8,7 @@ public enum JavaClassTypesEnum {
   RECORD("Record");
 
   private String name;
-  private JavaClassTypesEnum(String name){
+  JavaClassTypesEnum(String name){
     this.name = name;
   }
 

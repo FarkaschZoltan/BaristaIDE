@@ -93,9 +93,7 @@ public class LoadProjectWindow extends Stage {
     openButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
     VBox.setMargin(openButtonContainer, new Insets(10));
 
-    scene.getStylesheets().add(
-      Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
-        .toString());
+    scene.getStylesheets().add(Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
 
     initModality(Modality.APPLICATION_MODAL);
     setResizable(false);

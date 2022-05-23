@@ -68,4 +68,5 @@ public class Result {
   public static Result ERROR(String message, File errorLog) {
     return new Result(message, ResultTypeEnum.ERROR, errorLog, null);
   }
+
 }

@@ -101,8 +101,6 @@ public class PersistenceService {
   public void addOpenFile(File file) {
     openFiles.add(file);
     updateAndGetCurrentMainFiles();
-    openFiles.stream().map(File::getAbsolutePath).forEach(System.out::println);
-    mainFiles.stream().map(File::getAbsolutePath).forEach(System.out::println);
   }
 
   public void removeOpenFile(File file) {
@@ -134,6 +132,9 @@ public class PersistenceService {
     this.recentlyClosed = recentlyClosed;
   }
 
+  public void removeRecentlyClosed(File file){
+    recentlyClosed.remove(file);
+  }
   public BaristaProject getOpenProject() {
     return openProject;
   }

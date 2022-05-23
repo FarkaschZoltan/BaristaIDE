@@ -8,7 +8,7 @@ public enum GenerateEnum {
 
   private String name;
 
-  private GenerateEnum(String name){
+  GenerateEnum(String name){
     this.name = name;
   }
 
