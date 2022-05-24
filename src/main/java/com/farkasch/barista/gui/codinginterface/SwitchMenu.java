@@ -1,6 +1,7 @@
 package com.farkasch.barista.gui.codinginterface;
 
 import com.farkasch.barista.gui.mainview.sidemenu.SideMenu;
+import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.util.BaristaDragBoard;
 import java.io.File;
@@ -29,6 +30,8 @@ public class SwitchMenu extends HBox {
   private PersistenceService persistenceService;
   @Autowired
   private BaristaDragBoard dragBoard;
+  @Autowired
+  private FileService fileService;
   @Lazy
   @Autowired
   private CodingInterfaceContainer codingInterfaceContainer;
@@ -185,6 +188,7 @@ public class SwitchMenu extends HBox {
       closeButton.setOnAction(actionEvent -> {
         SwitchMenu menu = SwitchMenu.this;
         int index = menu.getChildren().indexOf(this);
+        fileService.saveFile(file, parent.getTextContent());
         if (menu.getChildren().size() == 1) {
           persistenceService.setActiveFile(null);
           menu.removeFile(index);
