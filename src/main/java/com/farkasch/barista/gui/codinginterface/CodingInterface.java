@@ -3,6 +3,8 @@ package com.farkasch.barista.gui.codinginterface;
 import com.farkasch.barista.gui.mainview.topmenu.LoadProjectWindow;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.JavaScriptService;
+import com.farkasch.barista.services.PersistenceService;
+import com.google.common.io.Files;
 import java.io.File;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -72,7 +74,7 @@ public class CodingInterface extends BorderPane {
     content.setContextMenuEnabled(false);
     content.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
       contextMenu.hide();
-      if(event.getButton() == MouseButton.SECONDARY){
+      if(event.getButton() == MouseButton.SECONDARY && Files.getFileExtension(getShownFile().getAbsolutePath()).equals("java")){
         generateInsertPosition = fileService.getGenerateInsertPosition(getTextContent(), this);
         contextMenu.show(content, event.getScreenX(), event.getScreenY());
       }
@@ -96,7 +98,6 @@ public class CodingInterface extends BorderPane {
   }
 
   public void showFileWithClick(File file) {
-
     showFile(file);
     javaScriptService.setContent(content, file, !interfaceLoaded);
     interfaceLoaded = true;

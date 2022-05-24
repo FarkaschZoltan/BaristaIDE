@@ -36,3 +36,11 @@ function insertGeneratedContent(){
   ch = codeMirror.getLine(line).length
   codeMirror.replaceRange(content, {line, length})
 }
+
+function activateJavaMode(){
+  codeMirror.setOption("mode", "text/x-java");
+}
+
+function activateTextMode(){
+ codeMirror.setOption("mode", "text/plain");
+}

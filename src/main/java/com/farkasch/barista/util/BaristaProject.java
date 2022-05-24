@@ -1,15 +1,12 @@
 package com.farkasch.barista.util;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import org.checkerframework.checker.units.qual.A;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class BaristaProject {
-  //TODO: Create a list with all files
   private String projectName;
   private String projectRoot;
   private String sourceRoot;
@@ -17,6 +14,7 @@ public class BaristaProject {
   private File mainFile;
   private ArrayList<String> jars;
   private ArrayList<String> sourceFiles;
+  private ArrayList<String> otherFiles;
   private ArrayList<String> folders;
   private boolean maven;
   private boolean gradle;
@@ -36,6 +34,7 @@ public class BaristaProject {
     this.targetFolder = projectRoot + "\\target";
     this.jars = new ArrayList<>();
     this.sourceFiles = new ArrayList<>();
+    this.otherFiles = new ArrayList<>();
     this.folders = new ArrayList<>();
     this.maven = maven;
     this.gradle = gradle;
@@ -137,6 +136,29 @@ public class BaristaProject {
     this.folders.remove(folder.getAbsolutePath());
   }
 
+  public ArrayList<String> getOtherFiles() {
+    return otherFiles;
+  }
+
+  public void setOtherFiles(ArrayList<String> otherFiles) {
+    this.otherFiles = otherFiles;
+  }
+
+  public void addOtherFile(File otherFile){
+    otherFiles.add(otherFile.getAbsolutePath());
+  }
+
+  public void removeOtherFile(File otherFile){
+    otherFiles.remove(otherFile.getAbsolutePath());
+  }
+
+  public ArrayList<String> getAllFiles(){
+    ArrayList<String> allFiles = new ArrayList<>();
+    allFiles.addAll(sourceFiles);
+    allFiles.addAll(otherFiles);
+    return allFiles;
+  }
+
   public String toJsonString() {
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("projectName", projectName);
@@ -146,6 +168,7 @@ public class BaristaProject {
     jsonObject.put("targetFolder", targetFolder);
     jsonObject.put("jars", jars);
     jsonObject.put("sourceFiles", sourceFiles);
+    jsonObject.put("otherFiles", otherFiles);
     jsonObject.put("folders", folders);
     jsonObject.put("maven", maven);
     jsonObject.put("gradle", gradle);
@@ -163,6 +186,7 @@ public class BaristaProject {
     targetFolder = (String) jsonObject.get("targetFolder");
     jars = (ArrayList<String>) jsonObject.get("jars");
     sourceFiles = (ArrayList<String>) jsonObject.get("sourceFiles");
+    otherFiles = (ArrayList<String>) jsonObject.get("otherFiles");
     folders = (ArrayList<String>) jsonObject.get("folders");
     mainFile = new File((String) jsonObject.get("mainFile"));
     maven = (boolean) jsonObject.get("maven");

@@ -1,5 +1,6 @@
 package com.farkasch.barista.services;
 
+import com.google.common.io.Files;
 import java.io.File;
 import javafx.concurrent.Worker.State;
 import javafx.scene.web.WebView;
@@ -27,21 +28,35 @@ public class JavaScriptService {
 
   public void setContent(WebView view, File fileToSet, boolean firstOpen) {
     persistenceService.setFileToOpen(fileToSet);
-    String script = "loadContent()";
-    if(firstOpen){
-      open(view, script);
+    String openContent = "loadContent()";
+    String modeScript;
+    if(Files.getFileExtension(fileToSet.getAbsolutePath()).equals("java")){
+      modeScript = "activateJavaMode()";
     } else {
-      view.getEngine().executeScript(script);
+      modeScript = "activateTextMode()";
+    }
+    if(firstOpen){
+      open(view, openContent, modeScript);
+    } else {
+      view.getEngine().executeScript(openContent);
+      view.getEngine().executeScript(modeScript);
     }
   }
 
   public void switchContent(WebView view, File fileToSet, boolean firstOpen) {
     persistenceService.setFileToSwitch(fileToSet);
-    String script = "switchContent()";
-    if(firstOpen){
-      open(view, script);
+    String switchContent = "switchContent()";
+    String modeScript;
+    if(Files.getFileExtension(fileToSet.getAbsolutePath()).equals("java")){
+      modeScript = "activateJavaMode()";
     } else {
-      view.getEngine().executeScript(script);
+      modeScript = "activateTextMode()";
+    }
+    if(firstOpen){
+      open(view, switchContent, modeScript);
+    } else {
+      view.getEngine().executeScript(switchContent);
+      view.getEngine().executeScript(modeScript);
     }
   }
 
@@ -52,6 +67,16 @@ public class JavaScriptService {
 
   public void insertGeneratedContent(WebView view){
     String script = "insertGeneratedContent()";
+    view.getEngine().executeScript(script);
+  }
+
+  public void activateJavaMode(WebView view){
+    String script = "activateJavaMode()";
+    view.getEngine().executeScript(script);
+  }
+
+  public void activateTextMode(WebView view){
+    String script = "activateTextMode()";
     view.getEngine().executeScript(script);
   }
 

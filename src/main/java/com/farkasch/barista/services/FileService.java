@@ -111,8 +111,10 @@ public class FileService {
       sideMenu.getProjectFolderDropdown().addFolderDropdownItem(creationFolder, newFile);
       if (Files.getFileExtension(newFile.getAbsolutePath()).equals("java")) {
         persistenceService.getOpenProject().addSourceFile(newFile);
-        saveProject();
+      } else {
+        persistenceService.getOpenProject().addOtherFile(newFile);
       }
+      saveProject();
     }
     return fileCreated;
   }
@@ -142,7 +144,11 @@ public class FileService {
       if (!partOfProject) {
         sideMenu.refresh();
       } else {
-        persistenceService.getOpenProject().removeSourceFile(file);
+        if (Files.getFileExtension(file.getAbsolutePath()).equals("java")) {
+          persistenceService.getOpenProject().removeSourceFile(file);
+        } else {
+          persistenceService.getOpenProject().removeOtherFile(file);
+        }
         saveProject();
       }
       for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
@@ -164,6 +170,8 @@ public class FileService {
       new ArrayList<>(baristaProject.getFolders().stream().filter(folder -> !folder.contains(folderToDelete.getAbsolutePath())).toList()));
     baristaProject.setSourceFiles(
       new ArrayList<>(baristaProject.getSourceFiles().stream().filter(file -> !file.contains(folderToDelete.getAbsolutePath())).toList()));
+    baristaProject.setOtherFiles(
+      new ArrayList<>(baristaProject.getOtherFiles().stream().filter(file -> !file.contains(folderToDelete.getAbsolutePath())).toList()));
 
     if (baristaProject.getSourceRoot().contains(folderToDelete.getAbsolutePath())) {
       baristaProject.setSourceRoot("");
@@ -726,6 +734,9 @@ public class FileService {
         if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().equals(file)) {
           persistenceService.setActiveFile(renamedFile);
         }
+        if(persistenceService.getOpenProject().getMainFile().equals(file)){
+          persistenceService.getOpenProject().setMainFile(renamedFile);
+        }
         if (Files.getFileExtension(file.getAbsolutePath()).equals("java") && (Files.getFileExtension(name).equals("java") || Files.getFileExtension(
           name).equals(""))) {
           renameReferences(new File(persistenceService.getOpenProject().getSourceRoot()),
@@ -734,6 +745,25 @@ public class FileService {
           persistenceService.getOpenProject().addSourceFile(renamedFile);
         } else if (Files.getFileExtension(file.getAbsolutePath()).equals("java")) {
           persistenceService.getOpenProject().removeSourceFile(file);
+          persistenceService.getOpenProject().addOtherFile(renamedFile);
+          for(CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()){
+            if(codingInterface.getShownFile().equals(renamedFile)){
+              javaScriptService.activateTextMode(codingInterface.getContentWebView());
+              break;
+            }
+          }
+        } else if (Files.getFileExtension(name).equals("java")) {
+          persistenceService.getOpenProject().removeOtherFile(file);
+          persistenceService.getOpenProject().addSourceFile(renamedFile);
+          for(CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()){
+            if(codingInterface.getShownFile().equals(renamedFile)){
+              javaScriptService.activateJavaMode(codingInterface.getContentWebView());
+              break;
+            }
+          }
+        } else {
+          persistenceService.getOpenProject().removeOtherFile(file);
+          persistenceService.getOpenProject().addOtherFile(renamedFile);
         }
         saveProject();
       }
@@ -771,6 +801,8 @@ public class FileService {
           .collect(Collectors.toList())));
       openProject.setSourceFiles(new ArrayList<>(openProject.getSourceFiles().stream()
         .map(sourceFile -> sourceFile.replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath())).toList()));
+      openProject.setOtherFiles(new ArrayList<>(openProject.getOtherFiles().stream()
+        .map(otherFile -> otherFile.replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath())).toList()));
 
       if (openProject.getTargetFolder().contains(oldFolder.getAbsolutePath())) {
         openProject.setTargetFolder(openProject.getTargetFolder().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
@@ -804,7 +836,6 @@ public class FileService {
         redoImports(new File(file.replace(newFolder.getAbsolutePath(), oldFolder.getAbsolutePath())), new File(file));
       });
 
-
       saveProject();
       return Result.OK(newFolder);
     }
@@ -817,9 +848,17 @@ public class FileService {
       if (destinationFile.exists()) {
         return Result.FAIL("A file with the same name already exists here!");
       }
+
       BaristaProject baristaProject = persistenceService.getOpenProject();
-      repackage(fileToMove, destinationFile, null);
-      redoImports(fileToMove, destinationFile);
+      if(baristaProject.getSourceFiles().contains(fileToMove.getAbsolutePath())){
+        repackage(fileToMove, destinationFile, null);
+        redoImports(fileToMove, destinationFile);
+        baristaProject.removeSourceFile(fileToMove);
+        baristaProject.addSourceFile(destinationFile);
+      } else {
+        baristaProject.removeOtherFile(fileToMove);
+        baristaProject.addOtherFile(destinationFile);
+      }
 
       if (fileToMove.getAbsolutePath().equals(baristaProject.getMainFile().getAbsolutePath())) {
         baristaProject.setMainFile(destinationFile);
@@ -827,9 +866,7 @@ public class FileService {
       if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().equals(fileToMove)) {
         persistenceService.setActiveFile(destinationFile);
       }
-      //changing file path in project config
-      baristaProject.removeSourceFile(fileToMove);
-      baristaProject.addSourceFile(destinationFile);
+
       //changing the file in the switch menu(s)
       for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
         for (Node node : codingInterface.getSwitchMenu().getChildren()) {
@@ -922,7 +959,7 @@ public class FileService {
       moveFile(item, targetDirectory.getAbsolutePath());
     } else {
       //editing folders in the project
-      for (String folderPath : baristaProject.getSourceFiles()) {
+      for (String folderPath : baristaProject.getAllFiles()) {
         if (folderPath.equals(item.getAbsolutePath())) {
           baristaProject.getFolders().remove(folderPath);
           baristaProject.getFolders().add(newItem.getAbsolutePath());
