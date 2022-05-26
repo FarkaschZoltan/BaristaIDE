@@ -89,10 +89,10 @@ public class FileTemplates {
       arguments.append(name);
       arguments.append(", ");
 
-      content.append("  this.");
-      content.append(variables.get(name));
+      content.append("    this.");
+      content.append(name);
       content.append(" = ");
-      content.append(variables.get(name));
+      content.append(name);
       content.append(";\n");
     }
 
