@@ -164,7 +164,7 @@ public class BaristaProject {
     jsonObject.put("projectName", projectName);
     jsonObject.put("projectRoot", projectRoot);
     jsonObject.put("sourceRoot", sourceRoot);
-    jsonObject.put("mainFile", mainFile.getAbsolutePath());
+    jsonObject.put("mainFile", mainFile == null ? "" : mainFile.getAbsolutePath());
     jsonObject.put("targetFolder", targetFolder);
     jsonObject.put("jars", jars);
     jsonObject.put("sourceFiles", sourceFiles);
