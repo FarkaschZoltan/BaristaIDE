@@ -6,6 +6,7 @@ import com.farkasch.barista.util.Result;
 import com.farkasch.barista.util.enums.JavacEnum;
 import com.farkasch.barista.util.enums.ResultTypeEnum;
 import com.farkasch.barista.util.settings.RunSetting;
+import com.google.common.io.Files;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -58,15 +59,18 @@ public class ProcessService {
 
     Result compileResult = Result.FAIL();
 
-    if(args.get(JavacEnum.D) != null){
+    if (args.get(JavacEnum.D) != null) {
       File target = new File((String) args.get(JavacEnum.D));
-      if(!target.exists()){
+      if (!target.exists()) {
         target.mkdir();
-      } else if(persistenceService.getOpenProject() != null){
-        for(File file : target.listFiles()){
+      } else if (persistenceService.getOpenProject() != null) {
+        for (File file : target.listFiles()) {
           FileSystemUtils.deleteRecursively(file);
         }
       }
+    } else {
+      String mainClassPath = sourceDirectory + "\\" + Files.getNameWithoutExtension(files.get(0)) + ".class";
+      new File(mainClassPath).delete();
     }
 
     File argFile = createArgumentFile(sourceDirectory, args);
@@ -76,17 +80,34 @@ public class ProcessService {
       Process process = Runtime.getRuntime().exec(command, null, new File(sourceDirectory));
       process.waitFor();
 
+      if (persistenceService.getOpenProject() != null) {
+        BaristaProject project = persistenceService.getOpenProject();
+        String mainClassPath =
+          new File(project.getMainFile().getAbsolutePath().replace(project.getSourceRoot(), project.getTargetFolder())).getAbsolutePath()
+            .replace(project.getMainFile().getName(), Files.getNameWithoutExtension(project.getMainFile().getPath()) + ".class");
+        System.out.println(mainClassPath);
+        if (new File(mainClassPath).exists()) {
+          compileResult = Result.OK();
+        }
+      } else {
+        String mainClassPath = sourceDirectory + "\\" + Files.getNameWithoutExtension(files.get(0)) + ".class";
+        if (new File(mainClassPath).exists()) {
+          compileResult = Result.OK();
+        }
+      }
+
       sourceFile.delete(); //we have no need for the source and argument files anymore, so we delete them.
       argFile.delete();
+      if (compileResult.getResult().equals(ResultTypeEnum.FAIL)) {
 
-      BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-      StringBuilder errorMessage = new StringBuilder();
-      reader.lines().forEach(line -> {
-        errorMessage.append("echo " + line);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+        StringBuilder errorMessage = new StringBuilder();
+        errorMessage.append("echo This is an error message!");
         errorMessage.append("\n");
-      });
-      if(errorMessage.length() > 0){
-        compileResult = Result.FAIL();
+        reader.lines().forEach(line -> {
+          errorMessage.append("echo " + line);
+          errorMessage.append("\n");
+        });
         File batch = new File(sourceDirectory + "\\showerror.bat");
         FileWriter writer = new FileWriter(batch, false);
         writer.write("@Echo off\n" + errorMessage + "pause");
@@ -120,7 +141,7 @@ public class ProcessService {
 
   public void RunFile(String filePath, String fileName) {
     Result compileResult = CompileFile(filePath, fileName);
-    if(compileResult.getResult().equals(ResultTypeEnum.OK)){
+    if (compileResult.getResult().equals(ResultTypeEnum.OK)) {
       Run((File) compileResult.getReturnValue(), fileName, filePath, null);
     }
   }
@@ -128,7 +149,7 @@ public class ProcessService {
   public void RunProject(RunSetting runSetting) {
     BaristaProject baristaProject = persistenceService.getOpenProject();
     Result compileResult = CompileProject(baristaProject);
-    if(compileResult.getResult().equals(ResultTypeEnum.OK)){
+    if (compileResult.getResult().equals(ResultTypeEnum.OK)) {
       String mainClassPath = baristaProject.getMainFile().getAbsolutePath().replace(baristaProject.getSourceRoot(), baristaProject.getTargetFolder());
       Run((File) compileResult.getReturnValue(), mainClassPath, baristaProject.getTargetFolder(), runSetting);
     }
@@ -142,7 +163,7 @@ public class ProcessService {
 
       File batch = new File(sourcePath + "\\run.bat");
       FileWriter writer = new FileWriter(batch, false);
-      if(runSetting == null || runSetting.getCommand() == null){
+      if (runSetting == null || runSetting.getCommand() == null) {
         writer.write("@Echo off\n" + "java @" + argFile.getName() + " " + mainFile + "\n" + "pause");
       } else {
         writer.write("@Echo off\n" + runSetting.getCommand() + "\n" + "pause");
@@ -167,9 +188,9 @@ public class ProcessService {
     }
   }
 
-  public void openCommandPrompt(File path){
+  public void openCommandPrompt(File path) {
     try {
-      if(path == null){
+      if (path == null) {
         path = new File(System.getProperty("user.home"));
       }
       String command = "cmd /k start";
