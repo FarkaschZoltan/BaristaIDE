@@ -188,24 +188,30 @@ public class SwitchMenu extends HBox {
       closeButton.setOnAction(actionEvent -> {
         SwitchMenu menu = SwitchMenu.this;
         int index = menu.getChildren().indexOf(this);
-        fileService.saveFile(file, parent.getTextContent());
+        if(parent.getShownFile().equals(file)){
+          fileService.saveFile(file, parent.getTextContent());
+        }
         if (menu.getChildren().size() == 1) {
           persistenceService.setActiveFile(null);
           menu.removeFile(index);
           parent.close();
         } else if (index > 0) {
-          parent.showFileWithClick(
-            ((SwitchMenuItem) menu.getChildren().get(index - 1)).getFile());
-          currentlyActive = (SwitchMenuItem) menu.getChildren().get(index - 1);
-          currentlyActive.setContentId("switch-menu__item--selected");
-          persistenceService.setActiveFile(currentlyActive.getFile());
+          if(parent.getShownFile().equals(file)){
+            parent.showFileWithClick(
+              ((SwitchMenuItem) menu.getChildren().get(index - 1)).getFile());
+            currentlyActive = (SwitchMenuItem) menu.getChildren().get(index - 1);
+            currentlyActive.setContentId("switch-menu__item--selected");
+            persistenceService.setActiveFile(currentlyActive.getFile());
+          }
           menu.removeFile(index);
         } else {
-          parent.showFileWithClick(
-            ((SwitchMenuItem) menu.getChildren().get(index + 1)).getFile());
-          currentlyActive = (SwitchMenuItem) menu.getChildren().get(index + 1);
-          currentlyActive.setContentId("switch-menu__item--selected");
-          persistenceService.setActiveFile(currentlyActive.getFile());
+          if(parent.getShownFile().equals(file)) {
+            parent.showFileWithClick(
+              ((SwitchMenuItem) menu.getChildren().get(index + 1)).getFile());
+            currentlyActive = (SwitchMenuItem) menu.getChildren().get(index + 1);
+            currentlyActive.setContentId("switch-menu__item--selected");
+            persistenceService.setActiveFile(currentlyActive.getFile());
+          }
           menu.removeFile(index);
         }
       });

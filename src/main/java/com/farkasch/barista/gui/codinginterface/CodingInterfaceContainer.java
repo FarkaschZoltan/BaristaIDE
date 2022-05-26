@@ -93,9 +93,8 @@ public class CodingInterfaceContainer extends StackPane {
         codingInterface = applicationContext.getBean(CodingInterface.class);
         codingInterface.setParent(this);
         newInterface(codingInterface);
-      } else if (interfaces.size() == 2) {
-        codingInterface = (CodingInterface) contentPane.getChildren().get(1);
       }
+      codingInterface = (CodingInterface) contentPane.getChildren().get(1);
 
       if (codingInterface != null) {
         codingInterface.showFileWithDrag(((SwitchMenuItem) dragBoard.getDraggedItem()).getFile());
