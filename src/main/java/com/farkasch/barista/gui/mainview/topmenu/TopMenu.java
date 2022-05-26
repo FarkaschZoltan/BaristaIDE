@@ -37,7 +37,7 @@ public class TopMenu extends MenuBar {
     initGitMenu();
     initHelpMenu();
 
-    getMenus().addAll(fileMenu, gitMenu, helpMenu);
+    getMenus().addAll(fileMenu, helpMenu);
   }
 
   private void initFileMenu() {
@@ -71,8 +71,8 @@ public class TopMenu extends MenuBar {
 
     MenuItem saveProject = new MenuItem("Save");
     saveProject.setOnAction(actionEvent -> {
-      fileService.saveFile(codingInterfaceContainer.getActiveInterface().getShownFile(),
-        codingInterfaceContainer.getActiveInterface().getTextContent());
+      codingInterfaceContainer.getInterfaces().stream()
+        .forEach(codingInterface -> fileService.saveFile(codingInterface.getShownFile(), codingInterface.getTextContent()));
     });
 
     fileMenu.getItems().addAll(newFile, newProject, openFile, loadProject, saveProject);
