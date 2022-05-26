@@ -21,11 +21,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -36,6 +38,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
@@ -146,6 +149,9 @@ public class FileService {
       } else {
         if (Files.getFileExtension(file.getAbsolutePath()).equals("java")) {
           persistenceService.getOpenProject().removeSourceFile(file);
+          if(file.equals(persistenceService.getOpenProject().getMainFile())){
+            persistenceService.getOpenProject().setMainFile(null);
+          }
         } else {
           persistenceService.getOpenProject().removeOtherFile(file);
         }
@@ -197,10 +203,9 @@ public class FileService {
     //TODO: implement cleaning up json file after it hasn't been used in a while
   }
 
-  public void addNewJarConfig(String fileName, String... jars) {
+  public void addNewJarConfig(String fileName, List<String> jars) {
     try {
-      File jarJsonFile = new File(
-        System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
+      File jarJsonFile = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
       JSONObject jar = new JSONObject();
@@ -250,26 +255,33 @@ public class FileService {
         System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
-      FileWriter writer = new FileWriter(jarJsonFile);
+      JSONArray array;
       String jsonString = "";
 
       while (scanner.hasNextLine()) {
         jsonString = jsonString.concat(scanner.nextLine());
       }
       scanner.close();
-      JSONArray array = (JSONArray) parser.parse(jsonString);
+
+      if (jsonString == "") {
+        array = new JSONArray();
+      } else {
+        array = ((JSONArray) parser.parse(jsonString));
+      }
 
       for (int i = 0; i < array.size(); i++) {
         JSONObject jar = (JSONObject) array.get(i);
-        if (jar.get("fileName") == oldFileName) {
+        if (jar.get("fileName").equals(oldFileName)) {
           jar.put("fileName", newFileName);
-          jar.put("lastUpdated", LocalDateTime.now());
+          jar.put("lastUpdated", "\"" + LocalDateTime.now() + "\"");
           break;
         }
       }
 
       jsonString = JSONArray.toJSONString(array);
+      FileWriter writer = new FileWriter(jarJsonFile);
       writer.write(jsonString);
+      writer.close();
     } catch (IOException | ParseException e) {
       StringWriter stringWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -332,13 +344,18 @@ public class FileService {
         System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\JarConfig.json");
       Scanner scanner = new Scanner(jarJsonFile);
       JSONParser parser = new JSONParser();
+      JSONArray array;
       String jsonString = "";
 
       while (scanner.hasNextLine()) {
         jsonString = jsonString.concat(scanner.nextLine());
       }
       scanner.close();
-      JSONArray array = (JSONArray) parser.parse(jsonString);
+      if (jsonString == "") {
+        array = new JSONArray();
+      } else {
+        array = ((JSONArray) parser.parse(jsonString));
+      }
 
       for (Object j : array) {
         if (((JSONObject) j).get("fileName").equals(fileName)) {
@@ -599,8 +616,7 @@ public class FileService {
 
   public List<BaristaProject> getProjects() {
     try {
-      File projectConfig = new File(System.getProperty("user.home")
-        + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
+      File projectConfig = new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE\\config\\ProjectConfig.json");
       Scanner scanner = new Scanner(projectConfig);
       JSONParser parser = new JSONParser();
       JSONArray array = new JSONArray();
@@ -734,7 +750,7 @@ public class FileService {
         if (persistenceService.getActiveFile() != null && persistenceService.getActiveFile().equals(file)) {
           persistenceService.setActiveFile(renamedFile);
         }
-        if(persistenceService.getOpenProject().getMainFile().equals(file)){
+        if (persistenceService.getOpenProject().getMainFile().equals(file)) {
           persistenceService.getOpenProject().setMainFile(renamedFile);
         }
         if (Files.getFileExtension(file.getAbsolutePath()).equals("java") && (Files.getFileExtension(name).equals("java") || Files.getFileExtension(
@@ -746,8 +762,8 @@ public class FileService {
         } else if (Files.getFileExtension(file.getAbsolutePath()).equals("java")) {
           persistenceService.getOpenProject().removeSourceFile(file);
           persistenceService.getOpenProject().addOtherFile(renamedFile);
-          for(CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()){
-            if(codingInterface.getShownFile().equals(renamedFile)){
+          for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
+            if (codingInterface.getShownFile().equals(renamedFile)) {
               javaScriptService.activateTextMode(codingInterface.getContentWebView());
               break;
             }
@@ -755,8 +771,8 @@ public class FileService {
         } else if (Files.getFileExtension(name).equals("java")) {
           persistenceService.getOpenProject().removeOtherFile(file);
           persistenceService.getOpenProject().addSourceFile(renamedFile);
-          for(CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()){
-            if(codingInterface.getShownFile().equals(renamedFile)){
+          for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
+            if (codingInterface.getShownFile().equals(renamedFile)) {
               javaScriptService.activateJavaMode(codingInterface.getContentWebView());
               break;
             }
@@ -850,7 +866,7 @@ public class FileService {
       }
 
       BaristaProject baristaProject = persistenceService.getOpenProject();
-      if(baristaProject.getSourceFiles().contains(fileToMove.getAbsolutePath())){
+      if (baristaProject.getSourceFiles().contains(fileToMove.getAbsolutePath())) {
         repackage(fileToMove, destinationFile, null);
         redoImports(fileToMove, destinationFile);
         baristaProject.removeSourceFile(fileToMove);
@@ -930,7 +946,7 @@ public class FileService {
       }
     }
 
-    return Arrays.stream(sb.toString().split("\n")).filter(string -> string.matches("(.* +.*;+)")).toList();
+    return Arrays.stream(sb.toString().split("\n")).map(String::trim).filter(string -> string.matches("(.* +.*;+)")).toList();
   }
 
   //generated elements are always inserted before the first method. If no methods are found, at the current cursor position
@@ -938,9 +954,9 @@ public class FileService {
     Scanner scanner = new Scanner(content);
     int lineNum = 0;
     boolean foundLine = false;
-    while (scanner.hasNextLine() && !foundLine) {
+    while (scanner.hasNextLine()) {
       String line = scanner.nextLine();
-      if (line.matches(".*\\) *\\{")) {
+      if (line.matches(".*\\) *\\{.*")) {
         foundLine = true;
         break;
       }
@@ -959,7 +975,7 @@ public class FileService {
       moveFile(item, targetDirectory.getAbsolutePath());
     } else {
       //editing folders in the project
-      for (String folderPath : baristaProject.getAllFiles()) {
+      for (String folderPath : baristaProject.getFolders()) {
         if (folderPath.equals(item.getAbsolutePath())) {
           baristaProject.getFolders().remove(folderPath);
           baristaProject.getFolders().add(newItem.getAbsolutePath());
@@ -1141,5 +1157,13 @@ public class FileService {
       return true;
     }
     return false;
+  }
+
+  public void prepareForTesting(HashMap<String, Object> beansToReplace) throws IllegalAccessException {
+    for(Field bean : this.getClass().getDeclaredFields()){
+      if(beansToReplace.keySet().contains(bean.getName())){
+       bean.set(this, beansToReplace.get(bean.getName()));
+      }
+    }
   }
 }
