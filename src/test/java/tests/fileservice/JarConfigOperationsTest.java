@@ -96,7 +96,7 @@ public class JarConfigOperationsTest extends ApplicationTest {
   }
 
   @Test
-  public void updateNameInJarConfig() {
+  public void updateNameInJarConfigTest() {
     String fileToRename = TestHelper.generateRandomString();
     String newName = TestHelper.generateRandomString();
 

@@ -39,11 +39,6 @@ public class PersistenceServiceTest extends ApplicationTest {
       throw new RuntimeException(e);
     }
   }
-
-  @Before
-  public void init() {
-  }
-
   @After
   public void cleanup() {
     file1.delete();
@@ -136,11 +131,9 @@ public class PersistenceServiceTest extends ApplicationTest {
     persistenceService.addRecentlyClosed(file2);
     Assert.assertArrayEquals(recentlyClosed.toArray(), persistenceService.getRecentlyClosed().toArray());
 
-
     recentlyClosed.remove(file1);
     persistenceService.removeRecentlyClosed(file1);
     Assert.assertArrayEquals(recentlyClosed.toArray(), persistenceService.getRecentlyClosed().toArray());
-
   }
 
   @Test

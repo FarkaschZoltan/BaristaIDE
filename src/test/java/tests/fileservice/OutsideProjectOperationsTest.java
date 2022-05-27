@@ -88,36 +88,6 @@ public class OutsideProjectOperationsTest extends ApplicationTest {
   }
 
   @Test
-  public void saveFileTest() {
-    try {
-      //testing if saveFile can write into an empty file
-      fileService.saveFile(file1, "This is the saved content!");
-      Scanner scanner = new Scanner(file1);
-      StringBuilder content = new StringBuilder();
-      while (scanner.hasNextLine()) {
-        content.append(scanner.nextLine());
-        content.append("\n");
-      }
-      scanner.close();
-      Assert.assertEquals("This is the saved content!\n", content.toString());
-
-      //testing if saveFile overrides the content inside the file
-      fileService.saveFile(file1, "This overrides the previous!");
-      scanner = new Scanner(file1);
-      content = new StringBuilder();
-      while (scanner.hasNextLine()) {
-        content.append(scanner.nextLine());
-        content.append("\n");
-      }
-      scanner.close();
-      Assert.assertEquals("This overrides the previous!\n", content.toString());
-
-    } catch (IOException e) {
-      Assert.fail();
-    }
-  }
-
-  @Test
   public void createFileTest(){
     //testing, if a file is created with createFile
     Result okResult = fileService.createFile(createFileTest.getAbsolutePath());

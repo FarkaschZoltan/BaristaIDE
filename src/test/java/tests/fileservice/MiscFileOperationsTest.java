@@ -10,9 +10,12 @@ import com.farkasch.barista.services.JavaScriptService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.util.FileTemplates;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 import javafx.stage.Stage;
 import org.junit.Assert;
 import org.junit.Test;
@@ -66,6 +69,39 @@ public class MiscFileOperationsTest extends ApplicationTest {
       fileService.prepareForTesting(beansToReplace);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  @Test
+  public void saveFileTest() {
+    try {
+      File saveFileTest = new File("src\\test\\resources\\FileServiceTest\\saveFileTest.txt");
+      //testing if saveFile can write into an empty file
+      fileService.saveFile(saveFileTest, "This is the saved content!");
+      Scanner scanner = new Scanner(saveFileTest);
+      StringBuilder content = new StringBuilder();
+      while (scanner.hasNextLine()) {
+        content.append(scanner.nextLine());
+        content.append("\n");
+      }
+      scanner.close();
+      Assert.assertEquals("This is the saved content!\n", content.toString());
+
+      //testing if saveFile overrides the content inside the file
+      fileService.saveFile(saveFileTest, "This overrides the previous!");
+      scanner = new Scanner(saveFileTest);
+      content = new StringBuilder();
+      while (scanner.hasNextLine()) {
+        content.append(scanner.nextLine());
+        content.append("\n");
+      }
+      scanner.close();
+      Assert.assertEquals("This overrides the previous!\n", content.toString());
+
+      FileWriter fw = new FileWriter(saveFileTest);
+      fw.close();
+    } catch (IOException e) {
+      Assert.fail();
     }
   }
 
