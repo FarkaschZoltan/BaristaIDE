@@ -67,7 +67,6 @@ public class GenerateWindow extends Stage {
 
   @PostConstruct
   private void init() {
-    System.out.println("init");
     generateComboBoxLabel = new Label("Generate: ");
     classVariablesLabel = new Label("Class variables: ");
     generateComboBox = new ComboBox<>();

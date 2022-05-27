@@ -481,7 +481,6 @@ public class FolderDropdown extends GridPane {
               destination = (File) result.getReturnValue();
               addFolderDropdownItem(folderDropdownItem, destination);
               event.setDropCompleted(true);
-              System.out.println("here");
             } else {
               warningPopup.showWindow(result);
               event.setDropCompleted(false);

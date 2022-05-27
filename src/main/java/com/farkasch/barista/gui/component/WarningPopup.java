@@ -83,7 +83,6 @@ public class WarningPopup extends Stage {
   }
 
   public void showWindow(String title, String message, EventHandler acceptButtonClick, EventHandler cancelButtonClick){
-    System.out.println("Warning popup show window!");
     this.message.setText(message);
     this.acceptButtonClick = acceptButtonClick;
     this.cancelButtonClick = cancelButtonClick;

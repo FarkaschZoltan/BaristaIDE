@@ -5,6 +5,7 @@ import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.util.BaristaDragBoard;
 import java.io.File;
+import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -143,7 +144,6 @@ public class SwitchMenu extends HBox {
       initCloseButton();
 
       addEventFilter(MouseEvent.DRAG_DETECTED, event -> {
-        System.out.println("Drag detected!");
         Dragboard db = this.startDragAndDrop(TransferMode.MOVE);
         //This needs to be here, because JavaFX only starts a dragEvent, when there is something in the drag board
         //-------------------------------------------------------------

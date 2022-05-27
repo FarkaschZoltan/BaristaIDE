@@ -85,7 +85,6 @@ public class ProcessService {
         String mainClassPath =
           new File(project.getMainFile().getAbsolutePath().replace(project.getSourceRoot(), project.getTargetFolder())).getAbsolutePath()
             .replace(project.getMainFile().getName(), Files.getNameWithoutExtension(project.getMainFile().getPath()) + ".class");
-        System.out.println(mainClassPath);
         if (new File(mainClassPath).exists()) {
           compileResult = Result.OK();
         }
@@ -214,7 +213,6 @@ public class ProcessService {
       if (!file.exists()) {
         file.createNewFile();
       }
-      System.out.println(file.getAbsolutePath());
       BufferedWriter writer = new BufferedWriter(new FileWriter(file));
       for (JavacEnum arg : args.keySet()) {
         switch (arg) {

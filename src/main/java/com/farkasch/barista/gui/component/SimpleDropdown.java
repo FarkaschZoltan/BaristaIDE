@@ -62,7 +62,6 @@ public class SimpleDropdown extends GridPane {
           openFileButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
           addRow(getRowCount(), openFileButton);
         });
-        System.out.println(open);
       }
     });
     dropdownButton.setId("side-menu__simple-dropdown--title");
@@ -98,7 +97,6 @@ public class SimpleDropdown extends GridPane {
         });
         openFileButton.setId("side-menu__simple-dropdown--item");
         openFileButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        System.out.println("rowCount: " + getRowCount());
         addRow(getRowCount(), openFileButton);
       });
     }

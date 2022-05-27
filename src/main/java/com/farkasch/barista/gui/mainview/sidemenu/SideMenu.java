@@ -142,9 +142,6 @@ public class SideMenu extends BorderPane {
     content.setId("side-menu__content");
     content.setMaxWidth(Double.MAX_VALUE);
     content.getChildren().addAll(recentlyClosed, openFiles);
-    content.setOnDragOver(event -> {
-      System.out.println("content");
-    });
   }
 
   private void initCompileButton() {
@@ -287,12 +284,9 @@ public class SideMenu extends BorderPane {
   }
 
   public void refresh() {
-    System.out.println("refresh!");
     openFiles.refresh(persistenceService.getOpenFiles());
     recentlyClosed.refresh(persistenceService.getRecentlyClosed());
     mainFileComboBox.setItems(FXCollections.observableList(persistenceService.updateAndGetCurrentMainFiles()));
-    persistenceService.getOpenFiles().stream().map(File::getAbsolutePath).forEach(System.out::println);
-    persistenceService.updateAndGetCurrentMainFiles().stream().map(File::getAbsolutePath).forEach(System.out::println);
   }
 
   public void openProject(BaristaProject baristaProject) {
