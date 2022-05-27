@@ -1,5 +1,6 @@
 package com.farkasch.barista.gui.mainview.topmenu;
 
+import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.util.BaristaProject;
 import java.nio.file.Paths;
@@ -28,6 +29,8 @@ public class LoadProjectWindow extends Stage {
 
   @Autowired
   private FileService fileService;
+  @Autowired
+  private WarningPopup warningPopup;
 
   private Label projectsLabel;
   private Label chosenProjectLabel;
@@ -85,8 +88,12 @@ public class LoadProjectWindow extends Stage {
     VBox.setMargin(fieldLayout, new Insets(10));
 
     openButton.setOnAction(click -> {
-      fileService.loadProject(selectedProject);
-      close();
+      if(selectedProject.getProjectName() != null){
+        fileService.loadProject(selectedProject);
+        close();
+      } else {
+        warningPopup.showWindow("Error", "Please Select a Project!", null);
+      }
     });
 
     openButtonContainer.getChildren().add(openButton);

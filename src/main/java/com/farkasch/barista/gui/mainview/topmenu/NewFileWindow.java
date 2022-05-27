@@ -44,8 +44,6 @@ public class NewFileWindow extends Stage {
   @Autowired
   private SideMenu sideMenu;
   @Autowired
-  private ErrorPopup errorPopup;
-  @Autowired
   private WarningPopup warningPopup;
 
   //Design
@@ -115,16 +113,20 @@ public class NewFileWindow extends Stage {
     VBox.setMargin(fieldLayout, new Insets(10, 10, 0, 10));
 
     createButton.setOnAction(actionEvent -> {
-      Result fileCreated = fileService.createFile(folderPathField.getText() + "\\" + fileNameField.getText());
-      if (fileCreated.getResult().equals(ResultTypeEnum.OK)) {
-        File newFile = (File) fileCreated.getReturnValue();
-        if (persistenceService.getOpenProject() != null) {
-          sideMenu.closeProject(false);
+      if(!folderPathField.getText().equals("") && !fileNameField.getText().equals("")){
+        Result fileCreated = fileService.createFile(folderPathField.getText() + "\\" + fileNameField.getText());
+        if (fileCreated.getResult().equals(ResultTypeEnum.OK)) {
+          File newFile = (File) fileCreated.getReturnValue();
+          if (persistenceService.getOpenProject() != null) {
+            sideMenu.closeProject(false);
+          }
+          openFile.accept(newFile);
+          close();
+        } else {
+          warningPopup.showWindow(fileCreated);
         }
-        openFile.accept(newFile);
-        close();
       } else {
-        warningPopup.showWindow(fileCreated);
+        warningPopup.showWindow("Error", "File name field and folder path field must not be empty!", null);
       }
     });
 

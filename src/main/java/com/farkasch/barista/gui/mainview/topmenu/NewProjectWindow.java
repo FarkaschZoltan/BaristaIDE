@@ -4,7 +4,9 @@ import com.farkasch.barista.gui.component.FolderDropdown;
 import com.farkasch.barista.gui.component.WarningPopup;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.util.BaristaProject;
+import com.farkasch.barista.util.Result;
 import com.farkasch.barista.util.enums.ProjectTypeEnum;
+import com.farkasch.barista.util.enums.ResultTypeEnum;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import javafx.collections.FXCollections;
@@ -41,11 +43,11 @@ public class NewProjectWindow extends Stage {
   //Design
   private TextField projectNameField;
   private TextField folderPathField;
-  private ComboBox<ProjectTypeEnum> projectType;
+  //private ComboBox<ProjectTypeEnum> projectType;
   private FolderDropdown rootFolderSelector;
   private Label projectNameLabel;
   private Label folderPathLabel;
-  private Label projectTypeLabel;
+  //private Label projectTypeLabel;
   private Label rootFolderLabel;
   private Button createButton;
   private GridPane fieldLayout;
@@ -64,8 +66,8 @@ public class NewProjectWindow extends Stage {
     folderPathField = new TextField(System.getProperty("user.home"));
     folderPathLabel = new Label("Project creation folder: ");
 
-    projectType = new ComboBox<>();
-    projectTypeLabel = new Label("Project Type: ");
+    //projectType = new ComboBox<>();
+    //projectTypeLabel = new Label("Project Type: ");
 
     createButton = new Button("Create");
     createButtonContainer = new HBox(createButton);
@@ -89,7 +91,7 @@ public class NewProjectWindow extends Stage {
 
     projectNameLabel.setLabelFor(projectNameField);
     folderPathLabel.setLabelFor(folderPathField);
-    projectNameLabel.setLabelFor(projectType);
+    //projectNameLabel.setLabelFor(projectType);
 
     fieldLayout.add(projectNameLabel, 0, 0);
     GridPane.setMargin(projectNameLabel, new Insets(10, 10, 10, 0));
@@ -103,17 +105,17 @@ public class NewProjectWindow extends Stage {
     fieldLayout.add(folderPathField, 1, 1);
     GridPane.setHgrow(projectNameField, Priority.ALWAYS);
     GridPane.setFillWidth(projectNameField, true);
-    fieldLayout.add(projectTypeLabel, 0, 2);
-    GridPane.setMargin(projectTypeLabel, new Insets(10, 10, 10, 0));
-    GridPane.setValignment(projectTypeLabel, VPos.CENTER);
-    fieldLayout.add(projectType, 1, 2);
+    //fieldLayout.add(projectTypeLabel, 0, 2);
+    //GridPane.setMargin(projectTypeLabel, new Insets(10, 10, 10, 0));
+    //GridPane.setValignment(projectTypeLabel, VPos.CENTER);
+    //fieldLayout.add(projectType, 1, 2);
     fieldLayout.add(rootFolderLabel, 0, 3);
     GridPane.setMargin(rootFolderLabel, new Insets(10, 0, 0, 0));
     VBox.setMargin(fieldLayout, new Insets(10, 10, 0, 10));
 
-    projectType.setItems(FXCollections.observableArrayList(ProjectTypeEnum.BASIC, ProjectTypeEnum.MAVEN, ProjectTypeEnum.GRADLE));
-    projectType.setMaxWidth(Double.MAX_VALUE);
-    projectType.setConverter(new StringConverter<>() {
+    //projectType.setItems(FXCollections.observableArrayList(ProjectTypeEnum.BASIC, ProjectTypeEnum.MAVEN, ProjectTypeEnum.GRADLE));
+    //projectType.setMaxWidth(Double.MAX_VALUE);
+    /*projectType.setConverter(new StringConverter<>() {
       @Override
       public String toString(ProjectTypeEnum projectTypeEnum) {
         return projectTypeEnum.getName();
@@ -147,6 +149,22 @@ public class NewProjectWindow extends Stage {
         maven, gradle);
       fileService.createNewProject(baristaProject);
       close();
+    });*/
+
+    createButton.setOnAction(actionEvent -> {
+      if(!projectNameField.getText().equals("") && !folderPathField.getText().equals("")){
+        BaristaProject baristaProject = new BaristaProject(projectNameField.getText(), folderPathField.getText() + "\\" + projectNameField.getText(),
+          false, false);
+        Result result = fileService.createNewProject(baristaProject);
+        if(result.getResult().equals(ResultTypeEnum.OK)){
+          close();
+        } else {
+          warningPopup.showWindow(result);
+        }
+      } else {
+        warningPopup.showWindow("Error", "Project name field and folder path field must not be empty!", null);
+      }
+
     });
 
     createButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
@@ -159,7 +177,7 @@ public class NewProjectWindow extends Stage {
   private void onLoad() {
     projectNameField.setText("");
     folderPathField.setText(System.getProperty("user.home"));
-    projectType.setValue(ProjectTypeEnum.BASIC);
+    //projectType.setValue(ProjectTypeEnum.BASIC);
     HashMap<String, String> styleIds = new HashMap<>();
     styleIds.put("item", "folder-dropdown__item");
     styleIds.put("dragEntered", "folder-dropdown__item--on-drag-entered");

@@ -97,12 +97,16 @@ public class OpenFileWindow extends Stage {
     VBox.setMargin(fileNameLayout, new Insets(10, 10, 0, 10));
 
     openFileButton.setOnAction(actionEvent -> {
-      File file = new File(filePath);
-      if (persistenceService.getOpenProject() != null) {
-        sideMenu.closeProject(false);
+      if(!filePath.equals("")){
+        File file = new File(filePath);
+        if (persistenceService.getOpenProject() != null) {
+          sideMenu.closeProject(false);
+        }
+        openFile.accept(file);
+        close();
+      } else {
+        warningPopup.showWindow("Error", "File name field must not be empty!", null);
       }
-      openFile.accept(file);
-      close();
     });
 
     openButtonContainer.setAlignment(Pos.BOTTOM_RIGHT);
