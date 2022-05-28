@@ -101,8 +101,6 @@ public class ProcessService {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
         StringBuilder errorMessage = new StringBuilder();
-        errorMessage.append("echo This is an error message!");
-        errorMessage.append("\n");
         reader.lines().forEach(line -> {
           errorMessage.append("echo " + line);
           errorMessage.append("\n");
