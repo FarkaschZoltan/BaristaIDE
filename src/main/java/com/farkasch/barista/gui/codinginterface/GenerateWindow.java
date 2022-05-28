@@ -241,7 +241,7 @@ public class GenerateWindow extends Stage {
           setId("folder-dropdown__item");
         } else {
           clickedItems.add(this);
-          setId("#folder-dropdown__item--selected");
+          setId("folder-dropdown__item--selected");
         }
       });
       GridPane.setHgrow(this, Priority.ALWAYS);
