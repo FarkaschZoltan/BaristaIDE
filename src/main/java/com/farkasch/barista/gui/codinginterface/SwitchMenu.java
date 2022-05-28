@@ -58,7 +58,7 @@ public class SwitchMenu extends HBox {
   }
 
   public void addFile(File file) {
-    SwitchMenuItem widget = new SwitchMenuItem(file);
+    SwitchMenuItem widget = new SwitchMenuItem(file, this);
     getChildren().add(widget);
     if (currentlyActive != null) {
       currentlyActive.setContentId("switch-menu__item");
@@ -116,6 +116,15 @@ public class SwitchMenu extends HBox {
     private File file;
     private Button openButton;
     private Button closeButton;
+    private SwitchMenu switchMenu;
+
+    public SwitchMenu getSwitchMenu() {
+      return switchMenu;
+    }
+
+    public void setSwitchMenu(SwitchMenu switchMenu) {
+      this.switchMenu = switchMenu;
+    }
 
     public File getFile() {
       return file;
@@ -134,8 +143,9 @@ public class SwitchMenu extends HBox {
       openButton.setText(text);
     }
 
-    public SwitchMenuItem(File file) {
+    public SwitchMenuItem(File file, SwitchMenu switchMenu) {
       this.file = file;
+      this.switchMenu = switchMenu;
       init();
     }
 

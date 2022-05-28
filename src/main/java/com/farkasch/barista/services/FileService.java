@@ -157,8 +157,15 @@ public class FileService {
         }
         saveProject();
       }
+      SwitchMenu switchMenu = null;
       for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
-        codingInterface.getSwitchMenu().closeFile(file);
+        if(codingInterface.getSwitchMenu().getChildren().stream().filter(item -> ((SwitchMenuItem) item).getFile().equals(file)).toList().size() > 0){
+          switchMenu = codingInterface.getSwitchMenu();
+          break;
+        }
+      }
+      if(switchMenu != null){
+        switchMenu.closeFile(file);
       }
       return file.delete();
     } else {
@@ -188,12 +195,13 @@ public class FileService {
     projectDropdown.removeFolderDropdownItem(folderDropdownItem);
 
     //removing all the files from the switch menu(s)
+    List<Node> menusToClose = new ArrayList<>();
     for (CodingInterface codingInterface : codingInterfaceContainer.getInterfaces()) {
       SwitchMenu switchMenu = codingInterface.getSwitchMenu();
-      List<Node> menusToClose = switchMenu.getChildren().stream()
-        .filter(switchMenuItem -> ((SwitchMenuItem) switchMenuItem).getFile().getAbsolutePath().contains(folderToDelete.getAbsolutePath())).toList();
-      menusToClose.forEach(item -> switchMenu.closeFile(((SwitchMenuItem) item).getFile()));
+      menusToClose.addAll(switchMenu.getChildren().stream()
+        .filter(switchMenuItem -> ((SwitchMenuItem) switchMenuItem).getFile().getAbsolutePath().contains(folderToDelete.getAbsolutePath())).toList());
     }
+    menusToClose.forEach(item -> ((SwitchMenuItem)item).getSwitchMenu().closeFile(((SwitchMenuItem) item).getFile()));
 
     saveProject();
     return FileSystemUtils.deleteRecursively(folderToDelete);
