@@ -151,6 +151,8 @@ public class FileService {
           persistenceService.getOpenProject().removeSourceFile(file);
           if(file.equals(persistenceService.getOpenProject().getMainFile())){
             persistenceService.getOpenProject().setMainFile(null);
+            sideMenu.getCompileButton().setDisable(true);
+            sideMenu.getRunButton().setDisable(true);
           }
         } else {
           persistenceService.getOpenProject().removeOtherFile(file);
