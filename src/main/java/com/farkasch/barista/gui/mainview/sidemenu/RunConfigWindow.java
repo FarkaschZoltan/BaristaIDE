@@ -245,11 +245,17 @@ public class RunConfigWindow extends Stage {
     GridPane.setMargin(newRunConfigNameTextField, new Insets(5, 0, 10, 0));
 
     addNewRunConfigButton.setOnAction(event -> {
+      if(newRunConfigNameTextField.getText().equals("") || newRunConfigTextField.getText().equals("")){
+        warningPopup.showWindow("Error", "Name and Command fields must not be empty!", null);
+        return;
+      }
       if (!runSettingList.stream().map(RunSetting::getName).toList().contains(newRunConfigNameTextField.getText())
         && !newRunConfigNameTextField.getText().equals(persistenceService.getOpenProject().getProjectName())) {
         runSettingList.add(new RunSetting(newRunConfigNameTextField.getText(), newRunConfigTextField.getText()));
-        runSettingList.stream().forEach(System.out::println);
         runSettingsComboBox.setItems(runSettingList);
+        newRunConfigTextField.setText("");
+        newRunConfigNameTextField.setText("");
+        warningPopup.showWindow("Success", "Run-configuration added successfully!", null);
       } else {
         warningPopup.showWindow("Error", "A run-config with this name already exists!", null);
       }
@@ -329,11 +335,20 @@ public class RunConfigWindow extends Stage {
 
     editRunConfigButton.setOnAction(event -> {
       RunSetting editedSetting;
+      if(editRunConfigTextField.getText().equals("") || editRunConfigNameTextField.getText().equals("")){
+        warningPopup.showWindow("Error", "Name and Command fields must not be empty!", null);
+        return;
+      }
+      if(runSettingsComboBox.getValue() == null){
+        warningPopup.showWindow("Error", "Please choose a run-configuration first!", null);
+        return;
+      }
       if (oldName.equals(editRunConfigNameTextField.getText())) {
         editedSetting = new RunSetting(oldName, editRunConfigTextField.getText());
         runSettingList.remove(editedSetting);
         runSettingList.add(editedSetting);
         runSettingsComboBox.setValue(editedSetting);
+        warningPopup.showWindow("Success", "Run-configuration edited successfully!", null);
       } else {
         if (!runSettingList.stream().map(RunSetting::getName).toList().contains(editRunConfigNameTextField.getText())
           && !editRunConfigNameTextField.getText().equals(persistenceService.getOpenProject().getProjectName())) {
@@ -342,6 +357,7 @@ public class RunConfigWindow extends Stage {
           runSettingList.add(editedSetting);
           runSettingsComboBox.setValue(editedSetting);
           oldName = editRunConfigNameTextField.getText();
+          warningPopup.showWindow("Success", "Run-configuration edited successfully!", null);
         } else {
           warningPopup.showWindow("Error", "A run-config with this name already exists!", null);
         }
@@ -353,6 +369,7 @@ public class RunConfigWindow extends Stage {
     deleteRunConfigButton.setOnAction(event -> {
       if(runSettingsComboBox.getValue() != null){
         runSettingList.remove(runSettingsComboBox.getValue());
+        warningPopup.showWindow("Success", "Run-configuration deleted successfully!", null);
       }
     });
 
