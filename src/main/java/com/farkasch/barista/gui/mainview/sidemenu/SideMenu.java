@@ -354,7 +354,7 @@ public class SideMenu extends BorderPane {
 
     MenuItem deleteProject = new MenuItem("Delete Project");
     deleteProject.setOnAction(click -> warningPopup.showWindow("Delete Project", "Are you sure you want to delete this project?",
-      acceptClick -> fileService.deleteProject(persistenceService.getOpenProject())));
+      acceptClick -> fileService.deleteProject(persistenceService.getOpenProject()), null));
 
     //giving the absolute parent its own context menu
     projectFolderDropdown.setAbsoluteParentContextMenuItems(Arrays.asList(renameProject, newFile, newFolder, closeProject, deleteProject));
@@ -379,7 +379,9 @@ public class SideMenu extends BorderPane {
     }
     ArrayList<CodingInterface> toClose = new ArrayList<>();
     codingInterfaceContainer.getInterfaces().forEach(codingInterface -> {
-      fileService.saveFile(codingInterface.getShownFile(), codingInterface.getTextContent());
+      if(!delete){
+        fileService.saveFile(codingInterface.getShownFile(), codingInterface.getTextContent());
+      }
       toClose.add(codingInterface);
     });
     toClose.forEach(CodingInterface::close);
@@ -388,6 +390,9 @@ public class SideMenu extends BorderPane {
     content.getChildren().addAll(recentlyClosed, openFiles);
     topMenu.getChildren().remove(runSettingsComboBox);
     topMenu.add(mainFileComboBox, 0, 1, 2, 1);
+    runButton.setDisable(true);
+    compileButton.setDisable(true);
+    editRunSettingsButton.setDisable(true);
   }
 
   public FolderDropdown getProjectFolderDropdown() {
