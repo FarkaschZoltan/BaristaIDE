@@ -188,7 +188,7 @@ public class BaristaProject {
     sourceFiles = (ArrayList<String>) jsonObject.get("sourceFiles");
     otherFiles = (ArrayList<String>) jsonObject.get("otherFiles");
     folders = (ArrayList<String>) jsonObject.get("folders");
-    mainFile = new File((String) jsonObject.get("mainFile"));
+    mainFile = (jsonObject.get("mainFile")).equals("") ? null : new File((String) jsonObject.get("mainFile"));
     maven = (boolean) jsonObject.get("maven");
     gradle = (boolean) jsonObject.get("gradle");
 
