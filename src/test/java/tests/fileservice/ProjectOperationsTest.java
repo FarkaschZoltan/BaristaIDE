@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -162,6 +163,8 @@ public class ProjectOperationsTest extends ApplicationTest {
     File javaFileToDelete = new File(deleteTestProject.getSourceRoot() + "\\folderToDelete\\javaFileToDelete.java");
     File mainFile = deleteTestProject.getMainFile();
     File folderToDelete = new File(deleteTestProject.getSourceRoot() + "\\folderToDelete");
+    Mockito.when(sideMenu.getCompileButton()).thenReturn(new Button());
+    Mockito.when(sideMenu.getRunButton()).thenReturn(new Button());
 
     boolean deleteResult = fileService.deleteFile(textFileToDelete, true);
     Assert.assertTrue(deleteResult);
