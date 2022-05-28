@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import javafx.application.Platform;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Button;
@@ -92,6 +93,14 @@ public class SideMenu extends BorderPane {
     return runSettingsComboBox;
   }
 
+  public Button getCompileButton() {
+    return compileButton;
+  }
+
+  public Button getRunButton() {
+    return runButton;
+  }
+
   @PostConstruct
   private void init() {
     openedProject = null;
@@ -156,11 +165,13 @@ public class SideMenu extends BorderPane {
         Result compileResult = processService.CompileFile(filePath, fileName);
         if(compileResult.getResult().equals(ResultTypeEnum.OK)){
           ((File) compileResult.getReturnValue()).delete();
+          Platform.runLater(() -> warningPopup.showWindow("Success", "Compilation succeeded!", null));
         }
       } else {
         Result compileResult = processService.CompileProject(persistenceService.getOpenProject());
         if(compileResult.getResult().equals(ResultTypeEnum.OK)){
           ((File) compileResult.getReturnValue()).delete();
+          Platform.runLater(() -> warningPopup.showWindow("Success", "Compilation succeeded!", null));
         }
       }
     };
@@ -333,6 +344,16 @@ public class SideMenu extends BorderPane {
     MenuItem renameFile = new MenuItem("Rename");
     renameFile.setOnAction(click -> renameFilePopup.showWindow((FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode()));
 
+    MenuItem setAsMainFile = new MenuItem("Set as Main File");
+    setAsMainFile.setOnAction(click -> {
+      File newMainFile = new File(((FolderDropdownItem)((MenuItem)click.getTarget()).getParentPopup().getOwnerNode()).getPath());
+      persistenceService.getOpenProject().setMainFile(newMainFile);
+      runButton.setDisable(false);
+      compileButton.setDisable(false);
+      warningPopup.showWindow("Success", "New main file set!", null);
+      fileService.saveProject();
+    });
+
     MenuItem deleteFile = new MenuItem("Delete");
     deleteFile.setOnAction(click -> {
       FolderDropdownItem folderDropdownItem = (FolderDropdownItem) ((MenuItem) click.getTarget()).getParentPopup().getOwnerNode();
@@ -343,7 +364,7 @@ public class SideMenu extends BorderPane {
         }, null);
 
     });
-    projectFolderDropdown.setFileContextMenuItems(Arrays.asList(renameFile, deleteFile));
+    projectFolderDropdown.setFileContextMenuItems(Arrays.asList(renameFile, setAsMainFile, deleteFile));
 
     MenuItem renameProject = new MenuItem("Rename Project");
     renameProject.setOnAction(
@@ -367,8 +388,13 @@ public class SideMenu extends BorderPane {
     topMenu.add(runSettingsComboBox, 0, 1, 2, 1);
     runSettingsComboBox.setItems(FXCollections.observableList(fileService.getRunConfig()));
     runSettingsComboBox.setValue(runSettingsComboBox.getItems().get(0));
-    runButton.setDisable(false);
-    compileButton.setDisable(false);
+    if(openedProject.getMainFile() != null){
+      runButton.setDisable(false);
+      compileButton.setDisable(false);
+    } else {
+      runButton.setDisable(true);
+      compileButton.setDisable(true);
+    }
     editRunSettingsButton.setDisable(false);
   }
 
