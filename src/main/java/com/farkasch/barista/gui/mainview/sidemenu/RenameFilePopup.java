@@ -13,15 +13,20 @@ public class RenameFilePopup extends AbstractProjectPopup {
   @Override
   protected void save() {
     String newFileName = itemTextField.getText();
-    if (newFileName.split("\\.").length < 2) {
-      newFileName = newFileName.concat("." + Files.getFileExtension(item.getPath()));
-    }
-    Result fileRenamed = fileService.renameFile(new File(item.getPath()), newFileName, item);
-    if(fileRenamed.getResult().equals(ResultTypeEnum.OK)){
-      close();
+    if(!newFileName.equals("")){
+      if (newFileName.split("\\.").length < 2) {
+        newFileName = newFileName.concat("." + Files.getFileExtension(item.getPath()));
+      }
+      Result fileRenamed = fileService.renameFile(new File(item.getPath()), newFileName, item);
+      if(fileRenamed.getResult().equals(ResultTypeEnum.OK)){
+        close();
+      } else {
+        warningPopup.showWindow(fileRenamed);
+      }
     } else {
-      warningPopup.showWindow(fileRenamed);
+      warningPopup.showWindow("Error", "File name field must nor be empty!", null);
     }
+
   }
 
   @Override

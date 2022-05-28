@@ -5,6 +5,7 @@ import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.util.BaristaDragBoard;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
@@ -83,7 +84,7 @@ public class SwitchMenu extends HBox {
   }
 
   private void removeFile(int index) {
-    if(persistenceService.getOpenProject() == null){
+    if(persistenceService.getOpenProject() == null && dragBoard.getDraggedItem() == null){
       persistenceService.removeOpenFile(((SwitchMenuItem)(getChildren().get(index))).getFile());
       persistenceService.addRecentlyClosed(((SwitchMenuItem)(getChildren().get(index))).getFile());
       sideMenu.refresh();

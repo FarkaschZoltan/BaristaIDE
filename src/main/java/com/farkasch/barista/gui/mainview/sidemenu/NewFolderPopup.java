@@ -21,11 +21,15 @@ public class NewFolderPopup extends AbstractProjectPopup {
 
   @Override
   protected void save(){
-    Result folderCreated = fileService.createFolder(item.getPath() + "\\" + itemTextField.getText(), item);
-    if(folderCreated.getResult().equals(ResultTypeEnum.OK)){
-      close();
+    if(!itemTextField.getText().equals("")){
+      Result folderCreated = fileService.createFolder(item.getPath() + "\\" + itemTextField.getText(), item);
+      if(folderCreated.getResult().equals(ResultTypeEnum.OK)){
+        close();
+      } else {
+        warningPopup.showWindow(folderCreated);
+      }
     } else {
-      warningPopup.showWindow(folderCreated);
+      warningPopup.showWindow("Error", "Folder name field must not be empty!", null);
     }
   }
 

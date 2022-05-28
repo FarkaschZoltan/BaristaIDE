@@ -13,11 +13,15 @@ public class RenameFolderPopup extends AbstractProjectPopup {
   @Override
   protected void save() {
     String newFolderName = itemTextField.getText();
-    Result folderRenamed = fileService.renameFolder(new File(item.getPath()), newFolderName, item);
-    if(folderRenamed.getResult().equals(ResultTypeEnum.OK)){
-      close();
+    if(!newFolderName.equals("")){
+      Result folderRenamed = fileService.renameFolder(new File(item.getPath()), newFolderName, item);
+      if(folderRenamed.getResult().equals(ResultTypeEnum.OK)){
+        close();
+      } else {
+        warningPopup.showWindow(folderRenamed);
+      }
     } else {
-      warningPopup.showWindow(folderRenamed);
+      warningPopup.showWindow("Error", "Folder name field must not be empty!", null);
     }
   }
 

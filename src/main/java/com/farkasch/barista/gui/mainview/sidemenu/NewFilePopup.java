@@ -154,61 +154,66 @@ public class NewFilePopup extends Stage {
     GridPane.setFillWidth(classTypeComboBox, true);
 
     createButton.setOnAction(click -> {
-      try {
-        String extension;
-        if (fileExtensionComboBox.getValue().equals(FileExtensionEnum.OTHER)) {
-          if (fileNameField.getText().split("\\.").length > 1) {
-            extension = "";
-          } else {
-            extension = ".txt";
-          }
-        } else {
-          extension = fileExtensionComboBox.getValue().getName();
-        }
-
-        Result fileCreated = fileService.createFile(creationFolder.getPath() + "\\" + fileNameField.getText() + extension, creationFolder);
-        if (fileCreated.getResult().equals(ResultTypeEnum.OK)) {
-          File newFile = (File) fileCreated.getReturnValue();
-          if (fileExtensionComboBox.getValue().equals(FileExtensionEnum.JAVA)) {
-            FileWriter writer = new FileWriter(newFile);
-            switch (classTypeComboBox.getValue()) {
-              case ENUM:
-                writer.write(fileTemplates.enumTemplate(fileNameField.getText(), creationFolder.getPath()));
-                break;
-              case CLASS:
-                writer.write(fileTemplates.classTemplate(fileNameField.getText(), creationFolder.getPath()));
-                break;
-              case RECORD:
-                writer.write(fileTemplates.recordTemplate(fileNameField.getText(), creationFolder.getPath()));
-                break;
-              case INTERFACE:
-                writer.write(fileTemplates.interfaceTemplate(fileNameField.getText(), creationFolder.getPath()));
-                break;
-              case ANNOTATION:
-                writer.write(fileTemplates.annotationTemplate(fileNameField.getText(), creationFolder.getPath()));
-                break;
-              default:
-                break;
+      if (!fileNameField.getText().equals("")) {
+        try {
+          String extension;
+          if (fileExtensionComboBox.getValue().equals(FileExtensionEnum.OTHER)) {
+            if (fileNameField.getText().split("\\.").length > 1) {
+              extension = "";
+            } else {
+              extension = ".txt";
             }
-            writer.close();
+          } else {
+            extension = fileExtensionComboBox.getValue().getName();
           }
 
-          codingInterfaceContainer.openFile(newFile);
-          persistenceService.setActiveFile(newFile);
-          close();
-        } else {
-          warningPopup.showWindow(fileCreated);
-        }
-      } catch (IOException e) {
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter printWriter = new PrintWriter(stringWriter);
-        e.printStackTrace(printWriter);
-        File errorFile = fileService.createErrorLog(stringWriter.toString());
-        errorPopup.showWindow(Result.ERROR("Error while creating new file!", errorFile));
+          Result fileCreated = fileService.createFile(creationFolder.getPath() + "\\" + fileNameField.getText() + extension, creationFolder);
+          if (fileCreated.getResult().equals(ResultTypeEnum.OK)) {
+            File newFile = (File) fileCreated.getReturnValue();
+            if (fileExtensionComboBox.getValue().equals(FileExtensionEnum.JAVA)) {
+              FileWriter writer = new FileWriter(newFile);
+              switch (classTypeComboBox.getValue()) {
+                case ENUM:
+                  writer.write(fileTemplates.enumTemplate(fileNameField.getText(), creationFolder.getPath()));
+                  break;
+                case CLASS:
+                  writer.write(fileTemplates.classTemplate(fileNameField.getText(), creationFolder.getPath()));
+                  break;
+                case RECORD:
+                  writer.write(fileTemplates.recordTemplate(fileNameField.getText(), creationFolder.getPath()));
+                  break;
+                case INTERFACE:
+                  writer.write(fileTemplates.interfaceTemplate(fileNameField.getText(), creationFolder.getPath()));
+                  break;
+                case ANNOTATION:
+                  writer.write(fileTemplates.annotationTemplate(fileNameField.getText(), creationFolder.getPath()));
+                  break;
+                default:
+                  break;
+              }
+              writer.close();
+            }
 
-        printWriter.close();
-        e.printStackTrace();
+            codingInterfaceContainer.openFile(newFile);
+            persistenceService.setActiveFile(newFile);
+            close();
+          } else {
+            warningPopup.showWindow(fileCreated);
+          }
+        } catch (IOException e) {
+          StringWriter stringWriter = new StringWriter();
+          PrintWriter printWriter = new PrintWriter(stringWriter);
+          e.printStackTrace(printWriter);
+          File errorFile = fileService.createErrorLog(stringWriter.toString());
+          errorPopup.showWindow(Result.ERROR("Error while creating new file!", errorFile));
+
+          printWriter.close();
+          e.printStackTrace();
+        }
+      } else {
+        warningPopup.showWindow("Error", "File name field must not be empty!", null);
       }
+
     });
     HBox.setHgrow(buttonAlignmentRegion, Priority.ALWAYS);
     buttonLayout.setPadding(new Insets(10, 0, 10, 0));
@@ -221,10 +226,14 @@ public class NewFilePopup extends Stage {
     fieldLayout.setHgap(10);
     fieldLayout.setVgap(10);
 
-    windowLayout.setPadding(new Insets(10));
+    windowLayout.setPadding(new
+
+      Insets(10));
 
     initModality(Modality.APPLICATION_MODAL);
+
     setResizable(false);
+
   }
 
   private void onLoad(FolderDropdownItem creationFolder) {

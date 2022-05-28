@@ -9,11 +9,15 @@ public class RenameProjectPopup extends AbstractProjectPopup {
   @Override
   protected void save() {
     String newProjectName = itemTextField.getText();
-    if(fileService.getProjects().stream().filter(baristaProject -> baristaProject.getProjectName().equals(newProjectName)).toList().size() == 0){
-      fileService.renameProject(newProjectName, item);
-      close();
+    if(!newProjectName.equals("")){
+      if(fileService.getProjects().stream().filter(baristaProject -> baristaProject.getProjectName().equals(newProjectName)).toList().size() == 0){
+        fileService.renameProject(newProjectName, item);
+        close();
+      } else {
+        warningPopup.showWindow("Error", "A project with this name already exists!", null);
+      }
     } else {
-      warningPopup.showWindow("Error", "A project with this name already exists!", null);
+      warningPopup.showWindow("Error", "Project name field must not be empty!", null);
     }
   }
 
