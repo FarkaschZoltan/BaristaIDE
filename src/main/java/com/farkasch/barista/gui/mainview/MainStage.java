@@ -31,7 +31,7 @@ public class MainStage extends Stage {
     setTitle("BaristaIDE");
 
     layout = new BorderPane();
-    scene = new Scene(layout, Screen.getPrimary().getBounds().getWidth(), Screen.getPrimary().getBounds().getHeight());
+    scene = new Scene(layout, 800, 600);
 
     layout.setCenter(codingInterfaceContainer);
     layout.setTop(topMenu);
