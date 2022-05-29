@@ -62,8 +62,7 @@ public abstract class AbstractProjectPopup extends Stage {
     windowLayout.setPadding(new Insets(10));
 
     scene = new Scene(windowLayout, 300, 80);
-    scene.getStylesheets().add(
-      Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
+    scene.getStylesheets().add("style.css");
 
     itemTextFieldLabel.setLabelFor(itemTextField);
     GridPane.setMargin(itemTextFieldLabel, new Insets(0, 10, 0, 0));

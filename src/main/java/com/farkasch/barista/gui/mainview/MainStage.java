@@ -37,9 +37,7 @@ public class MainStage extends Stage {
     layout.setTop(topMenu);
     layout.setLeft(sideMenu);
 
-    scene.getStylesheets().add(
-      Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
-        .toString());
+    scene.getStylesheets().add("style.css");
 
     sideMenu.setPrefWidth(scene.getWidth() * 0.1);
     sideMenu.setMinWidth(200);

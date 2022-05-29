@@ -6,13 +6,11 @@ import com.farkasch.barista.services.PersistenceService;
 import com.farkasch.barista.util.FileTemplates;
 import com.farkasch.barista.util.enums.GenerateEnum;
 import com.google.common.io.Files;
-import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -25,12 +23,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javax.annotation.PostConstruct;
-import javax.swing.GroupLayout.Alignment;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -84,7 +79,7 @@ public class GenerateWindow extends Stage {
 
     setTitle("Generate...");
     scene = new Scene(windowLayout, 300, 400);
-    scene.getStylesheets().add(Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
+    scene.getStylesheets().add("style.css");
 
     generateComboBoxLabel.setLabelFor(generateComboBox);
     GridPane.setHgrow(generateComboBoxLabel, Priority.ALWAYS);

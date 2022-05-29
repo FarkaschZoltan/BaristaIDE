@@ -84,9 +84,7 @@ public class NewFileWindow extends Stage {
 
     scene = new Scene(windowLayout, 350, 400);
 
-    scene.getStylesheets().add(
-      Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
-        .toString());
+    scene.getStylesheets().add("style.css");
 
     scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
     scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);

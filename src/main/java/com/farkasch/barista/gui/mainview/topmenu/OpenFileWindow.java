@@ -71,9 +71,7 @@ public class OpenFileWindow extends Stage {
     windowLayout = new VBox(fileNameLayout, scrollPane, openButtonContainer);
 
     scene = new Scene(windowLayout, 300, 400);
-    scene.getStylesheets().add(
-      Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri()
-        .toString());
+    scene.getStylesheets().add("style.css");
 
     filePath = "";
 

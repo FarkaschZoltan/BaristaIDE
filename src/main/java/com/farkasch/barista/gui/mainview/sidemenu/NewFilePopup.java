@@ -92,7 +92,7 @@ public class NewFilePopup extends Stage {
     windowLayout = new VBox(fieldLayout, buttonLayout);
 
     scene = new Scene(windowLayout, 500, 110);
-    scene.getStylesheets().add(Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
+    scene.getStylesheets().add("style.css");
 
     fileExtensionComboBox.setValue(FileExtensionEnum.JAVA);
     fileExtensionComboBox.setItems(fileExtensions);

@@ -121,8 +121,7 @@ public class RunConfigWindow extends Stage {
     buttonLayoutRegion = new Region();
 
     scene = new Scene(windowLayout, 500, 400);
-    scene.getStylesheets().add(
-      Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
+    scene.getStylesheets().add("style.css");
 
     addDependencies.setOnAction(event -> {
       addDependencies.setId("switch-menu__item--selected");

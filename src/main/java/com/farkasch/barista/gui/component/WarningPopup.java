@@ -43,7 +43,7 @@ public class WarningPopup extends Stage {
     cancelButtonClick = null;
 
     scene = new Scene(windowLayout, 300, 100);
-    scene.getStylesheets().add(Paths.get("src/main/java/com/farkasch/barista/style.css").toAbsolutePath().toUri().toString());
+    scene.getStylesheets().add("style.css");
 
     message.setWrappingWidth(scene.getWidth() - 20);
     message.setTextAlignment(TextAlignment.CENTER);
