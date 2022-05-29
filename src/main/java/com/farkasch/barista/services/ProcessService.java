@@ -15,9 +15,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import javafx.application.Platform;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -274,14 +276,14 @@ public class ProcessService {
 
   public void openDocumentation(){
     try{
-      Process p = Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler Documentation.pdf", null, new File("src\\main\\resources"));
+      Process p = Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler Documentation.pdf", null, new File(System.getProperty("user.home") + "\\AppData\\Roaming\\BaristaIDE"));
       p.waitFor();
     } catch(IOException | InterruptedException e){
       StringWriter stringWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(stringWriter);
       e.printStackTrace(printWriter);
       File errorFile = fileService.createErrorLog(stringWriter.toString());
-      errorPopup.showWindow(Result.ERROR("Error while trying to open documentation!", errorFile));
+      Platform.runLater(() -> errorPopup.showWindow(Result.ERROR("Error while trying to open documentation!", errorFile)));
 
       printWriter.close();
       e.printStackTrace();
