@@ -66,17 +66,16 @@ public class TreeNode<V> implements Cloneable {
   }
 
   public void cutBelow() {
-    children.forEach(TreeNode::cutBelow);
     children.clear();
   }
 
-  public void doActionTopToBottom(Consumer<V> action) {
+  public void doActionPreorder(Consumer<V> action) {
     action.accept(value);
-    children.forEach(child -> child.doActionTopToBottom(action));
+    children.forEach(child -> child.doActionPreorder(action));
   }
 
-  public void doActionBottomToTop(Consumer<V> action) {
-    children.forEach(child -> child.doActionBottomToTop(action));
+  public void doActionPostorder(Consumer<V> action) {
+    children.forEach(child -> child.doActionPostorder(action));
     action.accept(value);
   }
 

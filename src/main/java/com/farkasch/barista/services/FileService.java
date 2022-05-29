@@ -38,7 +38,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Scope;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
@@ -852,7 +851,7 @@ public class FileService {
 
       //renaming the files/folders in the dropdown
       folderDropdownItem.setText(name);
-      sideMenu.getProjectFolderDropdown().getRootNode().doActionTopToBottom(item -> {
+      sideMenu.getProjectFolderDropdown().getRootNode().doActionPreorder(item -> {
         item.setParentPath(item.getParentPath().replace(oldFolder.getAbsolutePath(), newFolder.getAbsolutePath()));
       });
 
