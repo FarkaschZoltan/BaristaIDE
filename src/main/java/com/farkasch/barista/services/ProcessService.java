@@ -272,4 +272,20 @@ public class ProcessService {
     return file;
   }
 
+  public void openDocumentation(){
+    try{
+      Process p = Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler Documentation.pdf", null, new File("src\\main\\resources"));
+      p.waitFor();
+    } catch(IOException | InterruptedException e){
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
+      File errorFile = fileService.createErrorLog(stringWriter.toString());
+      errorPopup.showWindow(Result.ERROR("Error while trying to open documentation!", errorFile));
+
+      printWriter.close();
+      e.printStackTrace();
+    }
+  }
+
 }

@@ -3,6 +3,7 @@ package com.farkasch.barista.gui.mainview.topmenu;
 import com.farkasch.barista.gui.codinginterface.CodingInterfaceContainer;
 import com.farkasch.barista.services.FileService;
 import com.farkasch.barista.services.PersistenceService;
+import com.farkasch.barista.services.ProcessService;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -16,6 +17,8 @@ public class TopMenu extends MenuBar {
   @Autowired
   private FileService fileService;
   @Autowired
+  private ProcessService processService;
+  @Autowired
   private NewFileWindow newFileWindow;
   @Autowired
   private OpenFileWindow openFileWindow;
@@ -28,13 +31,11 @@ public class TopMenu extends MenuBar {
   @Autowired
   private CodingInterfaceContainer codingInterfaceContainer;
   private Menu fileMenu;
-  private Menu gitMenu;
   private Menu helpMenu;
 
   @PostConstruct
   private void init() {
     initFileMenu();
-    initGitMenu();
     initHelpMenu();
 
     getMenus().addAll(fileMenu, helpMenu);
@@ -77,12 +78,17 @@ public class TopMenu extends MenuBar {
 
     fileMenu.getItems().addAll(newFile, newProject, openFile, loadProject, saveProject);
   }
-
-  private void initGitMenu() {
-    gitMenu = new Menu("Git");
-  }
-
   private void initHelpMenu() {
     helpMenu = new Menu("Help");
+
+    MenuItem documentation = new MenuItem("Documentation");
+    documentation.setOnAction(click -> {
+      Thread thread = new Thread(() -> {
+        processService.openDocumentation();
+      });
+      thread.start();
+    });
+
+    helpMenu.getItems().add(documentation);
   }
 }
